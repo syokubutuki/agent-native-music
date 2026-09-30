@@ -1,0 +1,9 @@
+{
+  "name": "agent-native-music",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "codex": "node tools/codex-worker.mjs",
+    "test:tools": "node --test tools/test/codex-worker.test.mjs"
+  }
+}
