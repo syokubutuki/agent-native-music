@@ -16,6 +16,9 @@ function repo() {
   execFileSync("git", ["init", "-q"], { cwd: dir });
   execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "i"], { cwd: dir });
   fs.writeFileSync(path.join(dir, ".gitignore"), ".codex-worker/\n");
+  // Ignore the shared default model; the fake server only knows "fake-model".
+  fs.mkdirSync(path.join(dir, ".codex-worker"));
+  fs.writeFileSync(path.join(dir, ".codex-worker", "config.local.json"), JSON.stringify({ model: null }));
   return dir;
 }
 
