@@ -1,0 +1,8 @@
+# limiter strategy C: gentle master soft clipper before the limiter
+mix:
+  master:
+    chain:
+      - {type: compressor, threshold_db: -14, ratio: 2.0, attack_ms: 30, release_ms: 200}
+      - {type: gain, db: -3}
+      - {type: saturate, drive: 0.12}
+      - {type: gain, db: 3}

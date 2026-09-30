@@ -1,0 +1,4 @@
+# limiter strategy B: soft-clip the kick's transient before the mix bus
+mix:
+  tracks:
+    kick: {chain: [{type: saturate, drive: 0.35}, {type: gain, db: -1.5}]}

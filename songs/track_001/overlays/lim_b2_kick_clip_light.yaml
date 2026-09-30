@@ -1,0 +1,4 @@
+# limiter strategy B2: lighter kick clip
+mix:
+  tracks:
+    kick: {chain: [{type: saturate, drive: 0.22}, {type: gain, db: -1.0}]}

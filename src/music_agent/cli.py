@@ -112,6 +112,11 @@ def _cmd_analyze(a):
     (d / "analysis.json").write_text(json.dumps(an, indent=1))
     (d / "findings.json").write_text(json.dumps(fs, indent=1))
     overview(x.T, sr, score, an, d / "overview.png")
+    if (d / "manifest.json").exists():
+        from .analysis.report import write_report
+
+        man = json.loads((d / "manifest.json").read_text())
+        (d / "report.md").write_text(write_report(d.name, score, an, fs, man.get("mix", {}), man))
     ton = an.get("tonality", {})
     print(f"LUFS {an['global']['lufs_integrated']:.2f}  key estimate {ton.get('top_keys')}  "
           f"declared rank {ton.get('declared_rank')} ({an.get('tonality_source')})")

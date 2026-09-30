@@ -1,0 +1,72 @@
+{
+ "render_id": "cand_01",
+ "created_utc": "2026-09-30T06:23:28+00:00",
+ "command": "/home/user/agent-native-music/src/music_agent/__main__.py batch songs/track_001 songs/track_001/overlays/lim_b2_kick_clip_light.yaml songs/track_001/overlays/lim_b3_kick_clip_duck.yaml --name mix_limiter_b002",
+ "git": {
+  "commit": "b5d33a4848dfa0406324990790db155e3922a585",
+  "branch": "claude/determined-lovelace-7itfke",
+  "dirty": true
+ },
+ "spec_path": "songs/track_001/song.yaml",
+ "spec_hash": "1d9ea49d4e7f5dec",
+ "source_files": {
+  "songs/track_001/song.yaml": "0d5b1c1938af66a6",
+  "songs/track_001/harmony.yaml": "7712ea24ad075c7a",
+  "songs/track_001/melody.yaml": "2bcd1e5d5ad15c14",
+  "songs/track_001/arrangement.yaml": "60a1536a504ec7aa",
+  "songs/track_001/mix.yaml": "42ac565dbd2eb5e4",
+  "songs/track_001/overlays/lim_b3_kick_clip_duck.yaml": "426de88d33bd7a16",
+  "instruments/bass/sub_saw_bass.yaml": "8a4607267d9e1593",
+  "instruments/drums/clap_main.yaml": "b489bf50f025b11a",
+  "instruments/drums/crash.yaml": "28863565b4d9d915",
+  "instruments/drums/hat_closed.yaml": "353fc8ddef013c2e",
+  "instruments/drums/hat_open.yaml": "860dd5ecc126d71a",
+  "instruments/drums/kick_main.yaml": "fb75088b00f4e636",
+  "instruments/drums/snare_roll.yaml": "f93c58f5873e28c4",
+  "instruments/fx/impact.yaml": "8e65b9ac7ef93a59",
+  "instruments/fx/reverse_crash.yaml": "effdf3cb7e7fc5b0",
+  "instruments/fx/riser.yaml": "7e7dd705ee12873e",
+  "instruments/keys/glass_pluck.yaml": "bc74a1f16df14d24",
+  "instruments/keys/vocal_sketch.yaml": "50e75ea5d1ab8ed4",
+  "instruments/lead/supersaw_lead.yaml": "7acf477ad4c6dc8d",
+  "instruments/pad/saw_chords.yaml": "e39705c3dbfb3829",
+  "instruments/pad/warm_pad.yaml": "7b3b8d3d0a000466"
+ },
+ "seed": 1001,
+ "python": "3.11.15",
+ "platform": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+ "libs": {
+  "numpy": "2.4.6",
+  "scipy": "1.17.1",
+  "numba": "0.67.0",
+  "pedalboard": "0.9.25",
+  "soundfile": "0.14.0",
+  "mido": "1.3.3",
+  "pyloudnorm": "0.2.0",
+  "PyYAML": "6.0.1"
+ },
+ "overlays": [
+  "songs/track_001/overlays/lim_b3_kick_clip_duck.yaml"
+ ],
+ "sample_rate": 44100,
+ "mix": {
+  "pre_limiter_lufs": -11.811511499305022,
+  "master_gain_db": 1.9556457255604656,
+  "limiter_max_gr_db": 4.016718520883033,
+  "final_lufs": -10.555850959931712,
+  "final_true_peak_db": -1.0434813356810635
+ },
+ "timings_sec": {
+  "realize": 0.04,
+  "synthesis": 10.46,
+  "mix": 7.61,
+  "analysis": 1.76,
+  "total": 21.16
+ },
+ "findings_summary": {
+  "error": 0,
+  "warn": 2,
+  "info": 7
+ },
+ "crop_sections": null
+}

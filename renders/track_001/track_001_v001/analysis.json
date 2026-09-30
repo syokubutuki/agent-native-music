@@ -9,7 +9,8 @@
   "clipped_samples": 0,
   "dc_offset": 0.00038152694613323435,
   "side_to_mid_db": -14.824393847239328,
-  "lr_correlation": 0.9362440766207341
+  "lr_correlation": 0.9362440766207341,
+  "side_to_mid_300_db": -7.1246248724652865
  },
  "sections": [
   {
@@ -21,6 +22,7 @@
    "rms_dbfs": -10.74124671651199,
    "side_to_mid_db": -14.175123659640164,
    "lr_correlation": 0.9263465427048285,
+   "side_to_mid_300_db": -7.870745875326125,
    "centroid_hz": 611.0122982264293,
    "bandwidth_hz": 1108.381780306102,
    "rolloff85_hz": 952.2899626247624,
@@ -56,6 +58,7 @@
    "rms_dbfs": -9.765228007547226,
    "side_to_mid_db": -15.31864519633702,
    "lr_correlation": 0.942907325845541,
+   "side_to_mid_300_db": -7.174712763490105,
    "centroid_hz": 1759.3646718543885,
    "bandwidth_hz": 2761.164468728124,
    "rolloff85_hz": 3469.139179025643,
@@ -91,6 +94,7 @@
    "rms_dbfs": -9.155731642622035,
    "side_to_mid_db": -15.309053277246958,
    "lr_correlation": 0.942784206912045,
+   "side_to_mid_300_db": -6.596927886199805,
    "centroid_hz": 2320.2119298003954,
    "bandwidth_hz": 3809.6618522592335,
    "rolloff85_hz": 5150.005656897048,
@@ -126,6 +130,7 @@
    "rms_dbfs": -9.711090443312447,
    "side_to_mid_db": -13.579720279654026,
    "lr_correlation": 0.9159735962639055,
+   "side_to_mid_300_db": -6.378226641901758,
    "centroid_hz": 2426.0160116513703,
    "bandwidth_hz": 3438.1880130066106,
    "rolloff85_hz": 5657.806511106723,
@@ -278,6 +283,7 @@
    "centroid_hz_delta": 1148.3523736279592,
    "onsets_per_sec_delta": 2.1999999999999997,
    "side_to_mid_db_delta": -1.1435215366968556,
+   "side_to_mid_300_db_delta": 0.6960331118360195,
    "band_share_delta": {
     "sub": 0.06245360135155126,
     "low": -0.013200399809485786,
@@ -293,6 +299,7 @@
    "centroid_hz_delta": 560.847257946007,
    "onsets_per_sec_delta": -1.0666666666666664,
    "side_to_mid_db_delta": 0.009591919090061296,
+   "side_to_mid_300_db_delta": 0.5777848772903003,
    "band_share_delta": {
     "sub": 0.004818586937863634,
     "low": 0.014954203196998583,
@@ -308,6 +315,7 @@
    "centroid_hz_delta": 105.80408185097485,
    "onsets_per_sec_delta": -2.133320433280524,
    "side_to_mid_db_delta": 1.7293329975929321,
+   "side_to_mid_300_db_delta": 0.21870124429804694,
    "band_share_delta": {
     "sub": 0.2594592458239626,
     "low": -0.31995206148817046,

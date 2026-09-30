@@ -12,7 +12,7 @@ import numpy as np
 from ..score import ChordEvent, Note, Score, SectionInfo, Track
 from ..spec import SongSpec, SpecError, Timeline
 from ..theory import Key, nearest_in_range, parse_chord, parse_key, parse_pitch, voice_chord
-from .notation import MNote, apply_ops, notes_end, parse_notes, parse_pattern, pattern_for_bar
+from .notation import MNote, apply_ops, leading_tie, notes_end, parse_notes, parse_pattern, pattern_for_bar
 
 GM_DRUMS = {"kick": 36, "snare": 38, "clap": 39, "hat": 42, "closed_hat": 42, "open_hat": 46,
             "crash": 49, "ride": 51, "tom": 45, "perc": 56, "shaker": 70, "snare_roll": 38}
@@ -50,7 +50,13 @@ def realize_harmony(data: dict, tl: Timeline, key: Key) -> list[ChordEvent]:
             dur = tl.bpb / len(symbols)
             for j, sym in enumerate(symbols):
                 ch = parse_chord(sym, key)
-                events.append(ChordEvent(bar_start + j * dur, dur, sym, ch.pcs, ch.bass))
+                start = bar_start + j * dur
+                prev = events[-1] if events else None
+                # the same chord continuing is one harmonic event (sustained harmonic rhythm)
+                if prev and prev.symbol == sym and abs(prev.start + prev.dur - start) < 1e-9:
+                    prev.dur += dur
+                else:
+                    events.append(ChordEvent(start, dur, sym, ch.pcs, ch.bass))
     return events
 
 
@@ -132,16 +138,43 @@ def _pattern_hits(patterns: dict, sec_name: str, bar_idx: int):
     return parse_pattern(pat)
 
 
+def _bar_tie(patterns: dict, sec_name: str, bar_idx: int) -> tuple[int, int]:
+    """(tie steps, grid) for a bar pattern starting with '-'."""
+    pat = pattern_for_bar((patterns or {}).get(sec_name), bar_idx)
+    if not pat:
+        return 0, 16
+    s = str(pat).replace(" ", "").replace("|", "")
+    return leading_tie(s), len(s)
+
+
+def _extend_ties(sounding: list[Note], bar_beat: float, tie_beats: float, chords: list[ChordEvent], clip: bool):
+    """Lengthen notes that were still sounding at the barline."""
+    for n in sounding:
+        if abs(n.start + n.dur - bar_beat) > 1e-6:
+            continue
+        new_end = bar_beat + tie_beats
+        if clip:
+            ce = chord_at(chords, n.start)
+            if ce is not None:
+                new_end = min(new_end, ce.start + ce.dur)
+        n.dur = max(n.dur, new_end - n.start)
+
+
 def realize_chords(content: dict, data: dict, tl: Timeline, chords: list[ChordEvent], only) -> list[Note]:
     low, high = (parse_pitch(x) for x in content.get("range", ["F3", "E5"]))
     nvoices = int(content.get("voices", 4))
     out: list[Note] = []
     prev = None
     cache: dict[tuple, tuple] = {}
+    clip = content.get("clip_to_chord", True)
+    sounding: list[Note] = []
     for sec_name, bar0, nbars in _section_iter(data, tl, only):
         for b in range(nbars):
             hits, grid = _pattern_hits(content.get("patterns"), sec_name, b)
             spb = grid / tl.bpb
+            tie, tgrid = _bar_tie(content.get("patterns"), sec_name, b)
+            if tie:
+                _extend_ties(sounding, (bar0 + b) * tl.bpb, tie * tl.bpb / tgrid, chords, clip)
             for h in hits:
                 beat = (bar0 + b) * tl.bpb + h.step / spb
                 ce = chord_at(chords, beat)
@@ -154,9 +187,9 @@ def realize_chords(content: dict, data: dict, tl: Timeline, chords: list[ChordEv
                     prev = cache[ck]
                 v = cache[ck]
                 # Do not let a held chord ring past the chord change.
-                dur = min(h.length / spb, ce.start + ce.dur - beat) if content.get("clip_to_chord", True) else h.length / spb
-                for p in v:
-                    out.append(Note(p, beat, max(dur, 0.05), h.vel))
+                dur = min(h.length / spb, ce.start + ce.dur - beat) if clip else h.length / spb
+                sounding = [Note(p, beat, max(dur, 0.05), h.vel) for p in v]
+                out += sounding
     return out
 
 
@@ -192,10 +225,15 @@ def realize_bass(content: dict, data: dict, tl: Timeline, chords: list[ChordEven
     low, high = (parse_pitch(x) for x in content.get("range", ["E1", "D#2"]))
     out: list[Note] = []
     prev = None
+    clip = content.get("clip_to_chord", True)
+    last: list[Note] = []
     for sec_name, bar0, nbars in _section_iter(data, tl, only):
         for b in range(nbars):
             hits, grid = _pattern_hits(content.get("patterns"), sec_name, b)
             spb = grid / tl.bpb
+            tie, tgrid = _bar_tie(content.get("patterns"), sec_name, b)
+            if tie:
+                _extend_ties(last, (bar0 + b) * tl.bpb, tie * tl.bpb / tgrid, chords, clip)
             for h in hits:
                 beat = (bar0 + b) * tl.bpb + h.step / spb
                 ce = chord_at(chords, beat)
@@ -204,9 +242,10 @@ def realize_bass(content: dict, data: dict, tl: Timeline, chords: list[ChordEven
                 root = nearest_in_range(ce.bass_pc, low, high, prev)
                 prev = root
                 dur = h.length / spb
-                if content.get("clip_to_chord", True):
+                if clip:
                     dur = min(dur, ce.start + ce.dur - beat)
-                out.append(Note(root + (12 if h.octave_up else 0), beat, max(dur, 0.05), h.vel))
+                last = [Note(root + (12 if h.octave_up else 0), beat, max(dur, 0.05), h.vel)]
+                out += last
     return out
 
 

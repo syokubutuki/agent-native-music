@@ -2,7 +2,7 @@
 type: subtractive
 oscillators:
   - {wave: saw, unison: 7, detune: 0.2, spread: 1.0, level: 1.0}
-filter: {mode: lowpass, cutoff: 2600, q: 0.7, slope: 12, env_amount: 0.6, keytrack: 0.3}
+filter: {mode: lowpass, cutoff: 4000, q: 0.7, slope: 12, env_amount: 0.6, keytrack: 0.3}
 filter_env: {a: 0.01, d: 0.6, s: 0.6, r: 0.3}
 amp_env: {a: 0.01, d: 0.3, s: 0.9, r: 0.25}
 velocity_sens: 0.2

@@ -23,6 +23,9 @@ Spaces are ignored so "x... x... x... x..." is fine.
     X  accent hit (1.0)      x  normal hit (0.85)     o  ghost hit (0.55)
     u  octave-up hit (bass)  U  accented octave-up
     -  hold previous note    .  rest
+A bar that *starts* with '-' ties over the notes still sounding at the end
+of the previous bar (chords / bass), e.g. ["x---------------", "--------........"]
+holds one chord for 1.5 bars (if the harmony does not change).
 """
 from __future__ import annotations
 
@@ -187,8 +190,16 @@ class Hit:
 _HIT_VEL = {"X": 1.0, "x": 0.85, "o": 0.55, "u": 0.85, "U": 1.0}
 
 
+def leading_tie(text: str) -> int:
+    """Number of leading '-' steps: a bar starting with '-' continues (ties)
+    the notes of the previous bar instead of starting new ones."""
+    s = str(text).replace(" ", "").replace("|", "")
+    return len(s) - len(s.lstrip("-"))
+
+
 def parse_pattern(text: str) -> tuple[list[Hit], int]:
-    """Returns (hits, grid). Lengths extend through '-' characters."""
+    """Returns (hits, grid). Lengths extend through '-' characters.
+    Leading '-' (a tie from the previous bar) is reported by `leading_tie`."""
     s = str(text).replace(" ", "").replace("|", "")
     hits: list[Hit] = []
     for i, ch in enumerate(s):

@@ -1,0 +1,5 @@
+# limiter strategy B3: kick clip + deeper/faster-recovering bass duck
+mix:
+  tracks:
+    kick: {chain: [{type: saturate, drive: 0.35}, {type: gain, db: -1.5}]}
+    bass: {sidechain: {depth: 1.0, release: 0.5, shape: 3.0}}

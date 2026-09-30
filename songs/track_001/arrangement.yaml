@@ -10,7 +10,8 @@ arrangement:
     pluck:
       instrument: keys/glass_pluck
       role: texture
-      content: {type: melody, part: pluck, transpose: {intro: -12}}
+      # v002 (C2): no octave-down in the intro — the hook must be the top voice
+      content: {type: melody, part: pluck}
     topline:
       instrument: keys/vocal_sketch
       role: topline
@@ -30,37 +31,41 @@ arrangement:
       role: harmony
       content:
         type: chords
-        range: [F#3, E5]
+        range: [C#3, A4]        # v002 (C2): accompaniment stays below the melody
         voices: 4
-        patterns: {intro: "x---------------", build: "x---------------", drop: "x---------------", end: "x---------------"}
+        patterns:
+          intro: "x---------------"
+          build: {"3": "x-------x-------", default: "x---------------"}   # C#sus4 -> C# re-voiced (C1)
+          drop: "x---------------"
+          end: ["x---------------", "----------------"]                     # one held tonic chord
     chords:
       instrument: pad/saw_chords
       role: harmony
       content:
         type: chords
-        range: [F#3, C#5]
+        range: [C#3, A4]
         voices: 4
-        patterns: {drop: "x---------------", end: "x---------------"}
+        patterns: {drop: "x---------------", end: ["x---------------", "--------........"]}
     bass:
       instrument: bass/sub_saw_bass
       role: bass
       content:
         type: bass
-        range: [F#1, F2]
+        range: [G#1, G2]        # v002 (C5): D2-E2-F#2 climbs instead of dropping to F#1
         patterns:
-          intro: {"0-3": "", default: "x---------------"}
-          build: {"3": "x-------........", default: "..x-..x-..x-..x-"}
+          intro: {"6-7": "x---------------", default: ""}                 # (C3) bass only at the end of the intro
+          build: {"0-1": "x---------------", "2": "x-------........", default: ""}   # offbeat groove saved for the drop
           drop: "..x-..x-..x-..u-"
-          end: "x---------------"
+          end: ["x-------........", ""]
     kick:
       instrument: drums/kick_main
       content:
         type: drums
         patterns:
           intro: {"0-3": "", default: "x...x...x...x..."}
-          build: {"3": "x...x...........", default: "x...x...x...x..."}
+          build: {"3": "", default: "x...x...x...x..."}                   # (C3) full vacuum in the last build bar
           drop: "x...x...x...x..."
-          end: "x..............."
+          end: ["x...............", ""]
     clap:
       instrument: drums/clap_main
       content: {type: drums, patterns: {drop: "....x.......x..."}}
@@ -88,7 +93,7 @@ arrangement:
         ramp: {build: {vel: [0.35, 1.0], pitch: [0, 9]}}
     crash:
       instrument: drums/crash
-      content: {type: drums, patterns: {drop: {"0": "x...............", "4": "x...............", default: ""}, end: "x..............."}}
+      content: {type: drums, patterns: {drop: {"0": "x...............", "4": "x...............", default: ""}, end: ["x...............", ""]}}
     riser:
       instrument: fx/riser
       content: {type: fx, events: [{at: "build:0", until: "build:end", vel: 0.9}]}
@@ -97,11 +102,15 @@ arrangement:
       content: {type: fx, events: [{at: "build:3|2", until: "build:end"}]}
     impact:
       instrument: fx/impact
-      content: {type: fx, events: [{at: "drop:0", beats: 4}, {at: "end:0", beats: 4, vel: 0.7}]}
+      content: {type: fx, events: [{at: "drop:0", beats: 4}, {at: "end:0", beats: 4, vel: 0.4}]}
 
   automation:
     - {target: pluck.lpf, curve: exp, points: [["intro:0", 1100], ["intro:4", 1700], ["intro:end", 3200], ["build:end", 14000]]}
     - {target: pad.lpf, curve: exp, points: [["intro:0", 1400], ["build:0", 2400], ["build:end", 8000]]}
-    - {target: kick.lpf, curve: exp, points: [["intro:4", 300], ["intro:end", 900], ["build:0", 18000]]}
+    - {target: kick.lpf, curve: exp, points: [["intro:4", 300], ["intro:end", 900], ["build:0", 18000], ["build:2", 18000], ["build:3", 600], ["drop:0", 18000]]}
+    # v003: thin kick (HPF) in intro/build so the sub first arrives at the drop
+    - {target: kick.hpf, curve: exp, points: [["intro:0", 160], ["intro:end", 140], ["build:0", 70], ["build:end", 70], ["drop:0", 20]]}
+    # v002 (C7): narrow the pad into the drop, then open wide
+    - {target: pad.width, points: [["build:2", 1.3], ["build:end", 0.5], ["drop:0", 1.3]]}
     - {target: pluck.send.reverb, points: [["build:2", -12], ["build:end", -3]]}
     - {target: music.hpf, curve: exp, points: [["build:2", 20], ["build:end", 380], ["drop:0", 20]]}

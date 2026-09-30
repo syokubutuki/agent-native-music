@@ -101,6 +101,31 @@ def test_overlay_merge(spec_dir, tmp_path):
     assert deep_merge({"a": {"b": 1, "c": 2}}, {"a": {"c": None}}) == {"a": {"b": 1}}
 
 
+def test_repeated_chord_merges_and_bar_ties(tmp_path):
+    spec = {
+        "id": "tie", "tempo": 120, "key": "A minor",
+        "sections": [{"name": "a", "bars": 3}],
+        "harmony": {"sections": {"a": ["Am", "Am", "F"]}},
+        "arrangement": {"tracks": {
+            "pad": {"instrument": "pad/warm_pad", "content": {
+                "type": "chords", "range": ["E3", "E5"], "voices": 3,
+                "patterns": {"a": ["x---------------", "--------........", "----------------"]}}},
+            "bass": {"instrument": "bass/sub_saw_bass", "content": {
+                "type": "bass", "range": ["E1", "D#2"],
+                "patterns": {"a": ["x---------------", "----------------", "x---............"]}}},
+        }},
+    }
+    d = tmp_path / "s"
+    d.mkdir()
+    (d / "song.yaml").write_text(yaml.safe_dump(spec))
+    score = realize(load_song(d))
+    assert [(c.symbol, c.start, c.dur) for c in score.chords] == [("Am", 0, 8), ("F", 8, 4)]
+    pad = score.track("pad").notes
+    assert len(pad) == 3 and all(n.dur == 6 for n in pad)  # 1.5 bars, tie into bar 2
+    bass = score.track("bass").notes
+    assert [(n.start, n.dur) for n in bass] == [(0, 8), (8, 1)]  # tie does not cross into the F chord
+
+
 def test_harmony_bar_count_validated(spec_dir):
     bad = dict(SPEC, harmony={"sections": {"a": ["Am"], "b": ["E"]}})
     (spec_dir / "song.yaml").write_text(yaml.safe_dump(bad))

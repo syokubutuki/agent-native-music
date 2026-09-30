@@ -39,18 +39,20 @@ def write_report(render_id: str, score: Score, analysis: dict, findings: list[di
     L.append("")
     L.append("### Sections")
     L.append("")
-    L.append("| section | energy tgt | LUFS | centroid Hz | rolloff Hz | onsets/s | side/mid dB | sub | low | lowmid | highmid | high |")
-    L.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+    L.append("| section | energy tgt | LUFS | centroid Hz | rolloff Hz | onsets/s | side/mid dB | side/mid >300 Hz | sub | low | lowmid | highmid | high |")
+    L.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
     for s in analysis["sections"]:
         bs = s.get("band_share", {})
         L.append(f"| {s['name']} | {s['energy_target']} | {_fmt(s.get('lufs'))} | {_fmt(s.get('centroid_hz'), 0)} | "
                  f"{_fmt(s.get('rolloff85_hz'), 0)} | {_fmt(s.get('onsets_per_sec'))} | {_fmt(s.get('side_to_mid_db'))} | "
+                 f"{_fmt(s.get('side_to_mid_300_db'))} | "
                  + " | ".join(_fmt(bs.get(b), 3) for b in ("sub", "low", "lowmid", "highmid", "high")) + " |")
     L.append("")
     L.append("### Section contrast")
     for c in analysis["contrast"]:
         L.append(f"- {c['from']} → {c['to']}: ΔLUFS {_fmt(c.get('lufs_delta'))}, Δcentroid {_fmt(c.get('centroid_hz_delta'), 0)} Hz, "
-                 f"Δonsets/s {_fmt(c.get('onsets_per_sec_delta'))}, Δwidth {_fmt(c.get('side_to_mid_db_delta'))} dB")
+                 f"Δonsets/s {_fmt(c.get('onsets_per_sec_delta'))}, Δwidth {_fmt(c.get('side_to_mid_db_delta'))} dB "
+                 f"(>300 Hz: {_fmt(c.get('side_to_mid_300_db_delta'))} dB)")
     L.append("")
     L.append("### Loudness by bar (LUFS)")
     L.append("")

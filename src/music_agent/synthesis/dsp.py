@@ -133,17 +133,24 @@ def _limiter_gain(peak_env, ceiling, lookahead, release_coef):
     for i in range(n):
         p = peak_env[i]
         req[i] = ceiling / p if p > ceiling else 1.0
-    # look-ahead minimum (so gain is already down when the peak arrives)
+    # look-ahead minimum over req[i : i+lookahead] (so gain is already down when
+    # the peak arrives). Monotonic deque, O(n).
     mn = np.empty(n)
+    dq = np.empty(n, dtype=np.int64)
+    head = 0
+    tail = 0
+    nxt = 0
     for i in range(n):
-        m = 1.0
-        end = i + lookahead
-        if end > n:
-            end = n
-        for j in range(i, end):
-            if req[j] < m:
-                m = req[j]
-        mn[i] = m
+        end = min(i + lookahead, n)
+        while nxt < end:
+            while tail > head and req[dq[tail - 1]] >= req[nxt]:
+                tail -= 1
+            dq[tail] = nxt
+            tail += 1
+            nxt += 1
+        while dq[head] < i:
+            head += 1
+        mn[i] = min(req[dq[head]], 1.0)
     # exponential release (instant attack on the held minimum)
     r = np.empty(n)
     cur = 1.0
@@ -171,27 +178,38 @@ def _limiter_gain(peak_env, ceiling, lookahead, release_coef):
     return g
 
 
+def peak_envelope(x: np.ndarray, oversample: int = 4) -> np.ndarray:
+    """Per-sample inter-sample (true) peak estimate across channels."""
+    from scipy.signal import resample_poly
+
+    if oversample <= 1:
+        return np.max(np.abs(x), axis=0)
+    n = x.shape[1]
+    pk = np.zeros(n)
+    for ch in x:
+        up = np.abs(resample_poly(ch, oversample, 1))[: n * oversample]
+        if up.shape[0] < n * oversample:
+            up = np.pad(up, (0, n * oversample - up.shape[0]))
+        np.maximum(pk, up.reshape(n, oversample).max(axis=1), out=pk)
+    return pk
+
+
 def limiter(x: np.ndarray, sr: int, ceiling_db: float = -1.0, lookahead_ms: float = 5.0,
-            release_ms: float = 80.0, oversample: int = 4) -> tuple[np.ndarray, np.ndarray]:
+            release_ms: float = 80.0, oversample: int = 4, peak_env: np.ndarray | None = None,
+            input_gain: float = 1.0) -> tuple[np.ndarray, np.ndarray]:
     """Stereo look-ahead peak limiter with true-peak estimation.
 
     Returns (limited signal, gain curve). The signal is delayed by nothing:
-    the gain curve anticipates peaks, so timing is preserved.
+    the gain curve anticipates peaks, so timing is preserved. `peak_env` may be
+    precomputed for `x` (it scales linearly with `input_gain`), which makes
+    repeated calls during loudness matching cheap.
     """
-    from scipy.signal import resample_poly
-
     ceiling = float(db_to_amp(ceiling_db))
-    if oversample > 1:
-        up = np.stack([resample_poly(ch, oversample, 1) for ch in x])
-        pk = np.max(np.abs(up), axis=0).reshape(-1, oversample).max(axis=1)[: x.shape[1]]
-        if pk.shape[0] < x.shape[1]:
-            pk = np.pad(pk, (0, x.shape[1] - pk.shape[0]))
-    else:
-        pk = np.max(np.abs(x), axis=0)
+    pk = (peak_env if peak_env is not None else peak_envelope(x, oversample)) * input_gain
     la = max(1, int(sr * lookahead_ms / 1000))
     rc = math.exp(-1.0 / (sr * release_ms / 1000))
     g = _limiter_gain(pk.astype(np.float64), ceiling * 0.995, la, rc)
-    return x * g[None, :], g
+    return x * (g * input_gain)[None, :], g
 
 
 def true_peak_db(x: np.ndarray, oversample: int = 4) -> float:

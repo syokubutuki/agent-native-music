@@ -31,9 +31,13 @@ def overview(x: np.ndarray, sr: int, score: Score, analysis: dict, path: Path) -
     f, t, Z = stft(mono, sr, nperseg=4096, noverlap=4096 - 1024)
     S = 20 * np.log10(np.abs(Z) + 1e-9)
     ax = axes[0]
-    ax.pcolormesh(t, f, S, shading="auto", vmin=S.max() - 90, vmax=S.max(), cmap="magma")
-    ax.set_yscale("symlog", linthresh=100)
-    ax.set_ylim(30, sr / 2)
+    # resample onto a log-frequency grid and draw as an image (fast)
+    fl = np.geomspace(30, sr / 2, 256)
+    Sl = np.stack([np.interp(fl, f, S[:, j]) for j in range(S.shape[1])], axis=1)
+    ax.imshow(Sl, origin="lower", aspect="auto", cmap="magma", vmin=S.max() - 90, vmax=S.max(),
+              extent=[t[0], t[-1], 0, len(fl)])
+    ticks = [50, 100, 200, 500, 1000, 2000, 5000, 10000]
+    ax.set_yticks([np.searchsorted(fl, v) for v in ticks], [f"{v:g}" for v in ticks])
     ax.set_ylabel("Hz")
     ax.set_title(f"{score.song_id} — spectrogram")
     _section_lines(ax, score, spb)

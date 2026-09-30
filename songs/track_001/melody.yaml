@@ -13,23 +13,28 @@ melody:
       base: F#4
       sections:
         drop:
-          - {bar: 0, motif: a}                                   # A   (over Dmaj7: 9, maj7, 5)
-          - {bar: 1, motif: a, ops: [{transpose: -1, keep: [0]}]} # A'  anchor held, rest steps down (over E)
+          # v002 (critique C1): the build's leading tone E#5 resolves UP to F#5 on the
+          # deceptive-cadence downbeat; later statements return to the E5 anchor.
+          - {bar: 0, motif: a, ops: [{set: {0: 8}}, {accent: [0]}]}  # A* arrival (over Dmaj7: 3, maj7, 5)
+          # v002 (C4): the question holds and breathes, ending open on B4 (5th of E)
+          - {bar: 1, notes: "7:3 5:3 4:10"}                      # A' question
           - {bar: 2, motif: a}                                   # A re-harmonised over F#m
-          - {bar: 3, notes: "5:3 4:3 2:6 r:2 3:1 4:1"}           # sigh down to G#, pickup back in
+          - {bar: 3, notes: "5:3 4:3 2:6 r:2 3:1 4:1"}           # answer: sigh down to G#, pickup back in
           - {bar: 4, motif: a}
           - {bar: 5, motif: a, ops: [{transpose: -1, keep: [0]}, {set: {3: 4, 4: 7}}]}  # A'' turns upward
-          - {bar: 6, notes: "8:3! 7:3 5:4 7:2 8:4"}              # B: climax on high tonic
+          # v002 (C1): climax A5 on the downbeat, above anything in the build; motif contour kept
+          - {bar: 6, notes: "10:3! 8:3 5:4 7:2 8:4"}             # B: climax
           - {bar: 7, notes: "7#:3 5:3 2:4 5:2 7#:4"}             # leading tone over V
         end:
-          - {bar: 0, notes: "8:16!"}                             # resolution F#5
+          - {bar: 0, notes: "8:32!"}                             # resolution F#5, held through the 2-bar ending
     pluck:           # intro (octave down via track transpose) + build
       base: F#4
       sections:
         intro:
-          - {bar: 0, motif: a, ops: [{vel: 0.8}]}
-          - {bar: 1, motif: a, ops: [{transpose: -1, keep: [0]}, {vel: 0.8}]}
-          - {bar: 2, motif: a, ops: [{vel: 0.8}]}
+          # v002 (C4): first half only hints at the hook (first three notes); full form from bar 4
+          - {bar: 0, motif: a, ops: [{take: [0, 3]}, {vel: 0.8}]}
+          - {bar: 1, motif: a, ops: [{take: [0, 3]}, {transpose: -1, keep: [0]}, {vel: 0.8}]}
+          - {bar: 2, motif: a, ops: [{take: [0, 3]}, {vel: 0.8}]}
           - {bar: 3, notes: "5:3 4:3 2:10"}
           - {bar: 4, motif: a}
           - {bar: 5, motif: a, ops: [{transpose: -1, keep: [0]}]}
@@ -50,5 +55,5 @@ melody:
           - {bar: 3, notes: "4:6 3:2 2:8"}
           - {bar: 4, notes: "r:2 3:2 3:2 5:2 4:4 3:4"}
           - {bar: 5, notes: "2:6 1:2 2:8"}
-          - {bar: 6, notes: "r:2 5:2 5:2 7:2 8:4 7:4"}
+          - {bar: 6, notes: "r:2 5:2 7:2 8:6 7:4"}              # v002 (C10): longer peak
           - {bar: 7, notes: "7#:6 5:2 5:8"}

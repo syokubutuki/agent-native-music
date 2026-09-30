@@ -35,7 +35,7 @@ import pyloudnorm as pyln
 
 from ..composition.realize import stable_seed
 from ..score import Score
-from ..synthesis.dsp import db_to_amp, limiter, pan_gains, svf_stereo, true_peak_db
+from ..synthesis.dsp import db_to_amp, limiter, pan_gains, peak_envelope, svf_stereo, true_peak_db
 from .automation import curve_array, duck_envelope, targets_for
 from .effects import apply_chain, width as apply_width
 
@@ -185,9 +185,10 @@ def mix(score: Score, stems: dict[str, np.ndarray], mix_spec: dict, sr: int, see
     res.pre_limiter_lufs = float(pre)
     gain_db = target - pre
     y, gcurve = x, np.ones(n)
+    pk = peak_envelope(x)  # computed once; scales linearly with the input gain
     for _ in range(4):  # limiting lowers loudness; iterate the input gain
-        y, gcurve = limiter(x * db_to_amp(gain_db), sr, ceiling, float(lim.get("lookahead_ms", 5)),
-                            float(lim.get("release_ms", 80)))
+        y, gcurve = limiter(x, sr, ceiling, float(lim.get("lookahead_ms", 5)), float(lim.get("release_ms", 80)),
+                            peak_env=pk, input_gain=float(db_to_amp(gain_db)))
         got = meter.integrated_loudness(y.T)
         if abs(got - target) < 0.1:
             break

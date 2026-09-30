@@ -6,7 +6,6 @@
 ## Layer 1 — rule checks
 - **WARN** `range` 1 notes outside topline range G3-F5 (e.g. F#5 at beat 74) _topline_
 - **WARN** `arrangement.energy_order` Energy target build=0.6 vs drop=1.0 but loudness -9.0 vs -8.5 LUFS _build->drop_
-- **WARN** `tonality.mismatch` Declared key ranks #13 in chroma estimate (top: D minor) _song_
 - **INFO** `melody.nonchord_strong` E5 held 0.75 beats on strong beat over F#m (tension) _lead@beat56_
 - **INFO** `melody.nonchord_strong` B4 held 1 beats on strong beat over Dmaj7 (tension) _topline@beat50_
 - **INFO** `melody.nonchord_strong` E5 held 1 beats on strong beat over F#m (tension) _topline@beat58_
@@ -30,17 +29,17 @@
 
 ### Sections
 
-| section | energy tgt | LUFS | centroid Hz | rolloff Hz | onsets/s | side/mid dB | sub | low | lowmid | highmid | high |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| intro | 0.3 | -10.0 | 611 | 952 | 3.1 | -14.2 | 0.312 | 0.491 | 0.196 | 0.001 | 0.000 |
-| build | 0.6 | -9.0 | 1759 | 3469 | 5.3 | -15.3 | 0.374 | 0.477 | 0.125 | 0.014 | 0.010 |
-| drop | 1.0 | -8.5 | 2320 | 5150 | 4.3 | -15.3 | 0.379 | 0.492 | 0.116 | 0.011 | 0.002 |
-| end | 0.5 | -9.5 | 2426 | 5658 | 2.1 | -13.6 | 0.639 | 0.172 | 0.160 | 0.026 | 0.003 |
+| section | energy tgt | LUFS | centroid Hz | rolloff Hz | onsets/s | side/mid dB | side/mid >300 Hz | sub | low | lowmid | highmid | high |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| intro | 0.3 | -10.0 | 611 | 952 | 3.1 | -14.2 | -7.9 | 0.312 | 0.491 | 0.196 | 0.001 | 0.000 |
+| build | 0.6 | -9.0 | 1759 | 3469 | 5.3 | -15.3 | -7.2 | 0.374 | 0.477 | 0.125 | 0.014 | 0.010 |
+| drop | 1.0 | -8.5 | 2320 | 5150 | 4.3 | -15.3 | -6.6 | 0.379 | 0.492 | 0.116 | 0.011 | 0.002 |
+| end | 0.5 | -9.5 | 2426 | 5658 | 2.1 | -13.6 | -6.4 | 0.639 | 0.172 | 0.160 | 0.026 | 0.003 |
 
 ### Section contrast
-- intro → build: ΔLUFS 1.0, Δcentroid 1148 Hz, Δonsets/s 2.2, Δwidth -1.1 dB
-- build → drop: ΔLUFS 0.4, Δcentroid 561 Hz, Δonsets/s -1.1, Δwidth 0.0 dB
-- drop → end: ΔLUFS -1.0, Δcentroid 106 Hz, Δonsets/s -2.1, Δwidth 1.7 dB
+- intro → build: ΔLUFS 1.0, Δcentroid 1148 Hz, Δonsets/s 2.2, Δwidth -1.1 dB (>300 Hz: 0.7 dB)
+- build → drop: ΔLUFS 0.4, Δcentroid 561 Hz, Δonsets/s -1.1, Δwidth 0.0 dB (>300 Hz: 0.6 dB)
+- drop → end: ΔLUFS -1.0, Δcentroid 106 Hz, Δonsets/s -2.1, Δwidth 1.7 dB (>300 Hz: 0.2 dB)
 
 ### Loudness by bar (LUFS)
 
@@ -52,7 +51,7 @@
 - low_end_stereo: side_to_mid_db=-39.750, lr_correlation=1.000
 
 ### Tonality
-- declared: F# minor (rank 13); estimate: D minor (0.60), C major (0.60), F major (0.58)
+- declared: F# minor (rank 3); estimate: C# minor (0.78), A major (0.75), F# minor (0.67)
 
 ## Layer 3 / 4
 Critic reviews go to `critiques/`, human A/B choices to `feedback/preferences.jsonl`.

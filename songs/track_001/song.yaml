@@ -20,4 +20,4 @@ sections:
   - {name: intro, bars: 8, energy: 0.3}   # theme foreshadowed, low register, filtered
   - {name: build, bars: 4, energy: 0.6}   # fragmentation, rising register, snare roll, riser
   - {name: drop,  bars: 8, energy: 1.0}   # full statement A A' A'' B, supersaw lead
-  - {name: end,   bars: 1, energy: 0.5}   # tonic resolution + tail
+  - {name: end,   bars: 2, energy: 0.4}   # tonic resolution + tail (v002: 1 -> 2 bars, critique C9)

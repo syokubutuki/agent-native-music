@@ -9,4 +9,4 @@ harmony:
     intro: {progression: loop, repeat: 2}
     build: [Bm7, D, E, "C#sus4 C#"]
     drop:  [Dmaj7, E, F#m, C#m7, Dmaj7, E, F#m, C#]
-    end:   [F#m]
+    end:   [F#m, F#m]     # merged into one 2-bar tonic event

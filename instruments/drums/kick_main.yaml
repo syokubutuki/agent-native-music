@@ -1,7 +1,7 @@
 type: drum
 model: kick
 f_start: 190
-f_end: 49
+f_end: 46.2   # tuned to F#1 (was 49 Hz ~ G, DECISIONS D-008)
 pitch_decay: 0.035
 decay: 0.36
 click_level: 0.22

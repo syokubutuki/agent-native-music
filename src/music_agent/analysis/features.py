@@ -82,12 +82,22 @@ def key_estimate(chroma: np.ndarray) -> list[tuple[str, float]]:
     return sorted(scores, key=lambda s: -s[1])
 
 
-def stereo_stats(x: np.ndarray) -> dict:
+def stereo_stats(x: np.ndarray, sr: int | None = None) -> dict:
     m = 0.5 * (x[0] + x[1])
     s = 0.5 * (x[0] - x[1])
     em, es = np.sum(m ** 2) + 1e-12, np.sum(s ** 2)
     corr = float(np.sum(x[0] * x[1]) / (np.sqrt(np.sum(x[0] ** 2) * np.sum(x[1] ** 2)) + 1e-12))
-    return {"side_to_mid_db": float(10 * np.log10(es / em + 1e-12)), "lr_correlation": corr}
+    out = {"side_to_mid_db": float(10 * np.log10(es / em + 1e-12)), "lr_correlation": corr}
+    if sr is not None and x.shape[1] > 1024:
+        # Width above 300 Hz: the full-band ratio is dominated by the (mono) sub
+        # and reports "narrower" whenever the bass gets louder.
+        from scipy.signal import butter, sosfilt
+
+        sos = butter(4, 300, "highpass", fs=sr, output="sos")
+        h = sosfilt(sos, x, axis=-1)
+        hm, hs = 0.5 * (h[0] + h[1]), 0.5 * (h[0] - h[1])
+        out["side_to_mid_300_db"] = float(10 * np.log10((np.sum(hs ** 2) + 1e-12) / (np.sum(hm ** 2) + 1e-12)))
+    return out
 
 
 def _lufs(meter, x: np.ndarray) -> float | None:
@@ -158,7 +168,7 @@ def analyze(x: np.ndarray, sr: int, score: Score, post_fader: dict[str, np.ndarr
             "crest_db": float(amp_to_db(peak) - amp_to_db(rms)),
             "clipped_samples": int(np.sum(np.abs(x) >= 0.9999)),
             "dc_offset": float(np.mean(mono)),
-            **stereo_stats(x),
+            **stereo_stats(x, sr),
         }
     }
     spb = score.sec_per_beat()
@@ -172,7 +182,7 @@ def analyze(x: np.ndarray, sr: int, score: Score, post_fader: dict[str, np.ndarr
             chroma_all += np.array(st["chroma"]) * np.sum(seg ** 2)
         secs.append({"name": s.name, "start_sec": a / sr, "end_sec": b / sr, "energy_target": s.energy,
                      "lufs": _lufs(meter, seg), "rms_dbfs": float(amp_to_db(np.sqrt(np.mean(seg ** 2)))),
-                     **stereo_stats(seg), **st})
+                     **stereo_stats(seg, sr), **st})
     res["sections"] = secs
     # bar-level loudness progression
     bars = []
@@ -189,7 +199,7 @@ def analyze(x: np.ndarray, sr: int, score: Score, post_fader: dict[str, np.ndarr
         d = {"from": p["name"], "to": q["name"]}
         if p.get("lufs") is not None and q.get("lufs") is not None:
             d["lufs_delta"] = q["lufs"] - p["lufs"]
-        for k in ("centroid_hz", "onsets_per_sec", "side_to_mid_db"):
+        for k in ("centroid_hz", "onsets_per_sec", "side_to_mid_db", "side_to_mid_300_db"):
             if k in p and k in q:
                 d[f"{k}_delta"] = q[k] - p[k]
         if "band_share" in p and "band_share" in q:
