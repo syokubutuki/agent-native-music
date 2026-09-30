@@ -64,9 +64,9 @@ Reproducibility
 | 2 | spec → MIDI → instrument → WAV（CLI） | done |
 | 3 | melody / chords / bass / drums の独立トラック | done |
 | 4 | 自動音響解析レポート | done |
-| 5 | 最初の作品 track_001 | v001 → 批評ループ中 |
-| 6 | 候補探索（motif 変奏、overlay バッチ、A/B シート） | 基盤 done |
-| 7 | 批評ループ（generate→render→analyze→critic→revise→render） | 1 周目実施 |
+| 5 | 最初の作品 track_001 | v003（人間の聴取待ち） |
+| 6 | 候補探索（motif 変奏、overlay バッチ、A/B シート） | done（motif a × 5, ミックス 5 案） |
+| 7 | 批評ループ（generate→render→analyze→critic→revise→render） | 1 周完了、2 周目の批評取得 |
 | 8 | 128→32→8→3 の段階探索、嗜好学習、フル尺拡張、ボーカル接続 | 未着手 |
 
 ## 環境（Phase 0 調査結果と仮定）

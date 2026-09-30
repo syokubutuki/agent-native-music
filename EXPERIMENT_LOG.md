@@ -68,7 +68,7 @@
   | b001/cand_01 | キック soft clip 0.35 | 4.13 | 10.7 | **0.41（警告）** | 重なり悪化 |
   | b001/cand_02 | マスター soft clip | 0.06 | 11.0 | – | 数値は最良だが、saturate 実装は小信号で +6.6 dB の強い曲線 → 全体に歪みの恐れ。**数値で選ばない**、人間 A/B 候補として保留 |
   | b002/cand_00 | キック soft clip 0.22 | **4.47** | 10.7 | **0.34** | 採用 |
-  | b002/cand_01 | clip 0.35 + ベースの深い duck | 4.02 | 10.7 | 0.41 | overlap 指標が duck に鈍感（要調査） |
+  | b002/cand_01 | clip 0.35 + ベースの深い duck | 4.02 | 10.7 | 0.41 | 不採用。原因は設定ミス: shape 3 は回復が速い曲線（gain = 1 − depth·(1−t)^shape）なので duck の総量はむしろ減っていた。指標は正常 |
 - result (`track_001_v003`):
   - 帯域: sub 比 intro **0.008** / build 0.18 / drop **0.50** — サブは drop で初めて解放される。
   - LUFS intro/build/drop/end −12.5/−10.5/−9.2/−10.7（intro→drop **+3.3**、build→drop +1.2）。GR **4.47 dB**。調推定 F# minor 1 位。
