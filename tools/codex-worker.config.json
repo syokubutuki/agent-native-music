@@ -1,5 +1,5 @@
 {
-  "model": null,
+  "model": "gpt-6.1-sol",
   "effort": "medium",
   "timeoutSec": 1800,
   "sandbox": "danger-full-access",
