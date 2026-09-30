@@ -14,3 +14,7 @@ experiments/**/*.wav
 # Numba cache
 **/__pycache__/*.nbi
 **/__pycache__/*.nbc
+
+# Codex worker state / node
+.codex-worker/
+node_modules/

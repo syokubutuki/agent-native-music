@@ -5,7 +5,7 @@
 
 - 仕様: [PROJECT_SPEC.md](PROJECT_SPEC.md) / 構造: [ARCHITECTURE.md](ARCHITECTURE.md) / 音楽方針: [MUSIC_SPEC.md](MUSIC_SPEC.md)
 - 評価: [EVALUATION.md](EVALUATION.md) / 実験: [EXPERIMENT_LOG.md](EXPERIMENT_LOG.md) / 技術判断: [DECISIONS.md](DECISIONS.md)
-- 役割: [CLAUDE.md](CLAUDE.md)（設計・音楽監督・批評）/ [AGENTS.md](AGENTS.md)（Codex: 実装・実験・検証）/ [tasks/codex/](tasks/codex/)
+- 役割: [CLAUDE.md](CLAUDE.md)（設計・音楽監督・批評・Codex 委譲手順）/ [AGENTS.md](AGENTS.md)（Codex: 実装・実験・検証）/ 委譲仕様 [specs/](specs/)・バックログ [tasks/codex/](tasks/codex/)
 
 ## セットアップ
 
@@ -63,3 +63,19 @@ melody:
 - 最新レンダと批評は [EXPERIMENT_LOG.md](EXPERIMENT_LOG.md) を参照（各 `renders/track_001/*/mix.mp3` で試聴可能）。
 
 WAV は git 管理外（manifest.json の commit・hash・seed から `render` で再生成できる）。
+
+## Codex 委譲環境
+
+Claude Code が設計・レビューし、実装を Codex App Server に委譲する構成。運用ルールは `CLAUDE.md`「Codex への委譲」を参照。
+
+前提: Node 18+、`npm i -g @openai/codex`（0.159.2 で検証）、`codex login` 済み。
+
+> Windows 注意: Codex デスクトップアプリ付属の `codex.exe` が PATH で先に見つかると、古い版が使われ
+> 新しいモデルが使えないことがある。`where codex` で npm 版（`...\npm\codex.cmd`）が先頭に来ることを確認する。
+> 別の実行ファイルを使いたい場合は環境変数 `CODEX_WORKER_BIN` でフルパスを指定できる。
+
+```
+node tools/codex-worker.mjs models                       # 疎通確認
+node tools/codex-worker.mjs run --task-file specs/x.md   # 実装を委譲
+node tools/codex-worker.mjs continue --task "修正指示"     # 同じスレッドに追加指示
+```
