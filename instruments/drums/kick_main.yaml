@@ -1,0 +1,10 @@
+type: drum
+model: kick
+f_start: 190
+f_end: 49
+pitch_decay: 0.035
+decay: 0.36
+click_level: 0.22
+drive: 0.4
+velocity_sens: 0.4
+gain_db: -1

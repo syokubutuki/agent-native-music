@@ -1,0 +1,23 @@
+# track_001 — first benchmark piece (working title "Lanterns").
+# Melodic progressive house, 30-45 s: Theme -> Tension -> Release -> Resolution.
+# Music lives in the included YAML files; the engine lives in src/.
+id: track_001
+title: Lanterns (working title)
+tempo: 128
+time_signature: [4, 4]
+key: F# minor
+seed: 1001
+sample_rate: 44100
+tail_sec: 2.5
+target:
+  duration_sec: [30, 45]
+include:
+  harmony: harmony.yaml
+  melody: melody.yaml
+  arrangement: arrangement.yaml
+  mix: mix.yaml
+sections:
+  - {name: intro, bars: 8, energy: 0.3}   # theme foreshadowed, low register, filtered
+  - {name: build, bars: 4, energy: 0.6}   # fragmentation, rising register, snare roll, riser
+  - {name: drop,  bars: 8, energy: 1.0}   # full statement A A' A'' B, supersaw lead
+  - {name: end,   bars: 1, energy: 0.5}   # tonic resolution + tail

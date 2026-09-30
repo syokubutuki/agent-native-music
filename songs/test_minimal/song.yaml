@@ -1,0 +1,58 @@
+# Minimal pipeline smoke test: 4 bars, melody + chords + bass + drums.
+id: test_minimal
+title: Pipeline smoke test
+tempo: 124
+time_signature: [4, 4]
+key: A minor
+seed: 7
+tail_sec: 1.5
+sections:
+  - {name: a, bars: 2, energy: 0.4}
+  - {name: b, bars: 2, energy: 0.9}
+harmony:
+  sections:
+    a: [Am, F]
+    b: [C, "G Esus4"]
+melody:
+  motifs:
+    m: "5:4 3:2 4:2 5:4 1:4"
+  parts:
+    lead:
+      base: A4
+      sections:
+        a:
+          - {bar: 0, motif: m}
+          - {bar: 1, motif: m, ops: [{transpose: -1}]}
+        b:
+          - {bar: 0, motif: m, ops: [{transpose: 2}]}
+          - {bar: 1, notes: "5:6 4:2 2:8"}
+arrangement:
+  tracks:
+    lead: {instrument: keys/glass_pluck, role: lead, content: {type: melody, part: lead}}
+    pad:
+      instrument: pad/warm_pad
+      role: harmony
+      content: {type: chords, range: [E3, E5], voices: 4, patterns: {a: "x---------------", b: "x---------------"}}
+    bass:
+      instrument: bass/sub_saw_bass
+      role: bass
+      content: {type: bass, range: [E1, D#2], patterns: {a: "x-------x-------", b: "..x-..x-..x-..x-"}}
+    kick:
+      instrument: drums/kick_main
+      content: {type: drums, patterns: {b: "x...x...x...x..."}}
+    hat:
+      instrument: drums/hat_closed
+      content: {type: drums, patterns: {a: "..x...x...x...x.", b: "..x...x...x...x."}}
+mix:
+  sidechain_source: kick
+  tracks:
+    lead: {gain_db: -2, sends: {reverb: -12}}
+    pad: {gain_db: -4, sidechain: 0.6, sends: {reverb: -10}}
+    bass: {gain_db: -3, sidechain: {depth: 0.7, release: 0.4}}
+    kick: {gain_db: 0}
+    hat: {gain_db: -2, pan: 0.2}
+  returns:
+    reverb: {chain: [{type: reverb, decay: 2.5, predelay_ms: 20, hp: 300, lp: 8000}]}
+  master:
+    target_lufs: -11
+    ceiling_db: -1.0

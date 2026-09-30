@@ -1,0 +1,32 @@
+[
+ {
+  "id": "melody.nonchord_strong",
+  "level": "info",
+  "message": "D5 held 1 beats on strong beat over F (tension)",
+  "where": "lead@beat4"
+ },
+ {
+  "id": "melody.nonchord_strong",
+  "level": "warn",
+  "message": "B4 held 0.5 beats on strong beat over F (semitone clash)",
+  "where": "lead@beat5"
+ },
+ {
+  "id": "melody.nonchord_strong",
+  "level": "info",
+  "message": "D5 held 1 beats on strong beat over F (tension)",
+  "where": "lead@beat6"
+ },
+ {
+  "id": "melody.nonchord_strong",
+  "level": "info",
+  "message": "E5 held 1.5 beats on strong beat over G (tension)",
+  "where": "lead@beat12"
+ },
+ {
+  "id": "motif.ok",
+  "level": "info",
+  "message": "Motifs repeated+transformed: ['m'] (uses: {'m': 3})",
+  "where": "melody"
+ }
+]

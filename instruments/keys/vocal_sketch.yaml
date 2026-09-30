@@ -1,0 +1,13 @@
+# Placeholder "voice" for auditioning topline melodies (NOT a vocal model):
+# soft triangle/sine with vowel-ish band emphasis and natural vibrato.
+type: subtractive
+oscillators:
+  - {wave: triangle, level: 1.0}
+  - {wave: saw, level: 0.25}
+filter: {mode: lowpass, cutoff: 2200, q: 1.0, slope: 12, keytrack: 0.4}
+amp_env: {a: 0.04, d: 0.2, s: 0.9, r: 0.15}
+vibrato: {rate: 5.0, depth: 0.25, delay: 0.25}
+gain_db: -6
+fx:
+  - {type: peak, freq: 800, gain_db: 4, q: 1.5}
+  - {type: peak, freq: 1200, gain_db: 3, q: 2}

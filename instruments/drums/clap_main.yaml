@@ -1,0 +1,8 @@
+type: drum
+model: clap
+freq: 1250
+tail: 0.18
+width: 0.35
+gain_db: -4
+fx:
+  - {type: reverb, decay: 0.9, predelay_ms: 5, damping: 0.6, mix: 0.18, hp: 600}

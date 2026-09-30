@@ -1,0 +1,9 @@
+type: fx
+model: riser
+f_lo: 300
+f_hi: 10000
+q: 1.6
+curve: 2.2
+tone_level: 0.25
+tone_octaves: 2
+gain_db: -12

@@ -1,0 +1,54 @@
+# Degrees are relative to each part's `base` (degree 1). F# minor:
+# 1=F# 2=G# 3=A 4=B 5=C# 6=D 7=E 8=F#(+8ve) 9=G#; "7#" = E# (leading tone).
+# Lengths are 16th-note steps (16 per bar).
+melody:
+  motifs:
+    # Hook: common-tone anchor (E5 on the downbeat) then a falling arpeggio
+    # with a stepwise upturn. 3+3+4+2+4 syncopation.
+    a: "7:3 5:3 3:4 4:2 5:4"
+    # Build fragment: the first three notes of `a`, compressed.
+    frag: "7:2 5:2 3:4"
+  parts:
+    lead:            # drop statement, sits A4..F#5
+      base: F#4
+      sections:
+        drop:
+          - {bar: 0, motif: a}                                   # A   (over Dmaj7: 9, maj7, 5)
+          - {bar: 1, motif: a, ops: [{transpose: -1, keep: [0]}]} # A'  anchor held, rest steps down (over E)
+          - {bar: 2, motif: a}                                   # A re-harmonised over F#m
+          - {bar: 3, notes: "5:3 4:3 2:6 r:2 3:1 4:1"}           # sigh down to G#, pickup back in
+          - {bar: 4, motif: a}
+          - {bar: 5, motif: a, ops: [{transpose: -1, keep: [0]}, {set: {3: 4, 4: 7}}]}  # A'' turns upward
+          - {bar: 6, notes: "8:3! 7:3 5:4 7:2 8:4"}              # B: climax on high tonic
+          - {bar: 7, notes: "7#:3 5:3 2:4 5:2 7#:4"}             # leading tone over V
+        end:
+          - {bar: 0, notes: "8:16!"}                             # resolution F#5
+    pluck:           # intro (octave down via track transpose) + build
+      base: F#4
+      sections:
+        intro:
+          - {bar: 0, motif: a, ops: [{vel: 0.8}]}
+          - {bar: 1, motif: a, ops: [{transpose: -1, keep: [0]}, {vel: 0.8}]}
+          - {bar: 2, motif: a, ops: [{vel: 0.8}]}
+          - {bar: 3, notes: "5:3 4:3 2:10"}
+          - {bar: 4, motif: a}
+          - {bar: 5, motif: a, ops: [{transpose: -1, keep: [0]}]}
+          - {bar: 6, motif: a}
+          - {bar: 7, notes: "5:3 4:3 2:6 r:2 3:1 4:1"}
+        build:
+          - {bar: 0, motif: frag, repeat: 2}                      # fragment, twice per bar
+          - {bar: 1, motif: frag, repeat: 2}
+          - {bar: 2, notes: "3:2 4:2 5:2 7:2 4:2 5:2 7:2 8:2"}   # climbing 8ths
+          - {bar: 3, notes: "8:2 8:2 8:2 8:2! 7#:2 7#:2 7#:2! r:2"}  # sus4 -> 3 in the melody
+    topline:         # future vocal line: singable, G#4..F#5, rhythm leaves room for syllables
+      base: F#4
+      sections:
+        drop:
+          - {bar: 0, notes: "r:2 3:2 3:2 5:2 4:4 3:4"}
+          - {bar: 1, notes: "2:6 1:2 2:8"}
+          - {bar: 2, notes: "r:2 3:2 3:2 5:2 7:4 5:4"}
+          - {bar: 3, notes: "4:6 3:2 2:8"}
+          - {bar: 4, notes: "r:2 3:2 3:2 5:2 4:4 3:4"}
+          - {bar: 5, notes: "2:6 1:2 2:8"}
+          - {bar: 6, notes: "r:2 5:2 5:2 7:2 8:4 7:4"}
+          - {bar: 7, notes: "7#:6 5:2 5:8"}

@@ -1,0 +1,35 @@
+mix:
+  sidechain_source: kick
+  tracks:
+    lead:    {gain_db: -2.0, group: music, sidechain: {depth: 0.25, release: 0.35}, sends: {reverb: -11, delay: -15}}
+    pluck:   {gain_db: -3.0, group: music, sends: {reverb: -12, delay: -13}}
+    topline: {gain_db: -4.0, group: music, sends: {reverb: -12}}
+    arp:     {gain_db: -15.0, group: music, pan: 0.0, width: 1.2, sidechain: {depth: 0.5, release: 0.5}, sends: {delay: -9, reverb: -12}}
+    pad:     {gain_db: -6.0, group: music, sidechain: {depth: 0.6, release: 0.6}, sends: {reverb: -9}}
+    chords:  {gain_db: -7.0, group: music, sidechain: {depth: 0.8, release: 0.7}, sends: {reverb: -13}}
+    bass:    {gain_db: -4.0, group: music, sidechain: {depth: 0.9, release: 0.45}}
+    kick:    {gain_db: 0.0}
+    clap:    {gain_db: -5.0, sends: {reverb: -16}}
+    hat:     {gain_db: -9.0, pan: 0.15}
+    ohat:    {gain_db: -9.0, pan: -0.1}
+    snare:   {gain_db: -7.0, sends: {reverb: -12}}
+    crash:   {gain_db: -9.0}
+    riser:   {gain_db: -8.0, sends: {reverb: -10}}
+    revcrash: {gain_db: -10.0}
+    impact:  {gain_db: -5.0, sends: {reverb: -10}}
+  groups:
+    music: {gain_db: 0.0}
+  returns:
+    reverb:
+      chain: [{type: reverb, decay: 3.2, predelay_ms: 25, damping: 0.55, hp: 300, lp: 9000, width: 1.0}]
+      sidechain: {depth: 0.5, release: 0.8}
+    delay:
+      chain: [{type: delay, time: "3/16", feedback: 0.35, hp: 450, lp: 5000, pingpong: true}]
+      sidechain: {depth: 0.4, release: 0.6}
+  master:
+    hpf: 25
+    chain:
+      - {type: compressor, threshold_db: -14, ratio: 2.0, attack_ms: 30, release_ms: 200}
+    target_lufs: -9.0
+    ceiling_db: -1.0
+    limiter: {release_ms: 80, lookahead_ms: 5}

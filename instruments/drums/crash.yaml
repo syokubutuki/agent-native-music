@@ -1,0 +1,4 @@
+type: drum
+model: crash
+decay: 2.2
+gain_db: -12

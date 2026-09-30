@@ -1,0 +1,494 @@
+harmony:
+  progressions:
+    loop:
+    - Dmaj7
+    - E
+    - F#m
+    - C#m7
+  sections:
+    intro:
+      progression: loop
+      repeat: 2
+    build:
+    - Bm7
+    - D
+    - E
+    - C#sus4 C#
+    drop:
+    - Dmaj7
+    - E
+    - F#m
+    - C#m7
+    - Dmaj7
+    - E
+    - F#m
+    - C#
+    end:
+    - F#m
+melody:
+  motifs:
+    a: 7:3 5:3 3:4 4:2 5:4
+    frag: 7:2 5:2 3:4
+  parts:
+    lead:
+      base: F#4
+      sections:
+        drop:
+        - bar: 0
+          motif: a
+        - bar: 1
+          motif: a
+          ops:
+          - transpose: -1
+            keep:
+            - 0
+        - bar: 2
+          motif: a
+        - bar: 3
+          notes: 5:3 4:3 2:6 r:2 3:1 4:1
+        - bar: 4
+          motif: a
+        - bar: 5
+          motif: a
+          ops:
+          - transpose: -1
+            keep:
+            - 0
+          - set:
+              3: 4
+              4: 7
+        - bar: 6
+          notes: 8:3! 7:3 5:4 7:2 8:4
+        - bar: 7
+          notes: 7#:3 5:3 2:4 5:2 7#:4
+        end:
+        - bar: 0
+          notes: 8:16!
+    pluck:
+      base: F#4
+      sections:
+        intro:
+        - bar: 0
+          motif: a
+          ops:
+          - vel: 0.8
+        - bar: 1
+          motif: a
+          ops:
+          - transpose: -1
+            keep:
+            - 0
+          - vel: 0.8
+        - bar: 2
+          motif: a
+          ops:
+          - vel: 0.8
+        - bar: 3
+          notes: 5:3 4:3 2:10
+        - bar: 4
+          motif: a
+        - bar: 5
+          motif: a
+          ops:
+          - transpose: -1
+            keep:
+            - 0
+        - bar: 6
+          motif: a
+        - bar: 7
+          notes: 5:3 4:3 2:6 r:2 3:1 4:1
+        build:
+        - bar: 0
+          motif: frag
+          repeat: 2
+        - bar: 1
+          motif: frag
+          repeat: 2
+        - bar: 2
+          notes: 3:2 4:2 5:2 7:2 4:2 5:2 7:2 8:2
+        - bar: 3
+          notes: 8:2 8:2 8:2 8:2! 7#:2 7#:2 7#:2! r:2
+    topline:
+      base: F#4
+      sections:
+        drop:
+        - bar: 0
+          notes: r:2 3:2 3:2 5:2 4:4 3:4
+        - bar: 1
+          notes: 2:6 1:2 2:8
+        - bar: 2
+          notes: r:2 3:2 3:2 5:2 7:4 5:4
+        - bar: 3
+          notes: 4:6 3:2 2:8
+        - bar: 4
+          notes: r:2 3:2 3:2 5:2 4:4 3:4
+        - bar: 5
+          notes: 2:6 1:2 2:8
+        - bar: 6
+          notes: r:2 5:2 5:2 7:2 8:4 7:4
+        - bar: 7
+          notes: 7#:6 5:2 5:8
+arrangement:
+  tracks:
+    lead:
+      instrument: lead/supersaw_lead
+      role: lead
+      content:
+        type: melody
+        part: lead
+    pluck:
+      instrument: keys/glass_pluck
+      role: texture
+      content:
+        type: melody
+        part: pluck
+        transpose:
+          intro: -12
+    topline:
+      instrument: keys/vocal_sketch
+      role: topline
+      mute: true
+      content:
+        type: melody
+        part: topline
+    arp:
+      instrument: keys/glass_pluck
+      role: texture
+      content:
+        type: arp
+        range:
+        - F#5
+        - B6
+        voices: 4
+        order: 0 1 2 3 2 1 0 2
+        patterns:
+          drop: x.x.x.x.x.x.x.x.
+    pad:
+      instrument: pad/warm_pad
+      role: harmony
+      content:
+        type: chords
+        range:
+        - F#3
+        - E5
+        voices: 4
+        patterns:
+          intro: x---------------
+          build: x---------------
+          drop: x---------------
+          end: x---------------
+    chords:
+      instrument: pad/saw_chords
+      role: harmony
+      content:
+        type: chords
+        range:
+        - F#3
+        - C#5
+        voices: 4
+        patterns:
+          drop: x---------------
+          end: x---------------
+    bass:
+      instrument: bass/sub_saw_bass
+      role: bass
+      content:
+        type: bass
+        range:
+        - F#1
+        - F2
+        patterns:
+          intro:
+            0-3: ''
+            default: x---------------
+          build:
+            '3': x-------........
+            default: ..x-..x-..x-..x-
+          drop: ..x-..x-..x-..u-
+          end: x---------------
+    kick:
+      instrument: drums/kick_main
+      content:
+        type: drums
+        patterns:
+          intro:
+            0-3: ''
+            default: x...x...x...x...
+          build:
+            '3': x...x...........
+            default: x...x...x...x...
+          drop: x...x...x...x...
+          end: x...............
+    clap:
+      instrument: drums/clap_main
+      content:
+        type: drums
+        patterns:
+          drop: '....x.......x...'
+    hat:
+      instrument: drums/hat_closed
+      content:
+        type: drums
+        patterns:
+          intro:
+            0-3: ''
+            default: ..x...x...x...x.
+          build:
+            '3': x.x.x.x.x.x.....
+            default: x.x.x.x.x.x.x.x.
+          drop: xoxoxoxoxoxoxoxo
+    ohat:
+      instrument: drums/hat_open
+      content:
+        type: drums
+        patterns:
+          drop: ..x...x...x...x.
+    snare:
+      instrument: drums/snare_roll
+      content:
+        type: drums
+        patterns:
+          build:
+          - '....x.......x...'
+          - x...x...x...x...
+          - x.x.x.x.x.x.x.x.
+          - xxxxxxxxxxxxxxxxxxxxxxxx........
+        ramp:
+          build:
+            vel:
+            - 0.35
+            - 1.0
+            pitch:
+            - 0
+            - 9
+    crash:
+      instrument: drums/crash
+      content:
+        type: drums
+        patterns:
+          drop:
+            '0': x...............
+            '4': x...............
+            default: ''
+          end: x...............
+    riser:
+      instrument: fx/riser
+      content:
+        type: fx
+        events:
+        - at: build:0
+          until: build:end
+          vel: 0.9
+    revcrash:
+      instrument: fx/reverse_crash
+      content:
+        type: fx
+        events:
+        - at: build:3|2
+          until: build:end
+    impact:
+      instrument: fx/impact
+      content:
+        type: fx
+        events:
+        - at: drop:0
+          beats: 4
+        - at: end:0
+          beats: 4
+          vel: 0.7
+  automation:
+  - target: pluck.lpf
+    curve: exp
+    points:
+    - - intro:0
+      - 1100
+    - - intro:4
+      - 1700
+    - - intro:end
+      - 3200
+    - - build:end
+      - 14000
+  - target: pad.lpf
+    curve: exp
+    points:
+    - - intro:0
+      - 1400
+    - - build:0
+      - 2400
+    - - build:end
+      - 8000
+  - target: kick.lpf
+    curve: exp
+    points:
+    - - intro:4
+      - 300
+    - - intro:end
+      - 900
+    - - build:0
+      - 18000
+  - target: pluck.send.reverb
+    points:
+    - - build:2
+      - -12
+    - - build:end
+      - -3
+  - target: music.hpf
+    curve: exp
+    points:
+    - - build:2
+      - 20
+    - - build:end
+      - 380
+    - - drop:0
+      - 20
+mix:
+  sidechain_source: kick
+  tracks:
+    lead:
+      gain_db: -2.0
+      group: music
+      sidechain:
+        depth: 0.25
+        release: 0.35
+      sends:
+        reverb: -11
+        delay: -15
+    pluck:
+      gain_db: -3.0
+      group: music
+      sends:
+        reverb: -12
+        delay: -13
+    topline:
+      gain_db: -4.0
+      group: music
+      sends:
+        reverb: -12
+    arp:
+      gain_db: -15.0
+      group: music
+      pan: 0.0
+      width: 1.2
+      sidechain:
+        depth: 0.5
+        release: 0.5
+      sends:
+        delay: -9
+        reverb: -12
+    pad:
+      gain_db: -6.0
+      group: music
+      sidechain:
+        depth: 0.6
+        release: 0.6
+      sends:
+        reverb: -9
+    chords:
+      gain_db: -7.0
+      group: music
+      sidechain:
+        depth: 0.8
+        release: 0.7
+      sends:
+        reverb: -13
+    bass:
+      gain_db: -4.0
+      group: music
+      sidechain:
+        depth: 0.9
+        release: 0.45
+    kick:
+      gain_db: 0.0
+    clap:
+      gain_db: -5.0
+      sends:
+        reverb: -16
+    hat:
+      gain_db: -9.0
+      pan: 0.15
+    ohat:
+      gain_db: -9.0
+      pan: -0.1
+    snare:
+      gain_db: -7.0
+      sends:
+        reverb: -12
+    crash:
+      gain_db: -9.0
+    riser:
+      gain_db: -8.0
+      sends:
+        reverb: -10
+    revcrash:
+      gain_db: -10.0
+    impact:
+      gain_db: -5.0
+      sends:
+        reverb: -10
+  groups:
+    music:
+      gain_db: 0.0
+  returns:
+    reverb:
+      chain:
+      - type: reverb
+        decay: 3.2
+        predelay_ms: 25
+        damping: 0.55
+        hp: 300
+        lp: 9000
+        width: 1.0
+      sidechain:
+        depth: 0.5
+        release: 0.8
+    delay:
+      chain:
+      - type: delay
+        time: 3/16
+        feedback: 0.35
+        hp: 450
+        lp: 5000
+        pingpong: true
+      sidechain:
+        depth: 0.4
+        release: 0.6
+  master:
+    hpf: 25
+    chain:
+    - type: compressor
+      threshold_db: -14
+      ratio: 2.0
+      attack_ms: 30
+      release_ms: 200
+    target_lufs: -9.0
+    ceiling_db: -1.0
+    limiter:
+      release_ms: 80
+      lookahead_ms: 5
+id: track_001
+title: Lanterns (working title)
+tempo: 128
+time_signature:
+- 4
+- 4
+key: F# minor
+seed: 1001
+sample_rate: 44100
+tail_sec: 2.5
+target:
+  duration_sec:
+  - 30
+  - 45
+sections:
+- name: intro
+  bars: 8
+  energy: 0.3
+- name: build
+  bars: 4
+  energy: 0.6
+- name: drop
+  bars: 8
+  energy: 1.0
+- name: end
+  bars: 1
+  energy: 0.5

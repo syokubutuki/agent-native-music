@@ -1,0 +1,6 @@
+type: drum
+model: snare
+tone_freq: 210
+noise_decay: 0.13
+gain_db: -6
+velocity_sens: 0.9

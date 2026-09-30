@@ -1,0 +1,20 @@
+# Main drop lead: wide detuned supersaw + a centred saw for focus + an
+# octave-down square for body. Bright but low-passed so it sits above
+# the chords without harshness.
+type: subtractive
+oscillators:
+  - {wave: saw, unison: 7, detune: 0.24, spread: 0.85, level: 1.0}
+  - {wave: saw, level: 0.45}                       # centred focus voice
+  - {wave: square, octave: -1, level: 0.25, pw: 0.5}
+  - {wave: noise, level: 0.015}
+filter: {mode: lowpass, cutoff: 3200, q: 0.9, slope: 12, env_amount: 1.6, keytrack: 0.5, vel_amount: 0.6}
+filter_env: {a: 0.002, d: 0.35, s: 0.35, r: 0.25}
+amp_env: {a: 0.004, d: 0.25, s: 0.85, r: 0.18}
+vibrato: {rate: 5.2, depth: 0.12, delay: 0.35}
+gate: 0.92
+velocity_sens: 0.35
+drive: 0.12
+gain_db: -6
+fx:
+  - {type: highpass, freq: 180}
+  - {type: chorus, rate_hz: 0.45, depth: 0.18, delay_ms: 9, mix: 0.25}

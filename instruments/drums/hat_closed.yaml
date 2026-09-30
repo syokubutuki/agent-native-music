@@ -1,0 +1,6 @@
+type: drum
+model: hat
+decay: 0.04
+hp: 8000
+metal: 0.45
+gain_db: -12

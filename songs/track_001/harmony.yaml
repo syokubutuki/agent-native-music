@@ -1,0 +1,12 @@
+# One entry per bar. "A B" splits a bar evenly.
+# Core loop VI-VII-i-v (Dmaj7 E F#m C#m7): bittersweet lift, never resolving
+# strongly. The build ends on C# major (V, harmonic minor) whose pull to i is
+# *deceived* into VI at the drop; the final bar finally resolves V -> i.
+harmony:
+  progressions:
+    loop: [Dmaj7, E, F#m, C#m7]
+  sections:
+    intro: {progression: loop, repeat: 2}
+    build: [Bm7, D, E, "C#sus4 C#"]
+    drop:  [Dmaj7, E, F#m, C#m7, Dmaj7, E, F#m, C#]
+    end:   [F#m]

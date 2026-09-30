@@ -1,0 +1,15 @@
+# Short glassy pluck for motif previews and arps: filter-envelope driven
+# attack, quick decay. Square + saw with a touch of FM-like brightness via
+# a detuned upper sine.
+type: subtractive
+oscillators:
+  - {wave: saw, unison: 3, detune: 0.08, spread: 0.6, level: 0.8}
+  - {wave: square, level: 0.35, pw: 0.35}
+  - {wave: sine, octave: 1, level: 0.25}
+filter: {mode: lowpass, cutoff: 900, q: 1.3, slope: 12, env_amount: 3.2, keytrack: 0.6, vel_amount: 1.0}
+filter_env: {a: 0.001, d: 0.22, s: 0.0, r: 0.15}
+amp_env: {a: 0.002, d: 0.45, s: 0.15, r: 0.25}
+velocity_sens: 0.6
+gain_db: -3
+fx:
+  - {type: highpass, freq: 200}

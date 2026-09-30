@@ -1,0 +1,8 @@
+# Audition the future vocal topline with a placeholder voice over the drop.
+arrangement:
+  tracks:
+    topline: {mute: false}
+mix:
+  tracks:
+    topline: {mute: false, gain_db: -1.0}
+    lead: {gain_db: -8.0}

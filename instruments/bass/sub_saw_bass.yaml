@@ -1,0 +1,12 @@
+# Two-layer bass: clean sine sub for weight + filtered saw for definition.
+# Mono output (low end must stay mono).
+type: layered
+layers:
+  - {oscillators: [{wave: sine}], amp_env: {a: 0.003, d: 0.2, s: 0.95, r: 0.06}, gain_db: -2, mono: true}
+  - oscillators: [{wave: saw, unison: 2, detune: 0.06, spread: 0.0}]
+    filter: {mode: lowpass, cutoff: 350, q: 1.1, slope: 24, env_amount: 1.8, keytrack: 0.5}
+    filter_env: {a: 0.001, d: 0.12, s: 0.25, r: 0.08}
+    amp_env: {a: 0.002, d: 0.2, s: 0.85, r: 0.06}
+    drive: 0.3
+    mono: true
+    layer_gain_db: -5

@@ -1,0 +1,625 @@
+{
+ "song_id": "test_minimal",
+ "tempo": 124.0,
+ "beats_per_bar": 4,
+ "key": "A minor",
+ "sections": [
+  {
+   "name": "a",
+   "start_bar": 0,
+   "bars": 2,
+   "energy": 0.4,
+   "start_beat": 0,
+   "end_beat": 8
+  },
+  {
+   "name": "b",
+   "start_bar": 2,
+   "bars": 2,
+   "energy": 0.9,
+   "start_beat": 8,
+   "end_beat": 16
+  }
+ ],
+ "chords": [
+  {
+   "start": 0.0,
+   "dur": 4.0,
+   "symbol": "Am",
+   "pcs": [
+    9,
+    0,
+    4
+   ],
+   "bass_pc": 9
+  },
+  {
+   "start": 4.0,
+   "dur": 4.0,
+   "symbol": "F",
+   "pcs": [
+    5,
+    9,
+    0
+   ],
+   "bass_pc": 5
+  },
+  {
+   "start": 8.0,
+   "dur": 4.0,
+   "symbol": "C",
+   "pcs": [
+    0,
+    4,
+    7
+   ],
+   "bass_pc": 0
+  },
+  {
+   "start": 12.0,
+   "dur": 2.0,
+   "symbol": "G",
+   "pcs": [
+    7,
+    11,
+    2
+   ],
+   "bass_pc": 7
+  },
+  {
+   "start": 14.0,
+   "dur": 2.0,
+   "symbol": "Esus4",
+   "pcs": [
+    4,
+    9,
+    11
+   ],
+   "bass_pc": 4
+  }
+ ],
+ "tracks": [
+  {
+   "name": "lead",
+   "kind": "melody",
+   "instrument": "keys/glass_pluck",
+   "notes": [
+    {
+     "pitch": 76,
+     "start": 0.0,
+     "dur": 1.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 72,
+     "start": 1.0,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 74,
+     "start": 1.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 76,
+     "start": 2.0,
+     "dur": 1.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 69,
+     "start": 3.0,
+     "dur": 1.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 74,
+     "start": 4.0,
+     "dur": 1.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 71,
+     "start": 5.0,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 72,
+     "start": 5.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 74,
+     "start": 6.0,
+     "dur": 1.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 67,
+     "start": 7.0,
+     "dur": 1.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 79,
+     "start": 8.0,
+     "dur": 1.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 76,
+     "start": 9.0,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 77,
+     "start": 9.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 79,
+     "start": 10.0,
+     "dur": 1.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 72,
+     "start": 11.0,
+     "dur": 1.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 76,
+     "start": 12.0,
+     "dur": 1.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 74,
+     "start": 13.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 71,
+     "start": 14.0,
+     "dur": 2.0,
+     "vel": 0.85,
+     "params": {}
+    }
+   ],
+   "role": "lead",
+   "midi_channel": 0,
+   "mute": false
+  },
+  {
+   "name": "pad",
+   "kind": "chords",
+   "instrument": "pad/warm_pad",
+   "notes": [
+    {
+     "pitch": 52,
+     "start": 0.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 57,
+     "start": 0.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 69,
+     "start": 0.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 72,
+     "start": 0.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 53,
+     "start": 4.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 57,
+     "start": 4.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 65,
+     "start": 4.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 72,
+     "start": 4.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 55,
+     "start": 8.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 60,
+     "start": 8.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 64,
+     "start": 8.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 72,
+     "start": 8.0,
+     "dur": 4.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 55,
+     "start": 12.0,
+     "dur": 2.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 59,
+     "start": 12.0,
+     "dur": 2.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 67,
+     "start": 12.0,
+     "dur": 2.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 74,
+     "start": 12.0,
+     "dur": 2.0,
+     "vel": 0.85,
+     "params": {}
+    }
+   ],
+   "role": "harmony",
+   "midi_channel": 1,
+   "mute": false
+  },
+  {
+   "name": "bass",
+   "kind": "bass",
+   "instrument": "bass/sub_saw_bass",
+   "notes": [
+    {
+     "pitch": 33,
+     "start": 0.0,
+     "dur": 2.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 33,
+     "start": 2.0,
+     "dur": 2.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 29,
+     "start": 4.0,
+     "dur": 2.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 29,
+     "start": 6.0,
+     "dur": 2.0,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 8.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 9.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 10.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 11.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 31,
+     "start": 12.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 31,
+     "start": 13.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 28,
+     "start": 14.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 28,
+     "start": 15.5,
+     "dur": 0.5,
+     "vel": 0.85,
+     "params": {}
+    }
+   ],
+   "role": "bass",
+   "midi_channel": 2,
+   "mute": false
+  },
+  {
+   "name": "kick",
+   "kind": "drums",
+   "instrument": "drums/kick_main",
+   "notes": [
+    {
+     "pitch": 36,
+     "start": 8.0,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 9.0,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 10.0,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 11.0,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 12.0,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 13.0,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 14.0,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 36,
+     "start": 15.0,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    }
+   ],
+   "role": "",
+   "midi_channel": 9,
+   "mute": false
+  },
+  {
+   "name": "hat",
+   "kind": "drums",
+   "instrument": "drums/hat_closed",
+   "notes": [
+    {
+     "pitch": 42,
+     "start": 0.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 1.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 2.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 3.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 4.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 5.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 6.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 7.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 8.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 9.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 10.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 11.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 12.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 13.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 14.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    },
+    {
+     "pitch": 42,
+     "start": 15.5,
+     "dur": 0.25,
+     "vel": 0.85,
+     "params": {}
+    }
+   ],
+   "role": "",
+   "midi_channel": 9,
+   "mute": false
+  }
+ ],
+ "total_beats": 16,
+ "automation": []
+}

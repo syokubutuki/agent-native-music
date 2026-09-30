@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+.venv/
+
+# Rendered audio is reproducible from spec + commit (see renders/*/manifest.json).
+# WAVs are not committed; manifests, analysis and reports are.
+renders/**/*.wav
+candidates/**/*.wav
+experiments/**/*.wav
+# Numba cache
+**/__pycache__/*.nbi
+**/__pycache__/*.nbc

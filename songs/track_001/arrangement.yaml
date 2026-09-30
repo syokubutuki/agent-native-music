@@ -1,0 +1,107 @@
+# Tracks: which instrument plays which musical content, where.
+# Pattern chars: X accent, x hit, o ghost, u octave-up (bass), - hold, . rest
+# Pattern specs: string (every bar) | list (cycled) | {bar-range: pattern, default: ...}
+arrangement:
+  tracks:
+    lead:
+      instrument: lead/supersaw_lead
+      role: lead
+      content: {type: melody, part: lead}
+    pluck:
+      instrument: keys/glass_pluck
+      role: texture
+      content: {type: melody, part: pluck, transpose: {intro: -12}}
+    topline:
+      instrument: keys/vocal_sketch
+      role: topline
+      mute: true        # reserved for a future vocal; audition via overlays/topline_audition.yaml
+      content: {type: melody, part: topline}
+    arp:
+      instrument: keys/glass_pluck
+      role: texture
+      content:
+        type: arp
+        range: [F#5, B6]
+        voices: 4
+        order: "0 1 2 3 2 1 0 2"
+        patterns: {drop: "x.x.x.x.x.x.x.x."}
+    pad:
+      instrument: pad/warm_pad
+      role: harmony
+      content:
+        type: chords
+        range: [F#3, E5]
+        voices: 4
+        patterns: {intro: "x---------------", build: "x---------------", drop: "x---------------", end: "x---------------"}
+    chords:
+      instrument: pad/saw_chords
+      role: harmony
+      content:
+        type: chords
+        range: [F#3, C#5]
+        voices: 4
+        patterns: {drop: "x---------------", end: "x---------------"}
+    bass:
+      instrument: bass/sub_saw_bass
+      role: bass
+      content:
+        type: bass
+        range: [F#1, F2]
+        patterns:
+          intro: {"0-3": "", default: "x---------------"}
+          build: {"3": "x-------........", default: "..x-..x-..x-..x-"}
+          drop: "..x-..x-..x-..u-"
+          end: "x---------------"
+    kick:
+      instrument: drums/kick_main
+      content:
+        type: drums
+        patterns:
+          intro: {"0-3": "", default: "x...x...x...x..."}
+          build: {"3": "x...x...........", default: "x...x...x...x..."}
+          drop: "x...x...x...x..."
+          end: "x..............."
+    clap:
+      instrument: drums/clap_main
+      content: {type: drums, patterns: {drop: "....x.......x..."}}
+    hat:
+      instrument: drums/hat_closed
+      content:
+        type: drums
+        patterns:
+          intro: {"0-3": "", default: "..x...x...x...x."}
+          build: {"3": "x.x.x.x.x.x.....", default: "x.x.x.x.x.x.x.x."}
+          drop: "xoxoxoxoxoxoxoxo"
+    ohat:
+      instrument: drums/hat_open
+      content: {type: drums, patterns: {drop: "..x...x...x...x."}}
+    snare:
+      instrument: drums/snare_roll
+      content:
+        type: drums
+        patterns:
+          build:
+            - "....x.......x..."
+            - "x...x...x...x..."
+            - "x.x.x.x.x.x.x.x."
+            - "xxxxxxxxxxxxxxxxxxxxxxxx........"   # 32nds, stops one beat early
+        ramp: {build: {vel: [0.35, 1.0], pitch: [0, 9]}}
+    crash:
+      instrument: drums/crash
+      content: {type: drums, patterns: {drop: {"0": "x...............", "4": "x...............", default: ""}, end: "x..............."}}
+    riser:
+      instrument: fx/riser
+      content: {type: fx, events: [{at: "build:0", until: "build:end", vel: 0.9}]}
+    revcrash:
+      instrument: fx/reverse_crash
+      content: {type: fx, events: [{at: "build:3|2", until: "build:end"}]}
+    impact:
+      instrument: fx/impact
+      content: {type: fx, events: [{at: "drop:0", beats: 4}, {at: "end:0", beats: 4, vel: 0.7}]}
+
+  automation:
+    - {target: pluck.lpf, curve: exp, points: [["intro:0", 1100], ["intro:4", 1700], ["intro:end", 3200], ["build:end", 14000]]}
+    - {target: pad.lpf, curve: exp, points: [["intro:0", 1400], ["build:0", 2400], ["build:end", 8000]]}
+    - {target: kick.lpf, curve: exp, points: [["intro:4", 300], ["intro:end", 900], ["build:0", 18000]]}
+    - {target: pluck.send.reverb, points: [["build:2", -12], ["build:end", -3]]}
+    - {target: music.hpf, curve: exp, points: [["build:2", 20], ["build:end", 380], ["drop:0", 20]]}
