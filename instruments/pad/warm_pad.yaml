@@ -3,7 +3,7 @@ type: subtractive
 oscillators:
   - {wave: saw, unison: 5, detune: 0.14, spread: 0.9, level: 1.0}
   - {wave: triangle, octave: 1, level: 0.2}
-filter: {mode: lowpass, cutoff: 1400, q: 0.7, slope: 12, env_amount: 0.8, keytrack: 0.3}
+filter: {mode: lowpass, cutoff: 1000, q: 0.7, slope: 12, env_amount: 0.8, keytrack: 0.3}
 filter_env: {a: 0.6, d: 1.5, s: 0.5, r: 1.0}
 amp_env: {a: 0.35, d: 0.8, s: 0.85, r: 0.9}
 velocity_sens: 0.2

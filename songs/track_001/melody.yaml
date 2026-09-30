@@ -1,60 +1,58 @@
 # Degrees are relative to each part's `base` (degree 1). F# minor:
-# 1=F# 2=G# 3=A 4=B 5=C# 6=D 7=E 8=F#(+8ve) 9=G#; "7#" = E# (leading tone).
-# Lengths are 16th-note steps (16 per bar).
+# 1=F# 2=G# 3=A 4=B 5=C# 6=D 7=E 8=F#(+8ve) 9=G# 10=A; "7#" = E# (leading tone),
+# "0#" = E# an octave lower. Lengths are 16th-note steps (16 per bar).
+#
+# v006: core motif = human-chosen candidate cand_04 (batch melody_motif_a_b001,
+# "変わり種でよい"): E C# A B A — the phrase closes *downward* onto A.
+# Harmony is the lament (harmony.yaml); every phrase below was re-fitted to it.
 melody:
   motifs:
-    # Hook: common-tone anchor (E5 on the downbeat) then a falling arpeggio
-    # with a stepwise upturn. 3+3+4+2+4 syncopation.
-    a: "7:3 5:3 3:4 4:2 5:4"
-    # Build fragment: the first three notes of `a`, compressed.
-    frag: "7:2 5:2 3:4"
+    # Hook: E5 anchor, falls through the triad, a B that leans on beat 3 and sinks back to A.
+    a: "7:2 5:4 3:2 4:4 3:4"
+    # Build fragment: the first three notes of `a`.
+    frag: "7:2 5:4 3:2"
   parts:
-    lead:            # drop statement, sits A4..F#5
+    lead:            # drop statement
       base: F#4
       sections:
         drop:
-          # v002 (critique C1): the build's leading tone E#5 resolves UP to F#5 on the
-          # deceptive-cadence downbeat; later statements return to the E5 anchor.
-          - {bar: 0, motif: a, ops: [{set: {0: 8}}, {accent: [0]}]}  # A* arrival (over Dmaj7: 3, maj7, 5)
-          # v002 (C4): the question holds and breathes, ending open on B4 (5th of E)
-          - {bar: 1, notes: "7:3 5:3 4:10"}                      # A' question
-          - {bar: 2, motif: a}                                   # A re-harmonised over F#m
-          - {bar: 3, notes: "5:3 4:3 2:6 r:2 3:1 4:1"}           # answer: sigh down to G#, pickup back in
-          - {bar: 4, motif: a}
-          - {bar: 5, motif: a, ops: [{transpose: -1, keep: [0]}, {set: {3: 4, 4: 7}}]}  # A'' turns upward
-          # v002 (C1): climax A5 on the downbeat, above anything in the build; motif contour kept
-          - {bar: 6, notes: "10:6! 8:2 5:4 7:2 8:2"}             # B: climax A5 held 1.5 beats (v004, v003-C4)
-          - {bar: 7, notes: "7#:3 5:3 2:4 5:2 7#:4"}             # leading tone over V
+          # arrival: leading tone E#5 (end of build) resolves up to the tonic F#5 over F#m (V -> i)
+          - {bar: 0, motif: a, ops: [{set: {0: 8}}, {accent: [0]}]}   # F#5 C#5 A4 B4 A4
+          - {bar: 1, notes: "7:2 5:4 3:2 2:8"}                         # question: A -> G# appoggiatura (b6 -> 5 over C#m/E)
+          - {bar: 2, motif: a}                                        # hook over Dmaj7 (9, maj7, 5, 6, 5)
+          - {bar: 3, notes: "8:6 8:2 7#:4 5:4"}                       # sus4 F# -> E# as the chord turns major
+          - {bar: 4, motif: a}                                        # hook over F#m (b7 anchor: darker)
+          - {bar: 5, notes: "7:2 5:4 7:2 9:8"}                        # rises instead of sinking: G#5 held
+          - {bar: 6, notes: "10:6! 8:2 7:4 5:4"}                      # climax A5 over Bm7 (b7, 5, 11, 9)
+          - {bar: 7, notes: "8:4 9:2 8:2 7#:8"}                       # leading tone held over V
         end:
-          - {bar: 0, notes: "8:32!"}                             # resolution F#5, held through the 2-bar ending
-    pluck:           # intro (octave down via track transpose) + build
+          - {bar: 0, notes: "8:32!"}                                  # F#5, held through the 2-bar ending
+    pluck:           # intro + build: reveals the hook piece by piece (never the full closing B -> A)
       base: F#4
       sections:
         intro:
-          # v002 (C4): first half only hints at the hook (first three notes); full form from bar 4
-          - {bar: 0, motif: a, ops: [{take: [0, 3]}, {vel: 0.8}]}
-          - {bar: 1, motif: a, ops: [{take: [0, 3]}, {transpose: -1, keep: [0]}, {vel: 0.8}]}
+          - {bar: 0, motif: a, ops: [{take: [0, 3]}, {vel: 0.8}]}     # E C# A
+          - {bar: 1, notes: "7:2? 5:4? 2:6?"}                          # E C# G#
           - {bar: 2, motif: a, ops: [{take: [0, 3]}, {vel: 0.8}]}
-          - {bar: 3, notes: "5:3 4:3 2:10"}
-          # v004 (critique v003-C4): the intro withholds the upturn and the pickup — the drop is the first full reveal
-          - {bar: 4, notes: "7:3 5:3 3:10"}
-          - {bar: 5, motif: a, ops: [{transpose: -1, keep: [0]}]}
-          - {bar: 6, notes: "7:3 5:3 3:4 4:2 3:4"}
-          - {bar: 7, notes: "5:3 4:3 2:10"}
+          - {bar: 3, notes: "5:4 4:4 3:8"}                             # C# B A over Bm7 (9, root, b7)
+          - {bar: 4, notes: "7:2 5:4 3:10"}                            # question, held
+          - {bar: 5, notes: "7:2 5:4 3:2 2:8"}                         # A -> G# sigh
+          - {bar: 6, notes: "7:2 5:4 3:2 4:8"}                         # stops on B: the hook is withheld
+          - {bar: 7, notes: "5:4 4:4 5:8"}                             # suspended C# (9 of Bm7) into the build
         build:
-          - {bar: 0, motif: frag, repeat: 2}                      # fragment, twice per bar
+          - {bar: 0, motif: frag, repeat: 2}                            # fragment, twice per bar
           - {bar: 1, motif: frag, repeat: 2}
-          - {bar: 2, notes: "3:2 4:2 5:2 7:2 4:2 5:2 7:2 8:2"}   # climbing 8ths
-          - {bar: 3, notes: "8:2 8:2 8:2 8:2! 7#:2 7#:2 7#:2! r:2"}  # sus4 -> 3 in the melody
-    topline:         # future vocal line: singable, G#4..F#5, rhythm leaves room for syllables
+          - {bar: 2, notes: "2:2 3:2 5:2 7:2 3:2 5:2 7:2 8:2"}         # climbing 8ths over C#m7 -> F# (sus4 of C#)
+          - {bar: 3, notes: "8:2 8:2 8:2 8:2! 7#:2 7#:2 7#:2! r:2"}    # sus4 -> 3 in the melody
+    topline:         # future vocal line: G#4..E5 core, F#4/E#4 low cadence, syllable-friendly 8ths
       base: F#4
       sections:
         drop:
-          - {bar: 0, notes: "r:2 3:2 3:2 5:2 4:4 3:4"}
-          - {bar: 1, notes: "2:6 1:2 2:8"}
-          - {bar: 2, notes: "r:2 3:2 3:2 5:2 7:4 5:4"}
-          - {bar: 3, notes: "4:6 3:2 2:8"}
-          - {bar: 4, notes: "r:2 3:2 3:2 5:2 4:4 3:4"}
-          - {bar: 5, notes: "2:6 1:2 2:8"}
-          - {bar: 6, notes: "r:2 5:2 7:2 8:6 7:4"}              # v002 (C10): longer peak
-          - {bar: 7, notes: "7#:6 5:2 5:8"}
+          - {bar: 0, notes: "r:2 3:2 3:2 5:2 3:4 1:4"}
+          - {bar: 1, notes: "2:6 3:2 2:8"}
+          - {bar: 2, notes: "r:2 3:2 3:2 5:2 6:4 5:4"}
+          - {bar: 3, notes: "1:8 0#:4 r:4"}
+          - {bar: 4, notes: "r:2 3:2 3:2 5:2 3:4 1:4"}
+          - {bar: 5, notes: "2:6 3:2 5:8"}
+          - {bar: 6, notes: "r:2 5:2 7:6 5:2 4:4"}                     # peak E5 held over Bm7
+          - {bar: 7, notes: "1:8 0#:4 r:4"}

@@ -68,3 +68,14 @@
 ## D-009 ffmpeg
 
 - apt で導入（6.1.1）。用途は mp3 プレビューのみ（任意）。無い環境では WAV だけ出る。
+
+## D-010 Codex App Server ワーカーの導入とクラウドでの制約
+
+- 人間が main に `tools/codex-worker.mjs`（codex app-server を JSON-RPC で駆動）と `specs/` テンプレートを追加（PR #1）。
+  作業ブランチへマージし、CLAUDE.md の委譲手順・AGENTS.md の受け取り形式を `specs/` + ワーカーに統一。`tasks/codex/` はバックログ扱い。
+- Attempt: クラウドコンテナで `npm i -g @openai/codex@0.159.2` → `node tools/codex-worker.mjs run --task "Reply OK" --model gpt-5.5`。
+- Result: CLI 導入・app-server 起動・モデル一覧は成功。turn は **`api.openai.com` への CONNECT がネットワークポリシーで 403**、
+  再接続を繰り返し 90 秒でタイムアウト。加えて `codex login status` = Not logged in。
+- Decision: このクラウドセッションでは実装を Claude が代行し、仕様は `specs/` に書いて `executed by: claude` を記録する。
+  人間の Windows 環境、または (a) 環境のネットワーク許可に `api.openai.com` を追加し (b) 認証情報を環境変数で渡したクラウド環境で Codex に委譲する。
+- Reason: 委譲の仕組みは整ったが、このコンテナの外向き通信と認証の 2 点が不足。

@@ -1,0 +1,18 @@
+# shimmer S1: above the lead's register, quieter, with a breath-noise air band
+arrangement:
+  tracks:
+    shimmer: {content: {range: [C#6, D7]}}
+instrument_overrides:
+  shimmer:
+    oscillators:
+      - {wave: sine, unison: 3, detune: 0.07, spread: 1.0, level: 1.0}
+      - {wave: triangle, octave: 1, level: 0.18}
+      - {wave: noise, level: 0.06}
+    filter: {mode: lowpass, cutoff: 15000, q: 0.6, slope: 12}
+    fx:
+      - {type: highpass, freq: 1500}
+      - {type: chorus, rate_hz: 0.25, depth: 0.35, delay_ms: 14, mix: 0.5}
+      - {type: highshelf, freq: 6000, gain_db: 4.0}
+mix:
+  tracks:
+    shimmer: {gain_db: -13.0}

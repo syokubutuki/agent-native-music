@@ -1,5 +1,6 @@
 # track_001 — first benchmark piece (working title "Lanterns").
 # Melodic progressive house, 30-45 s: Theme -> Tension -> Release -> Resolution.
+# v006 direction (human): "もっと陰鬱に、しかし透明感もほしい" — keep v005's width/clarity.
 # Music lives in the included YAML files; the engine lives in src/.
 id: track_001
 title: Lanterns (working title)

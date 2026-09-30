@@ -1,12 +1,16 @@
 # One entry per bar. "A B" splits a bar evenly.
-# Core loop VI-VII-i-v (Dmaj7 E F#m C#m7): bittersweet lift, never resolving
-# strongly. The build ends on C# major (V, harmonic minor) whose pull to i is
-# *deceived* into VI at the drop; the final bar finally resolves V -> i.
+#
+# v006 — direction "もっと陰鬱に、しかし透明感も" (feedback/preferences.jsonl):
+# The hopeful VI-VII-i-v loop (v001-v005) is replaced by a LAMENT: the bass walks
+# down by step F# - E - D - C# (i - v/5 - VI - V). Darkness comes from harmony,
+# not from dulling the sound. The build's V no longer deceives into VI: the drop
+# falls onto the minor tonic (V -> i), heavier and without consolation.
+# Bm7 (iv) replaces VI in the second half for the darkest colour before the climax.
 harmony:
   progressions:
-    loop: [Dmaj7, E, F#m, C#m7]
+    lament: [F#m, C#m/E, Dmaj7, Bm7]
   sections:
-    intro: {progression: loop, repeat: 2}
-    build: [Bm7, D, E, "C#sus4 C#"]
-    drop:  [Dmaj7, E, F#m, C#m7, Dmaj7, E, F#m, C#]
+    intro: {progression: lament, repeat: 2}
+    build: [Dmaj7, Bm7, C#m7, "C#sus4 C#"]
+    drop:  [F#m, C#m/E, Dmaj7, "C#sus4 C#", F#m, C#m/E, Bm7, "C#sus4 C#"]
     end:   [F#m, F#m]     # merged into one 2-bar tonic event

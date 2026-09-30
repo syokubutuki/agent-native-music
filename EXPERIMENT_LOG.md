@@ -127,3 +127,45 @@
 - subjective: 聴取なし・推定。
 - decision: **本線 = v005**。
 - next: 人間の聴取（v001 と v005 の比較、motif 候補の選択）→ 選好に基づき次の周回。
+
+## HUMAN-001 人間の聴取フィードバック（2026-09-30, feedback/preferences.jsonl）
+
+- v001 vs v005 → **v005**。「v005 の改訂で音の広がり、明瞭感、爽快感が良くなっている」（aspects: width / clarity / exhilaration）。
+- motif 候補 melody_motif_a_b001 → **cand_04**（`7:2 5:4 3:2 4:4 3:4` = E C# A B A、下で閉じる）。「変わり種でよい」。
+- 方向性: **「もっと陰鬱に、しかし透明感もほしい」**。
+- 解釈（Claude）: v005 で評価された広がり・明瞭感・爽快感は保持する。陰鬱さは **和声・旋律・音域** で作り、音をこもらせない。
+  透明感は **音色の上端（澄んだ高域層・明るく長い残響）と、マスキングの少なさ** で担う。
+
+## EXP-007 track_001 v006 — 「陰鬱 × 透明感」
+
+- hypothesis:
+  1. VI–VII–i–v（上昇・救い）→ **ラメント**（ベース F#–E–D–C# 下降、i – v/5 – VI – V）で陰鬱さが出る。drop の着地を偽終止 V→VI から
+     **V→i**（短調主和音へ落ちる）に替えると、救いのない重さになる。後半の VI を iv（Bm7）に替えて頂点前を最も暗く。
+  2. cand_04（下で閉じる motif）をラメントに再適合: A→G# の倚音（C#m/E 上の b6→5）、Bm7 上の 11th/9th。
+  3. 透明感: 旋律の上に純音系のシマー層（sine unison + triangle, 遅い立ち上がり, 長いリバーブ送り）、pad の胴を暗く（cutoff 1400→1000）、
+     リバーブ 3.2→4.2 s / predelay 25→40 ms。
+- change: harmony.yaml / melody.yaml 全面改訂、`instruments/pad/air_shimmer.yaml` 新規、arrangement に shimmer トラック。
+- result: Layer 1 の記号警告 0（topline の音域警告も解消）。
+- metrics (v005 → v006): 調推定 C# minor 0.780（F# minor 2 位）→ **F# minor 0.831（1 位）**。drop highmid−lowmid −9.7 → −8.7 dB、
+  high−lowmid −15.6 → −15.5 dB（変化なし）。**lead 存在感 3.53 → 2.21 dB（後退）**。
+- 診断: シマー（F#5–C#7）が lead と同じ 1–5 kHz にかぶり旋律をマスク。6 kHz 以上はほとんど増えない。
+- decision: 和声・旋律は keep。シマーは要修正（EXP-008）。
+
+## EXP-008 track_001 v007 — シマー層の配置
+
+- hypothesis: シマーを lead の音域より上へ移し、息成分（ノイズ + 6 kHz shelf）を足せば、lead を隠さずに空気感が出る。
+- 比較（batch `sound_shimmer_b001`, drop）:
+
+  | cand | 内容 | lead 存在感 | high−lowmid |
+  |---|---|---|---|
+  | cand_00 | S1: range C#6–D7, −13 dB, 息成分 | 3.33 dB | −15.3 dB |
+  | cand_01 | S2: シマーなし | **4.60 dB** | −15.3 dB |
+
+  → drop ではシマーは 6 kHz 以上をほぼ増やさず、lead だけを 1.3 dB 削る。
+- change（Claude の判断）: シマーは **lead が鳴らない区間（intro 後半・build・end）だけ**。drop は明瞭さ優先。
+  drop にも入れる案は `overlays/shimmer_in_drop.yaml` として人間の A/B に残す。
+- metrics (`track_001_v007`): lead 存在感 **4.12 dB**（初めて Critic 目標 ≥ 4 を達成）、調推定 **F# minor 0.861**（最も強い主和音中心）、
+  section LUFS intro −14.3 / build −10.3 / drop −8.9 / end −10.6、GR 4.9 dB。
+- subjective: 聴取なし・推定。
+- decision: **本線 = v007**。
+- next: 3 周目 Critic（critiques/track_001_v007.md）、人間の聴取。

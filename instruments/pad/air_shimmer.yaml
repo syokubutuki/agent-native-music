@@ -1,0 +1,20 @@
+# Crystalline top layer ("透明感"): pure sine/triangle voices above the melody's
+# register, slow bloom, no saturation, gently detuned so it shimmers rather than
+# buzzes, plus a faint breath-noise band for air. Quiet and very wet.
+# v006 finding (batch sound_shimmer_b001): in the drop it cost the lead 1.3 dB of
+# 1-5 kHz presence while adding almost nothing above 6 kHz -> used only where the
+# lead is silent (intro / build / end).
+type: subtractive
+oscillators:
+  - {wave: sine, unison: 3, detune: 0.07, spread: 1.0, level: 1.0}
+  - {wave: triangle, octave: 1, level: 0.18}
+  - {wave: noise, level: 0.06}
+filter: {mode: lowpass, cutoff: 15000, q: 0.6, slope: 12}
+amp_env: {a: 0.9, d: 1.5, s: 0.8, r: 1.8}
+vibrato: {rate: 0.35, depth: 0.04, delay: 0.0}
+velocity_sens: 0.2
+gain_db: -8
+fx:
+  - {type: highpass, freq: 1500}
+  - {type: chorus, rate_hz: 0.25, depth: 0.35, delay_ms: 14, mix: 0.5}
+  - {type: highshelf, freq: 6000, gain_db: 4.0}

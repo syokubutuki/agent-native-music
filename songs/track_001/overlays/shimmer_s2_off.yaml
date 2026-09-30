@@ -1,0 +1,4 @@
+# shimmer S2: reference without the shimmer layer
+mix:
+  tracks:
+    shimmer: {mute: true}

@@ -38,6 +38,17 @@ arrangement:
           build: {"3": "x-------x-------", default: "x---------------"}   # C#sus4 -> C# re-voiced (C1)
           drop: "x---------------"
           end: ["x---------------", "----------------"]                     # one held tonic chord
+    shimmer:           # v006: transparent top layer (direction "陰鬱だが透明感")
+      instrument: pad/air_shimmer
+      role: texture
+      content:
+        type: chords
+        range: [C#6, D7]     # above the lead register
+        voices: 3
+        patterns:          # not in the drop: it masked the lead there (batch sound_shimmer_b001)
+          intro: {"4-7": "x---------------", default: ""}
+          build: "x---------------"
+          end: ["x---------------", "----------------"]
     chords:
       instrument: pad/saw_chords
       role: harmony
