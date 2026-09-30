@@ -2,14 +2,14 @@ mix:
   sidechain_source: kick
   tracks:
     lead:    {gain_db: -2.0, group: music, sidechain: {depth: 0.25, release: 0.35}, sends: {reverb: -11, delay: -15},
-              chain: [{type: peak, freq: 2500, gain_db: 2.0, q: 1.0}]}      # v002 (C2) presence
+              width: 1.2, chain: [{type: peak, freq: 2500, gain_db: 2.0, q: 1.0}]}      # v002 (C2) presence, v004 width
     pluck:   {gain_db: -3.0, group: music, sends: {reverb: -12, delay: -13}}
     topline: {gain_db: -4.0, group: music, sends: {reverb: -12}}
     arp:     {gain_db: -15.0, group: music, pan: 0.0, width: 1.2, sidechain: {depth: 0.5, release: 0.5}, sends: {delay: -9, reverb: -12}}
     pad:     {gain_db: -6.0, group: music, width: 1.3, sidechain: {depth: 0.6, release: 0.6}, sends: {reverb: -9}}
     chords:  {gain_db: -7.0, group: music, width: 1.4, sidechain: {depth: 0.8, release: 0.7}, sends: {reverb: -13}}
-    bass:    {gain_db: -4.0, group: music, sidechain: {depth: 0.9, release: 0.45}}
-    kick:    {gain_db: 0.0, chain: [{type: saturate, drive: 0.22}, {type: gain, db: -1.0}]}   # v003: light clip (batch mix_limiter_b002, GR 7.0 -> 4.5 dB)
+    bass:    {gain_db: -3.0, group: music, sidechain: {depth: 0.9, release: 0.45}}
+    kick:    {gain_db: -2.5, chain: [{type: saturate, drive: 0.22}, {type: gain, db: -1.0}, {type: peak, freq: 3000, gain_db: -4.0, q: 0.8}]}   # v004 (v003-C3)   # v003: light clip (batch mix_limiter_b002, GR 7.0 -> 4.5 dB)
     clap:    {gain_db: -5.0, sends: {reverb: -16}}
     hat:     {gain_db: -6.0, pan: 0.15}          # v003: +3 dB air
     ohat:    {gain_db: -7.0, pan: -0.1}
@@ -19,10 +19,10 @@ mix:
     revcrash: {gain_db: -10.0}
     impact:  {gain_db: -5.0, sends: {reverb: -10}}
   groups:
-    music: {gain_db: 0.0}
+    music: {gain_db: 0.0, chain: [{type: highshelf, freq: 7000, gain_db: 3.0}]}   # v004 (v003-C7) air
   returns:
     reverb:
-      chain: [{type: reverb, decay: 3.2, predelay_ms: 25, damping: 0.55, hp: 300, lp: 12000, width: 1.0}]
+      chain: [{type: reverb, decay: 3.2, predelay_ms: 25, damping: 0.35, hp: 300, lp: 12000, width: 1.0}]
       sidechain: {depth: 0.5, release: 0.8}
     delay:
       chain: [{type: delay, time: "3/16", feedback: 0.35, hp: 450, lp: 7000, pingpong: true}]
@@ -30,7 +30,7 @@ mix:
   master:
     hpf: 25
     chain:
-      - {type: compressor, threshold_db: -14, ratio: 2.0, attack_ms: 30, release_ms: 200}
+      - {type: compressor, threshold_db: -6, ratio: 1.6, attack_ms: 30, release_ms: 200}   # v004 (v003-C1): glue, not a leveller
     target_lufs: -10.5        # v002 (C8): limiter was taking 7.4 dB
     ceiling_db: -1.0
     limiter: {release_ms: 80, lookahead_ms: 5}

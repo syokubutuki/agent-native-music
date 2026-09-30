@@ -31,7 +31,7 @@ arrangement:
       role: harmony
       content:
         type: chords
-        range: [C#3, A4]        # v002 (C2): accompaniment stays below the melody
+        range: [D3, A4]         # v002 (C2): below the melody; v004 (v003-C5): D3 floor -> VI root in the bass, no C#3/D3 clash
         voices: 4
         patterns:
           intro: "x---------------"
@@ -43,7 +43,7 @@ arrangement:
       role: harmony
       content:
         type: chords
-        range: [C#3, A4]
+        range: [D3, A4]
         voices: 4
         patterns: {drop: "x---------------", end: ["x---------------", "--------........"]}
     bass:
@@ -53,9 +53,9 @@ arrangement:
         type: bass
         range: [G#1, G2]        # v002 (C5): D2-E2-F#2 climbs instead of dropping to F#1
         patterns:
-          intro: {"6-7": "x---------------", default: ""}                 # (C3) bass only at the end of the intro
-          build: {"0-1": "x---------------", "2": "x-------........", default: ""}   # offbeat groove saved for the drop
-          drop: "..x-..x-..x-..u-"
+          intro: ""                                                        # v004 (v003-C6): bass first enters at the build
+          build: {"0-1": "x---------------", "2": "x-------........", "3": "x-------x-------"}   # v004 (v003-C2): C# root in bar 11 (HPF, no sub)
+          drop: {"0": "x.x-..x-..x-..u-", default: "..x-..x-..x-..u-"}    # v004: D2 on the drop downbeat completes V->VI
           end: ["x-------........", ""]
     kick:
       instrument: drums/kick_main
@@ -110,7 +110,9 @@ arrangement:
     - {target: kick.lpf, curve: exp, points: [["intro:4", 300], ["intro:end", 900], ["build:0", 18000], ["build:2", 18000], ["build:3", 600], ["drop:0", 18000]]}
     # v003: thin kick (HPF) in intro/build so the sub first arrives at the drop
     - {target: kick.hpf, curve: exp, points: [["intro:0", 160], ["intro:end", 140], ["build:0", 70], ["build:end", 70], ["drop:0", 20]]}
-    # v002 (C7): narrow the pad into the drop, then open wide
-    - {target: pad.width, points: [["build:2", 1.3], ["build:end", 0.5], ["drop:0", 1.3]]}
+    # v004 (v003-C2): bar 11 bass keeps its root but loses the sub (the vacuum stays)
+    - {target: bass.hpf, curve: exp, points: [["build:3", 20], ["build:3", 160], ["build:end", 160], ["drop:0", 20]]}
+    # v004 (v003-C8): narrow the whole music group into the drop, then open (replaces pad-only width)
+    - {target: music.width, points: [["build:2", 1.0], ["build:end", 0.6], ["drop:0", 1.15]]}
     - {target: pluck.send.reverb, points: [["build:2", -12], ["build:end", -3]]}
     - {target: music.hpf, curve: exp, points: [["build:2", 20], ["build:end", 380], ["drop:0", 20]]}

@@ -43,3 +43,18 @@
   Stage2 drop のみ低コストレンダ + Layer 2、Stage3 Critic（別エージェント）用の比較資料、Stage4 人間 A/B シート。
 - 制約: 単一重み付きスコアで選抜しない。各段は「足切り + 多様性（特徴空間で距離の離れたものを残す）」。
 - 状態: open（Phase 8。人間の A/B データが溜まってから）
+
+## T-015 Shared / bass-anchored chord voicing across tracks
+- 目的: 同じ和声を担う複数トラック（pad, chords）が別々に探索され、同時に短 2 度を鳴らす問題（critique v003-C5）を構造的に防ぐ。
+- 背景: `theory.voice_chord` はトラック単位。track_001 では range 下限の調整で回避したが恒久策ではない。
+- 出力: chords content に `voicing_group: <name>`（同名トラックは同一ボイシングを共有、または上下に分担）と
+  `root_in_bass: true`（最低音をコードの bass に固定）。`evaluation/rules.py` にトラック間の短 2 度検出（warn）。
+- 完了条件: track_001 の range を [C#3, A4] に戻しても drop 頭の短 2 度が 0。
+- テスト方法: 2 トラックが同じ voicing_group を持つ spec で、同時発音の短 2 度 = 0、最低音 pc = コードの bass。
+- 状態: open
+
+## T-016 kick/bass overlap diagnostics per section
+- 目的: `low_overlap_ratio` が曲全体で 1 値のため、どの区間・どのノートが衝突しているか分からない（EXP-006）。
+- 出力: analysis の stems.kick_bass にセクション別・小節別の overlap と上位 5 衝突箇所（beat）。report.md に表示。
+- 完了条件: track_001 v005 で区間別の値が出て、最大区間が特定できる。
+- 状態: open

@@ -88,3 +88,42 @@
 - result: 5 候補（original, 連打で閉じる, アンカー伸長 6-2-3-3-2, 均等 3-3-3-3-4, 下で閉じる 2-4-2-4-4）。
 - subjective: 人間の聴取待ち（SHEET.md）。
 - next: `python -m music_agent prefer ...` で選択を記録 → 選ばれた motif を本線へ。
+
+## EXP-005 track_001 v004 — 批評ループ 2 周目（critiques/track_001_v003.md を反映）
+
+- 検証（Critic による v001 指摘の達成判定）: C1/C5/C9 達成、C8 ほぼ達成、C2/C3/C4 部分達成、C6/C7/C10 未達。
+  後退: 全帯域幅指標、lead 存在感（v003 のキッククリップで −0.6 dB）、kick/bass 重なり、低域ステレオ、intro→drop の音域上昇（+13 → +1.4 半音）。
+- hypothesis（全 8 件採用）:
+  - C1 **マスターのバスコンプ（−14 dB, 2:1）が最も大きい区間ほど潰し、アレンジで作った「溜め・真空・解放」を消していた**
+    （pre-master では drop−build +2.25 dB、bar 11 −5.3 dB あったのに、出力では +1.13 / −0.14）→ 閾値 −6 dB / 1.6:1。
+  - C2 偽終止が聞こえない（bar 11 にベースの C# 無し、drop 頭の最低音が C#3/D3 の半音）→ bar 11 に HPF したベース C#2（サブの真空は維持）、drop 1 拍目に D2。
+  - C3 キックが支配的（キック単体 −5.8 LUFS vs 他の総和 −10.2）→ kick −2.5 dB + 3 kHz −4 dB、bass +1 dB。
+  - C4 intro が drop の 3 小節を完全先取り → intro は上向きターンとピックアップを出さない（情報の温存）、A5 頂点を 1.5 拍。
+  - C5 pad と chords が別々にボイシングされ drop 頭で短 2 度 ×2 → range 下限を D3 に（Critic がエンジンをメモリ上で試算済み）。
+  - C6 intro bar 7 が build より大きい → intro のベースを撤去（build 頭から）。
+  - C7 透明感不足は LPF ではなく空気帯域の音源不足（v001-C6 の仮説は外れ）→ music グループに 7 kHz high shelf +3 dB、reverb damping 0.35。
+  - C8 幅の演出が pad だけ → music グループ全体の width を build 末で 0.6 → drop 1.15、lead width 1.2。
+- metrics (v003 → v004): bar11−build −0.14 → **−2.90**、drop−build +1.23 → **+1.70**、intro→drop +3.26 → **+6.08**、GR 4.47 → **4.31**、
+  幅(>300 Hz) drop−build +1.28 → **+3.66**、high−lowmid −16.9 → −15.4、lead 3.18 → 3.55、overlap 0.342 → 0.358（警告）。
+- 新たに発見（ステム別の小節ラウドネス調査）: **build bar 8 だけ −8.9 LUFS と突出**。原因はベースの音色で、saw 層の
+  `unison: 2, detune: 0.06` が約 0.25 Hz のうなり（4 秒周期）を生み、全音符ベースが位相次第で ±6 dB 揺れていた。
+  → これまでの全版でベースの音量が小節ごとに不安定だった可能性。
+- decision: keep（v005 でベース修正）。
+
+## EXP-006 track_001 v005 — ベースのうなり修正
+
+- hypothesis: ベースの saw を単一オシレータにすれば小節間の音量揺れが消える。
+- change: `bass/sub_saw_bass` saw 層 unison 2 → 1、layer gain +3 dB（1 声分の補償）。
+- result: build の小節ラウドネス −10.4 / −9.9 / −10.5 / −11.8 と平坦化。drop 全小節 −8.8〜−9.1。
+- metrics: section LUFS intro −14.0 / build −10.6 / drop −8.8 / end −11.0（intro→drop +5.2, build→drop **+1.8**）、GR 4.95 dB、crest 11.1 dB、
+  TP −1.04 dBTP、幅(>300 Hz) drop−build +3.56 dB / drop−bar11 +2.88 dB、lead 存在感 +3.5 dB、high−lowmid −15.6 dB。
+  調推定 C# minor 0.780 / **F# minor 0.774（2 位）** — 差は 0.006。bar 11 の C# ベースと loop 内の C#m7 による。
+- 未達・判断保留（Claude の判断）:
+  - bar 11 の音量落差 −1.3 LU（Critic 基準 −3 LU）: スネアロールとライザーの頂点の小節なので音量の落差までは求めない。
+    **サブ帯域の真空（lowmid 比 −40 dB）は達成**しており、これ以上は指標への過適合と判断。聴取で確認する。
+  - kick/bass 重なり 0.39（警告、しきい値 0.35）、kick/bass 低域比 9.7 dB（Critic 目安 4〜6）: ベースを上げても比はほぼ動かない
+    （キック中心の指標）。音量バランスは聴取判断が必要。解析器の区間別内訳を T-016 に。
+  - 高域 −15.6 dB（Critic 目安 −14）。
+- subjective: 聴取なし・推定。
+- decision: **本線 = v005**。
+- next: 人間の聴取（v001 と v005 の比較、motif 候補の選択）→ 選好に基づき次の周回。

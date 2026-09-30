@@ -23,7 +23,7 @@ melody:
           - {bar: 4, motif: a}
           - {bar: 5, motif: a, ops: [{transpose: -1, keep: [0]}, {set: {3: 4, 4: 7}}]}  # A'' turns upward
           # v002 (C1): climax A5 on the downbeat, above anything in the build; motif contour kept
-          - {bar: 6, notes: "10:3! 8:3 5:4 7:2 8:4"}             # B: climax
+          - {bar: 6, notes: "10:6! 8:2 5:4 7:2 8:2"}             # B: climax A5 held 1.5 beats (v004, v003-C4)
           - {bar: 7, notes: "7#:3 5:3 2:4 5:2 7#:4"}             # leading tone over V
         end:
           - {bar: 0, notes: "8:32!"}                             # resolution F#5, held through the 2-bar ending
@@ -36,10 +36,11 @@ melody:
           - {bar: 1, motif: a, ops: [{take: [0, 3]}, {transpose: -1, keep: [0]}, {vel: 0.8}]}
           - {bar: 2, motif: a, ops: [{take: [0, 3]}, {vel: 0.8}]}
           - {bar: 3, notes: "5:3 4:3 2:10"}
-          - {bar: 4, motif: a}
+          # v004 (critique v003-C4): the intro withholds the upturn and the pickup — the drop is the first full reveal
+          - {bar: 4, notes: "7:3 5:3 3:10"}
           - {bar: 5, motif: a, ops: [{transpose: -1, keep: [0]}]}
-          - {bar: 6, motif: a}
-          - {bar: 7, notes: "5:3 4:3 2:6 r:2 3:1 4:1"}
+          - {bar: 6, notes: "7:3 5:3 3:4 4:2 3:4"}
+          - {bar: 7, notes: "5:3 4:3 2:10"}
         build:
           - {bar: 0, motif: frag, repeat: 2}                      # fragment, twice per bar
           - {bar: 1, motif: frag, repeat: 2}
