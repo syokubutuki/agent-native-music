@@ -16,8 +16,8 @@ Format: see `AGENTS.md`. One file per task. Status line at the bottom of each fi
 | T-012 | Synthesis performance (unison filtering) | **open** |
 | T-013 | Per-note synth parameter automation | **open** |
 | T-014 | Staged search 128 → 32 → 8 → 3 | **open** |
-| T-015 | Shared / bass-anchored chord voicing across tracks | **open** |
-| T-016 | kick/bass overlap diagnostics per section | **open** |
+| T-015 | Shared / bass-anchored chord voicing across tracks | **open** → spec: `specs/T-015-shared-voicing.md` |
+| T-016 | kick/bass overlap diagnostics per section | **open** → spec: `specs/T-016-kick-bass-diagnostics.md` |
 
 Codex was not available in the initial cloud session (DECISIONS.md D-007); T-001–T-007 were specified
 here first and then implemented by Claude under the same acceptance criteria.
