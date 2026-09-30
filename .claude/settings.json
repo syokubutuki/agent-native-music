@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node tools/codex-worker.mjs:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)"
+    ]
+  }
+}
