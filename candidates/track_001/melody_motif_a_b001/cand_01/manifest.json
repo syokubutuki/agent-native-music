@@ -1,0 +1,74 @@
+{
+ "render_id": "cand_01",
+ "created_utc": "2026-09-30T06:28:26+00:00",
+ "command": "/home/user/agent-native-music/src/music_agent/__main__.py candidates songs/track_001 --motif a --n 5 --seed 7 --sections drop --name melody_motif_a_b001",
+ "git": {
+  "commit": "7d65286cd761487256aac01dfa3790bf3c5651c7",
+  "branch": "claude/determined-lovelace-7itfke",
+  "dirty": true
+ },
+ "spec_path": "songs/track_001/song.yaml",
+ "spec_hash": "59d9ae4ad6ff89ff",
+ "source_files": {
+  "songs/track_001/song.yaml": "0d5b1c1938af66a6",
+  "songs/track_001/harmony.yaml": "7712ea24ad075c7a",
+  "songs/track_001/melody.yaml": "2bcd1e5d5ad15c14",
+  "songs/track_001/arrangement.yaml": "60a1536a504ec7aa",
+  "songs/track_001/mix.yaml": "ea0e1569dba6348a",
+  "candidates/track_001/melody_motif_a_b001/overlay_01.yaml": "b53e3828ef1649aa",
+  "instruments/bass/sub_saw_bass.yaml": "8a4607267d9e1593",
+  "instruments/drums/clap_main.yaml": "b489bf50f025b11a",
+  "instruments/drums/crash.yaml": "28863565b4d9d915",
+  "instruments/drums/hat_closed.yaml": "353fc8ddef013c2e",
+  "instruments/drums/hat_open.yaml": "860dd5ecc126d71a",
+  "instruments/drums/kick_main.yaml": "fb75088b00f4e636",
+  "instruments/drums/snare_roll.yaml": "f93c58f5873e28c4",
+  "instruments/fx/impact.yaml": "8e65b9ac7ef93a59",
+  "instruments/fx/reverse_crash.yaml": "effdf3cb7e7fc5b0",
+  "instruments/fx/riser.yaml": "7e7dd705ee12873e",
+  "instruments/keys/glass_pluck.yaml": "bc74a1f16df14d24",
+  "instruments/keys/vocal_sketch.yaml": "50e75ea5d1ab8ed4",
+  "instruments/lead/supersaw_lead.yaml": "7acf477ad4c6dc8d",
+  "instruments/pad/saw_chords.yaml": "e39705c3dbfb3829",
+  "instruments/pad/warm_pad.yaml": "7b3b8d3d0a000466"
+ },
+ "seed": 1001,
+ "python": "3.11.15",
+ "platform": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+ "libs": {
+  "numpy": "2.4.6",
+  "scipy": "1.17.1",
+  "numba": "0.67.0",
+  "pedalboard": "0.9.25",
+  "soundfile": "0.14.0",
+  "mido": "1.3.3",
+  "pyloudnorm": "0.2.0",
+  "PyYAML": "6.0.1"
+ },
+ "overlays": [
+  "/home/user/agent-native-music/candidates/track_001/melody_motif_a_b001/overlay_01.yaml"
+ ],
+ "sample_rate": 44100,
+ "mix": {
+  "pre_limiter_lufs": -11.906736613934603,
+  "master_gain_db": 2.1078550542890806,
+  "limiter_max_gr_db": 4.475787825249987,
+  "final_lufs": -10.556761191872742,
+  "final_true_peak_db": -1.0433850653994345
+ },
+ "timings_sec": {
+  "realize": 0.06,
+  "synthesis": 10.38,
+  "mix": 7.66,
+  "analysis": 0.4,
+  "total": 19.02
+ },
+ "findings_summary": {
+  "error": 0,
+  "warn": 1,
+  "info": 7
+ },
+ "crop_sections": [
+  "drop"
+ ]
+}

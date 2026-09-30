@@ -109,6 +109,17 @@ def motif_candidates(song: str | Path, motif: str, n: int, seed: int, part: str 
     base_notes = parse_notes(src)
     rng = np.random.default_rng(seed)
     out, seen = [], set()
+
+    def _problems(score, data) -> set[tuple[str, str]]:
+        return {(f["id"], f["where"]) for f in symbolic_checks(score, data)
+                if f["level"] in ("error", "warn") and f["id"].startswith(("melody", "range"))}
+
+    # Only problems a candidate *introduces* count (the original may already carry warnings
+    # in other parts, e.g. a topline range note).
+    base_score = realize(spec)
+    baseline_problems = _problems(base_score, spec.data)
+    base_lead = [x.pitch for t in base_score.tracks if t.name == part for x in t.notes]
+    base_diag = melodic_diagnostics(base_lead) if base_lead else {"unrecovered_leaps": 0, "range": 12}
     if include_original:
         out.append({"motif": src, "ops": ["original"], "overlay": {}})
         seen.add(motif_to_str(base_notes))
@@ -130,11 +141,13 @@ def motif_candidates(song: str | Path, motif: str, n: int, seed: int, part: str 
             score = realize(trial)
         except Exception:
             continue
-        findings = [f for f in symbolic_checks(score, trial.data) if f["level"] in ("error", "warn")
-                    and f["id"].startswith(("melody", "range"))]
+        findings = _problems(score, trial.data) - baseline_problems
         lead = [x for t in score.tracks if t.name == part for x in t.notes]
         diag = melodic_diagnostics([x.pitch for x in lead]) if lead else {}
-        if findings or diag.get("unrecovered_leaps", 0) > 2 or diag.get("range", 0) > 16:
+        # hard constraints relative to the original: no new clashes/range errors,
+        # no more than one extra unrecovered leap, range may grow by at most a whole tone
+        if (findings or diag.get("unrecovered_leaps", 0) > base_diag["unrecovered_leaps"] + 1
+                or diag.get("range", 0) > max(16, base_diag["range"] + 2)):
             continue
         seen.add(s)
         out.append({"motif": s, "ops": lineage, "overlay": overlay, "diagnostics": diag})

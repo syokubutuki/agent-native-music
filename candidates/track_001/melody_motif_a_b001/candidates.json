@@ -1,0 +1,88 @@
+[
+ {
+  "motif": "7:3 5:3 3:4 4:2 5:4",
+  "ops": [
+   "original"
+  ],
+  "overlay": {}
+ },
+ {
+  "motif": "7:3 5:3 3:4 3:2 3:4",
+  "ops": [
+   "contour",
+   "neighbor[4]"
+  ],
+  "overlay": {
+   "melody": {
+    "motifs": {
+     "a": "7:3 5:3 3:4 3:2 3:4"
+    }
+   }
+  },
+  "diagnostics": {
+   "range": 13,
+   "distinct": 8,
+   "step_ratio": 0.34210526315789475,
+   "unrecovered_leaps": 6
+  }
+ },
+ {
+  "motif": "7:6 5:2 3:3 4:3 5:2",
+  "ops": [
+   "rhythm(6 2 3 3 2)"
+  ],
+  "overlay": {
+   "melody": {
+    "motifs": {
+     "a": "7:6 5:2 3:3 4:3 5:2"
+    }
+   }
+  },
+  "diagnostics": {
+   "range": 13,
+   "distinct": 8,
+   "step_ratio": 0.3684210526315789,
+   "unrecovered_leaps": 5
+  }
+ },
+ {
+  "motif": "7:3 5:3 3:3 4:3 5:4",
+  "ops": [
+   "rhythm(4 2 2 4 4)",
+   "rhythm(3 3 3 3 4)"
+  ],
+  "overlay": {
+   "melody": {
+    "motifs": {
+     "a": "7:3 5:3 3:3 4:3 5:4"
+    }
+   }
+  },
+  "diagnostics": {
+   "range": 13,
+   "distinct": 8,
+   "step_ratio": 0.3684210526315789,
+   "unrecovered_leaps": 5
+  }
+ },
+ {
+  "motif": "7:2 5:4 3:2 4:4 3:4",
+  "ops": [
+   "rhythm(2 4 2 4 4)",
+   "tail"
+  ],
+  "overlay": {
+   "melody": {
+    "motifs": {
+     "a": "7:2 5:4 3:2 4:4 3:4"
+    }
+   }
+  },
+  "diagnostics": {
+   "range": 13,
+   "distinct": 8,
+   "step_ratio": 0.34210526315789475,
+   "unrecovered_leaps": 6
+  }
+ }
+]
