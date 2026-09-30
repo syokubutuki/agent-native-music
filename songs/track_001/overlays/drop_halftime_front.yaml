@@ -1,0 +1,6 @@
+# critique v007-C4: drop bars 12-15 half-time feel (clap only on beat 3, no open hat) — sinks heavier,
+# the normal groove opens at bar 16 with the crash (gloom -> release arc inside the drop)
+arrangement:
+  tracks:
+    clap: {content: {patterns: {drop: {"0-3": "........x.......", default: "....x.......x..."}}}}
+    ohat: {content: {patterns: {drop: {"0-3": "", default: "..x...x...x...x."}}}}

@@ -1,0 +1,5 @@
+# critique v007-C8: second half of the drop opens on Dmaj7/F# (b6 over the tonic bass) — restores the
+# colour the hook had when the human chose cand_04 (9, maj7, 6 over D), keeping the lament bass on F#
+harmony:
+  sections:
+    drop: [F#m, F#m7/E, Dmaj7, "C#sus4 C#", Dmaj7/F#, F#m7/E, Bm7, "C#sus4 C#"]

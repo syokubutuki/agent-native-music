@@ -8,9 +8,11 @@
 # Bm7 (iv) replaces VI in the second half for the darkest colour before the climax.
 harmony:
   progressions:
-    lament: [F#m, C#m/E, Dmaj7, Bm7]
+    # v008 (critique v007-C2): C#m/E -> F#m7/E — the classic lament's second chord: the upper voices
+    # hold A C# F# while only the bass walks F#-E-D; the minor third never disappears.
+    lament: [F#m, F#m7/E, Dmaj7, Bm7]
   sections:
     intro: {progression: lament, repeat: 2}
     build: [Dmaj7, Bm7, C#m7, "C#sus4 C#"]
-    drop:  [F#m, C#m/E, Dmaj7, "C#sus4 C#", F#m, C#m/E, Bm7, "C#sus4 C#"]
+    drop:  [F#m, F#m7/E, Dmaj7, "C#sus4 C#", F#m, F#m7/E, Bm7, "C#sus4 C#"]
     end:   [F#m, F#m]     # merged into one 2-bar tonic event

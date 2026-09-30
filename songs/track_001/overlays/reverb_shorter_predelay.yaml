@@ -1,0 +1,7 @@
+# critique v007-C7: shorter tail, longer predelay, drier harmony (wetness concentrated in the air layer)
+mix:
+  tracks:
+    pad: {sends: {reverb: -12}}
+  returns:
+    reverb:
+      chain: [{type: reverb, decay: 3.4, predelay_ms: 60, damping: 0.35, hp: 300, lp: 12000, width: 1.0}]

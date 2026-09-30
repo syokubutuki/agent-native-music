@@ -36,18 +36,18 @@ arrangement:
         patterns:
           intro: "x---------------"
           build: {"3": "x-------x-------", default: "x---------------"}   # C#sus4 -> C# re-voiced (C1)
-          drop: "x---------------"
+          drop: {"3,7": "x-------x-------", default: "x---------------"}   # re-voice C#sus4 -> C# (v008, v007-C1)
           end: ["x---------------", "----------------"]                     # one held tonic chord
     shimmer:           # v006: transparent top layer (direction "陰鬱だが透明感")
       instrument: pad/air_shimmer
-      role: texture
+      role: air            # air layer: above every melodic range rule
       content:
         type: chords
-        range: [C#6, D7]     # above the lead register
-        voices: 3
+        range: [C#7, A7]     # v008 (v007-C5): fundamentals 2.2-3.5 kHz, above the lead's harmonics
+        voices: 2
         patterns:          # not in the drop: it masked the lead there (batch sound_shimmer_b001)
           intro: {"4-7": "x---------------", default: ""}
-          build: "x---------------"
+          build: {"0-1": "", "3": "x-------x-------", default: "x---------------"}   # enters late in the build (v007-C6)
           end: ["x---------------", "----------------"]
     chords:
       instrument: pad/saw_chords
@@ -56,7 +56,7 @@ arrangement:
         type: chords
         range: [D3, A4]
         voices: 4
-        patterns: {drop: "x---------------", end: ["x---------------", "--------........"]}
+        patterns: {drop: {"3,7": "x-------x-------", default: "x---------------"}, end: ["x---------------", "--------........"]}
     bass:
       instrument: bass/sub_saw_bass
       role: bass
@@ -64,7 +64,7 @@ arrangement:
         type: bass
         range: [G#1, G2]        # v002 (C5): D2-E2-F#2 climbs instead of dropping to F#1
         patterns:
-          intro: ""                                                        # v004 (v003-C6): bass first enters at the build
+          intro: {"4-7": "x---------------", default: ""}                 # v008 (v007-C2): sub-less bass so the lament F#-E-D-B is heard
           build: {"0-1": "x---------------", "2": "x-------........", "3": "x-------x-------"}   # v004 (v003-C2): C# root in bar 11 (HPF, no sub)
           drop: {"0": "x.x-..x-..x-..u-", default: "..x-..x-..x-..u-"}    # v004: D2 on the drop downbeat completes V->VI
           end: ["x-------........", ""]
@@ -116,13 +116,15 @@ arrangement:
       content: {type: fx, events: [{at: "drop:0", beats: 4}, {at: "end:0", beats: 4, vel: 0.4}]}
 
   automation:
-    - {target: pluck.lpf, curve: exp, points: [["intro:0", 1100], ["intro:4", 1700], ["intro:end", 3200], ["build:end", 14000]]}
+    - {target: pluck.lpf, curve: exp, points: [["intro:0", 1800], ["intro:4", 2000], ["intro:end", 3200], ["build:end", 14000]]}
     - {target: pad.lpf, curve: exp, points: [["intro:0", 1400], ["build:0", 2400], ["build:end", 8000]]}
     - {target: kick.lpf, curve: exp, points: [["intro:4", 300], ["intro:end", 900], ["build:0", 18000], ["build:2", 18000], ["build:3", 600], ["drop:0", 18000]]}
     # v003: thin kick (HPF) in intro/build so the sub first arrives at the drop
     - {target: kick.hpf, curve: exp, points: [["intro:0", 160], ["intro:end", 140], ["build:0", 70], ["build:end", 70], ["drop:0", 20]]}
     # v004 (v003-C2): bar 11 bass keeps its root but loses the sub (the vacuum stays)
-    - {target: bass.hpf, curve: exp, points: [["build:3", 20], ["build:3", 160], ["build:end", 160], ["drop:0", 20]]}
+    # v009: the bass stays sub-less (HPF) through intro AND build — the sub first arrives at the drop,
+    # like the kick (bar 8 was the loudest build bar because the sub entered there)
+    - {target: bass.hpf, curve: exp, points: [["intro:4", 160], ["build:end", 160], ["drop:0", 20]]}
     # v004 (v003-C8): narrow the whole music group into the drop, then open (replaces pad-only width)
     - {target: music.width, points: [["build:2", 1.0], ["build:end", 0.6], ["drop:0", 1.15]]}
     - {target: pluck.send.reverb, points: [["build:2", -12], ["build:end", -3]]}

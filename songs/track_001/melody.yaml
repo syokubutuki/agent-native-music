@@ -18,12 +18,12 @@ melody:
         drop:
           # arrival: leading tone E#5 (end of build) resolves up to the tonic F#5 over F#m (V -> i)
           - {bar: 0, motif: a, ops: [{set: {0: 8}}, {accent: [0]}]}   # F#5 C#5 A4 B4 A4
-          - {bar: 1, notes: "7:2 5:4 3:2 2:8"}                         # question: A -> G# appoggiatura (b6 -> 5 over C#m/E)
+          - {bar: 1, notes: "7:2 5:4 3:2 2:8"}                         # question: A -> G# (3 -> 9 over F#m7/E)
           - {bar: 2, motif: a}                                        # hook over Dmaj7 (9, maj7, 5, 6, 5)
           - {bar: 3, notes: "8:6 8:2 7#:4 5:4"}                       # sus4 F# -> E# as the chord turns major
           - {bar: 4, motif: a}                                        # hook over F#m (b7 anchor: darker)
           - {bar: 5, notes: "7:2 5:4 7:2 9:8"}                        # rises instead of sinking: G#5 held
-          - {bar: 6, notes: "10:6! 8:2 7:4 5:4"}                      # climax A5 over Bm7 (b7, 5, 11, 9)
+          - {bar: 6, notes: "10:6! 8:2 6:4 5:4"}                      # climax A5, then the minor sigh D5 -> C#5 (b6 -> 5; v008, v007-C3)
           - {bar: 7, notes: "8:4 9:2 8:2 7#:8"}                       # leading tone held over V
         end:
           - {bar: 0, notes: "8:32!"}                                  # F#5, held through the 2-bar ending
@@ -34,14 +34,14 @@ melody:
           - {bar: 0, motif: a, ops: [{take: [0, 3]}, {vel: 0.8}]}     # E C# A
           - {bar: 1, notes: "7:2? 5:4? 2:6?"}                          # E C# G#
           - {bar: 2, motif: a, ops: [{take: [0, 3]}, {vel: 0.8}]}
-          - {bar: 3, notes: "5:4 4:4 3:8"}                             # C# B A over Bm7 (9, root, b7)
+          - {bar: 3, notes: "6:4 5:4 3:8"}                             # D C# A: first b6 -> 5 sigh, answered at the drop climax (v008)
           - {bar: 4, notes: "7:2 5:4 3:10"}                            # question, held
-          - {bar: 5, notes: "7:2 5:4 3:2 2:8"}                         # A -> G# sigh
+          - {bar: 5, notes: "7:2 5:4 2:10"}                            # E C# G# (the A -> G# sigh is saved for the drop; v008, v007-C8)
           - {bar: 6, notes: "7:2 5:4 3:2 4:8"}                         # stops on B: the hook is withheld
           - {bar: 7, notes: "5:4 4:4 5:8"}                             # suspended C# (9 of Bm7) into the build
         build:
-          - {bar: 0, motif: frag, repeat: 2}                            # fragment, twice per bar
-          - {bar: 1, motif: frag, repeat: 2}
+          - {bar: 0, motif: frag, repeat: 2, ops: [{vel: 0.75}]}        # fragment, twice per bar (softer start: v008, v007-C6)
+          - {bar: 1, motif: frag, repeat: 2, ops: [{vel: 0.75}]}
           - {bar: 2, notes: "2:2 3:2 5:2 7:2 3:2 5:2 7:2 8:2"}         # climbing 8ths over C#m7 -> F# (sus4 of C#)
           - {bar: 3, notes: "8:2 8:2 8:2 8:2! 7#:2 7#:2 7#:2! r:2"}    # sus4 -> 3 in the melody
     topline:         # future vocal line: G#4..E5 core, F#4/E#4 low cadence, syllable-friendly 8ths

@@ -1,0 +1,44 @@
+[
+ {
+  "id": "melody.nonchord_strong",
+  "level": "info",
+  "message": "B4 held 1 beats on strong beat over F#m (tension)",
+  "where": "lead@beat50"
+ },
+ {
+  "id": "melody.nonchord_strong",
+  "level": "info",
+  "message": "B4 held 1 beats on strong beat over Dmaj7 (tension)",
+  "where": "lead@beat58"
+ },
+ {
+  "id": "melody.nonchord_strong",
+  "level": "info",
+  "message": "E5 held 0.5 beats on strong beat over F#m (tension)",
+  "where": "lead@beat64"
+ },
+ {
+  "id": "melody.nonchord_strong",
+  "level": "info",
+  "message": "B4 held 1 beats on strong beat over F#m (tension)",
+  "where": "lead@beat66"
+ },
+ {
+  "id": "melody.nonchord_strong",
+  "level": "info",
+  "message": "E5 held 1.5 beats on strong beat over Bm7 (tension)",
+  "where": "topline@beat73"
+ },
+ {
+  "id": "motif.ok",
+  "level": "info",
+  "message": "Motifs repeated+transformed: ['a', 'frag'] (uses: {'a': 5, 'frag': 2})",
+  "where": "melody"
+ },
+ {
+  "id": "mix.kick_bass_overlap",
+  "level": "warn",
+  "message": "Kick/bass low-band overlap 0.37",
+  "where": "kick,bass"
+ }
+]
