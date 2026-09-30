@@ -70,3 +70,15 @@ test("continue without a prior thread fails clearly", () => {
   assert.equal(r.code, 1);
   assert.match(r.err, /no previous thread/);
 });
+
+test("unavailable model or effort fails before starting a turn", () => {
+  const dir = repo();
+  let r = run(dir, "run", "--task", "x", "--model", "gpt-nope");
+  assert.equal(r.code, 1);
+  assert.match(r.out, /model "gpt-nope" is not available.*Available: fake-model/);
+  assert.match(r.out, /turn: -/);
+  r = run(dir, "run", "--task", "x", "--model", "fake-model", "--effort", "ultra");
+  assert.match(r.out, /effort "ultra" is not supported by fake-model/);
+  r = run(dir, "run", "--task", "ok", "--model", "fake-model", "--effort", "high");
+  assert.equal(r.code, 0, r.err);
+});

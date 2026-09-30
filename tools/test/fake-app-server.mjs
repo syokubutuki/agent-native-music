@@ -59,6 +59,8 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       if (text === "HANG") return;
       return runTurn(msg.params.threadId, turnId, `${text} effort=${msg.params.effort}`, process.cwd());
     }
+    case "model/list":
+      return reply({ data: [{ id: "fake-model", model: "fake-model", isDefault: true, supportedReasoningEfforts: [{ reasoningEffort: "low" }, { reasoningEffort: "high" }] }], nextCursor: null });
     case "turn/interrupt":
       reply({});
       return send({ method: "turn/completed", params: { threadId: msg.params.threadId, turn: { id: msg.params.turnId, status: "interrupted", items: [] } } });

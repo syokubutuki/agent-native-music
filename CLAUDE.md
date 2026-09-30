@@ -29,7 +29,7 @@
 
 詳細なログが必要なときだけ `node tools/codex-worker.mjs log` のパスの JSONL を読む（大きいので grep で絞る）。
 
-### エフォート選択（モデル既定: gpt-6.1-sol / medium）
+### エフォート選択（モデル: `.codex-worker/config.local.json` の `model`、未指定ならアカウント既定 / effort 既定: medium）
 | effort | 使う場面 |
 |---|---|
 | `low` | 機械的な変更（リネーム、定型コード、既存パターンの横展開、軽微なレビュー指摘の修正） |
@@ -45,7 +45,8 @@
 - `continue [--thread <id>] --task ...` 直前（または指定）スレッドに追加指示
 - `status` 最近のスレッド・ターン一覧 / `log` 最新ログのパス / `models` 利用可能モデルとエフォート
 - 共通: `--effort` `--model` `--timeout <秒>`（既定 1800）`--quiet`
-- 設定: `tools/codex-worker.config.json`（共有）、`.codex-worker/config.local.json`（個人上書き、git 管理外）
+- 設定: `tools/codex-worker.config.json`（共有）、`.codex-worker/config.local.json`（個人上書き、git 管理外。使えるモデルはアカウントごとに異なるので `model` はここで指定）
+- 指定モデル/エフォートがアカウントで使えない場合、turn 開始前に使用可能な一覧付きでエラー終了する
 - 終了コード: 0 完了 / 1 失敗・エラー / 2 タイムアウト（turn は interrupt 済み）
 
 Codex は `danger-full-access` + `approvalPolicy: never` で動き、来た承認要求はすべて自動承認する。

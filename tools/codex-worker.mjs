@@ -91,7 +91,10 @@ class AppServer {
     // On Windows npm installs `codex` as a .cmd shim, which Node can only launch through a shell.
     this.useShell = process.platform === "win32" && !/\.exe$/i.test(bin) && bin !== "node";
     const args = [...extra, "app-server"].map((a) => (this.useShell && /\s/.test(a) ? `"${a}"` : a));
-    this.proc = spawn(bin, args, { cwd: this.cwd, stdio: ["pipe", "pipe", "pipe"], shell: this.useShell, windowsHide: true });
+    const spawnOpts = { cwd: this.cwd, stdio: ["pipe", "pipe", "pipe"], windowsHide: true };
+    this.proc = this.useShell
+      ? spawn([bin, ...args].join(" "), { ...spawnOpts, shell: true })
+      : spawn(bin, args, spawnOpts);
     this.exitPromise = new Promise((resolve) => {
       this.proc.on("exit", (code, signal) => {
         this.exited = true;
@@ -292,6 +295,16 @@ async function runTurn({ mode, task, threadId, opts, cfg, root, state }) {
     const init = await server.initialize();
     emit(`app-server ready (${init.userAgent})`);
 
+    const model = opts.model ?? cfg.model;
+    if (model) {
+      const available = await fetchModels(server);
+      const found = available.find((m) => m.id === model || m.model === model);
+      if (!found) throw new Error(`model "${model}" is not available for this Codex account. Available: ${available.map((m) => m.id).join(", ")}`);
+      const effort = opts.effort ?? cfg.effort;
+      const efforts = (found.supportedReasoningEfforts ?? []).map((e) => e.reasoningEffort ?? e);
+      if (effort && efforts.length && !efforts.includes(effort)) throw new Error(`effort "${effort}" is not supported by ${model}. Supported: ${efforts.join(", ")}`);
+    }
+
     const threadParams = {
       cwd: root,
       sandbox: cfg.sandbox,
@@ -363,7 +376,7 @@ async function runTurn({ mode, task, threadId, opts, cfg, root, state }) {
   if (result.error) out.push(`error: ${result.error}`);
   if (result.turn?.error) out.push(`turn error: ${result.turn.error.message}`);
   if (turn.retries) out.push(`transient retries: ${turn.retries}`);
-  for (const e of turn.errors) out.push(`stream error: ${truncate(e, 300)}`);
+  for (const e of turn.errors.filter((e) => e !== result.turn?.error?.message)) out.push(`stream error: ${truncate(e, 300)}`);
   if (turn.files.size) out.push("files changed by codex:\n" + [...turn.files].map(([f, k]) => `  ${k} ${path.relative(root, f) || f}`).join("\n"));
   const failed = turn.commands.filter((c) => c.exitCode !== 0 && c.exitCode !== null && c.exitCode !== undefined);
   out.push(`commands: ${turn.commands.length} run, ${failed.length} non-zero exit`);
@@ -379,21 +392,27 @@ async function runTurn({ mode, task, threadId, opts, cfg, root, state }) {
 // ---------------------------------------------------------------------------
 // Commands
 
+async function fetchModels(server) {
+  const models = [];
+  let cursor = null;
+  do {
+    const res = await server.request("model/list", { cursor, limit: 100 });
+    models.push(...(res.data ?? []));
+    cursor = res.nextCursor ?? null;
+  } while (cursor);
+  return models;
+}
+
 async function listModels(root) {
   const logStream = fs.createWriteStream(os.devNull);
   const server = new AppServer({ cwd: root, logStream, onNotification: () => {}, onServerRequest: (m) => { throw new Error(m); } });
   server.start();
   try {
     await server.initialize();
-    let cursor = null;
-    do {
-      const res = await server.request("model/list", { cursor, limit: 100 });
-      for (const m of res.data ?? []) {
-        const efforts = (m.supportedReasoningEfforts ?? []).map((e) => e.reasoningEffort ?? e).join(",");
-        process.stdout.write(`${m.id}${m.isDefault ? " (default)" : ""}  efforts=[${efforts}] default=${m.defaultReasoningEffort}  ${m.displayName ?? ""}\n`);
-      }
-      cursor = res.nextCursor ?? null;
-    } while (cursor);
+    for (const m of await fetchModels(server)) {
+      const efforts = (m.supportedReasoningEfforts ?? []).map((e) => e.reasoningEffort ?? e).join(",");
+      process.stdout.write(`${m.id}${m.isDefault ? " (default)" : ""}  efforts=[${efforts}] default=${m.defaultReasoningEffort}  ${m.displayName ?? ""}\n`);
+    }
   } finally {
     await server.close();
   }
