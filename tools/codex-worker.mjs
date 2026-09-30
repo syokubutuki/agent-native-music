@@ -18,6 +18,7 @@
 import { spawn, execFileSync } from "node:child_process";
 import { createInterface } from "node:readline";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -87,7 +88,10 @@ class AppServer {
   start() {
     const bin = process.env.CODEX_WORKER_BIN || "codex";
     const extra = process.env.CODEX_WORKER_BIN_ARGS ? JSON.parse(process.env.CODEX_WORKER_BIN_ARGS) : [];
-    this.proc = spawn(bin, [...extra, "app-server"], { cwd: this.cwd, stdio: ["pipe", "pipe", "pipe"] });
+    // On Windows npm installs `codex` as a .cmd shim, which Node can only launch through a shell.
+    this.useShell = process.platform === "win32" && !/\.exe$/i.test(bin) && bin !== "node";
+    const args = [...extra, "app-server"].map((a) => (this.useShell && /\s/.test(a) ? `"${a}"` : a));
+    this.proc = spawn(bin, args, { cwd: this.cwd, stdio: ["pipe", "pipe", "pipe"], shell: this.useShell, windowsHide: true });
     this.exitPromise = new Promise((resolve) => {
       this.proc.on("exit", (code, signal) => {
         this.exited = true;
@@ -154,14 +158,25 @@ class AppServer {
     return res;
   }
 
+  #kill(force) {
+    if (process.platform === "win32") {
+      // Kill the whole tree: with a .cmd shim the direct child is cmd.exe, not codex.
+      try {
+        execFileSync("taskkill", ["/pid", String(this.proc.pid), "/T", ...(force ? ["/F"] : [])], { stdio: "ignore" });
+      } catch {}
+    } else {
+      this.proc.kill(force ? "SIGKILL" : "SIGTERM");
+    }
+  }
+
   async close() {
     if (this.exited) return;
     this.proc.stdin.end();
     const timer = (ms) => new Promise((r) => setTimeout(r, ms));
     if (await Promise.race([this.exitPromise.then(() => true), timer(3000).then(() => false)])) return;
-    this.proc.kill("SIGTERM");
+    this.#kill(false);
     if (await Promise.race([this.exitPromise.then(() => true), timer(3000).then(() => false)])) return;
-    this.proc.kill("SIGKILL");
+    this.#kill(true);
     await this.exitPromise;
   }
 }
@@ -365,7 +380,7 @@ async function runTurn({ mode, task, threadId, opts, cfg, root, state }) {
 // Commands
 
 async function listModels(root) {
-  const logStream = fs.createWriteStream("/dev/null");
+  const logStream = fs.createWriteStream(os.devNull);
   const server = new AppServer({ cwd: root, logStream, onNotification: () => {}, onServerRequest: (m) => { throw new Error(m); } });
   server.start();
   try {
