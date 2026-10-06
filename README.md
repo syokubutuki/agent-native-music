@@ -15,3 +15,15 @@ node tools/codex-worker.mjs models                       # 疎通確認
 node tools/codex-worker.mjs run --task-file specs/x.md   # 実装を委譲
 node tools/codex-worker.mjs continue --task "修正指示"     # 同じスレッドに追加指示
 ```
+
+## 試聴プレーヤー
+
+楽譜データ (`songs/*.json`, 形式 `anm-score/1`、検証は `tools/lib/score.mjs`) をブラウザの Web Audio で演奏する。
+ダウンロード不要で、Artifact の非公開リンクから聴ける。感想は Artifact の `db`（`notes` コレクション）に保存され、次の作曲時に Claude が読む。
+
+```
+npm run build:player   # songs/lofi-rain-v1.json -> dist/player.html (git 管理外)
+npm run test:tools     # 楽譜の検証・ビルドのテスト
+```
+
+`dist/player.html` を Artifact として公開する（`capabilities: {db: {}}`）。

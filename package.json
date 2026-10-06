@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "codex": "node tools/codex-worker.mjs",
-    "test:tools": "node --test tools/test/codex-worker.test.mjs"
+    "test:tools": "node --test tools/test/codex-worker.test.mjs tools/test/score.test.mjs",
+    "build:player": "node tools/build-player.mjs"
   }
 }
