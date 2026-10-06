@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "seed": 2082978551,
+  "durationSec": 20,
+  "sampleRate": 44100,
+  "tuning": {
+    "type": "harmonic",
+    "baseHz": 51.830431348451114
+  },
+  "voices": [
+    {
+      "type": "noise",
+      "gain": 0.5444831732427701,
+      "pan": -0.9681952516548336,
+      "stepMs": 550.9129268815311,
+      "steps": 11,
+      "pulses": 11,
+      "rotate": 3,
+      "degrees": [
+        13,
+        0,
+        21,
+        20,
+        23
+      ],
+      "stride": 4,
+      "octave": -2,
+      "attackMs": 156.11606143867246,
+      "decayMs": 1488.6879054292833,
+      "filter": "bp",
+      "cutoffMul": 2.473402817666622,
+      "q": 0.5017526236246442
+    },
+    {
+      "type": "fm",
+      "gain": 0.5054888939834199,
+      "pan": 0.830819841939956,
+      "stepMs": 180.73048432377402,
+      "steps": 5,
+      "pulses": 2,
+      "rotate": 4,
+      "degrees": [
+        20,
+        5,
+        7,
+        17,
+        20,
+        4,
+        14,
+        22
+      ],
+      "stride": 1,
+      "octave": 0,
+      "attackMs": 2.0005456381965154,
+      "decayMs": 359.698679733181,
+      "ratio": 2.035540335686696,
+      "index": 2.440689504146576,
+      "indexDecay": 0.22805101051926613,
+      "modFeedback": 0.2884389112936333
+    }
+  ],
+  "break": {
+    "at": 0.48146501623559745,
+    "length": 0.27521628404501824,
+    "kind": "reverse",
+    "voice": 0
+  },
+  "master": {
+    "delayMs": 177.80610931543993,
+    "delayFeedback": 0.3096761722001247,
+    "delayMix": 0.5478341714479029,
+    "drive": 4.481725557033392
+  },
+  "meta": {
+    "id": "g0001-02",
+    "generation": 1,
+    "parents": [],
+    "strength": 0
+  }
+}

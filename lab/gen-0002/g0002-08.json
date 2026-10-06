@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "seed": 3217294036,
+  "durationSec": 20,
+  "sampleRate": 44100,
+  "tuning": {
+    "type": "edo",
+    "divisions": 11,
+    "baseHz": 87.95567562598782
+  },
+  "voices": [
+    {
+      "type": "fm",
+      "gain": 0.0803175863227807,
+      "pan": -0.7929480434395373,
+      "stepMs": 536.2704059441188,
+      "steps": 4,
+      "pulses": 4,
+      "rotate": 3,
+      "degrees": [
+        4
+      ],
+      "stride": 1,
+      "octave": -1,
+      "attackMs": 121.03737720318259,
+      "decayMs": 29.990644173882092,
+      "ratio": 0.6605714686071844,
+      "index": 2.228455369924074,
+      "indexDecay": 0.5904630343429744,
+      "modFeedback": 0.5204529067268595
+    },
+    {
+      "type": "feedback",
+      "gain": 0.14404320560861378,
+      "pan": -0.5629112906754017,
+      "stepMs": 81.70953001328087,
+      "steps": 12,
+      "pulses": 12,
+      "rotate": 5,
+      "degrees": [
+        5
+      ],
+      "stride": 5,
+      "octave": 2,
+      "attackMs": 109.51050162353974,
+      "decayMs": 524.3362865635332,
+      "loopGain": 0.833741381668253,
+      "damp": 0.2748162149102427,
+      "drive": 2.271317793333493,
+      "exciteMs": 38.69663652462956
+    },
+    {
+      "type": "noise",
+      "gain": 0.2496357359457761,
+      "pan": 0.02767501911148429,
+      "stepMs": 192.85234679648926,
+      "steps": 12,
+      "pulses": 12,
+      "rotate": 8,
+      "degrees": [
+        15,
+        17,
+        3,
+        8
+      ],
+      "stride": 3,
+      "octave": 0,
+      "attackMs": 1.9258862210953553,
+      "decayMs": 43.47051637289532,
+      "filter": "bp",
+      "cutoffMul": 0.6383029597759192,
+      "q": 1.7371409380512284
+    }
+  ],
+  "break": {
+    "at": 0.6804428159724921,
+    "length": 0.11630832816067375,
+    "kind": "solo",
+    "voice": 3
+  },
+  "master": {
+    "delayMs": 196.687017386067,
+    "delayFeedback": 0.4421766628278419,
+    "delayMix": 0.5308219372054551,
+    "drive": 6
+  },
+  "meta": {
+    "id": "g0002-08",
+    "generation": 2,
+    "parents": [
+      "g0001-03",
+      "g0001-04"
+    ],
+    "strength": 0.3
+  }
+}
