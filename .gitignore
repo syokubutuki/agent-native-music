@@ -1,2 +1,4 @@
 .codex-worker/
 node_modules/
+lab/**/*.wav
+lab/renders/

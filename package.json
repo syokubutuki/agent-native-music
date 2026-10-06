@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "codex": "node tools/codex-worker.mjs",
-    "test:tools": "node --test tools/test/codex-worker.test.mjs"
+    "test:tools": "node --test tools/test/codex-worker.test.mjs",
+    "lab": "node bin/lab.mjs",
+    "test": "node --test test/lab/genome.test.mjs test/lab/render.test.mjs test/lab/wav-cli.test.mjs"
   }
 }
