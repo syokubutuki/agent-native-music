@@ -9,6 +9,11 @@
   "swing": 0.5,
   "beatsPerBar": 4,
   "bars": 16,
+  "sections": [
+    {"bar":0,"label":"導入"},
+    {"bar":4,"label":"ドラム登場"},
+    {"bar":14,"label":"しずまる"}
+  ],
   "chords": [
     {"beat":0,"label":"Dm9"},
     {"beat":4,"label":"G13"},

@@ -54,6 +54,7 @@ header { display: flex; flex-direction: column; gap: 6px; }
 .strip { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
 .bar { border: 1px solid var(--line); border-radius: 8px; padding: 8px 4px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; transition: background-color .12s, border-color .12s; }
 .bar .chords { font-family: var(--font-mono); font-size: 0.72rem; line-height: 1.25; text-align: center; overflow-wrap: anywhere; min-height: 2.5em; display: flex; flex-direction: column; justify-content: center; }
+.bar .sec { font-size: 0.64rem; line-height: 1.2; color: var(--muted); text-align: center; min-height: 1.2em; overflow-wrap: anywhere; }
 .bar .dots { display: flex; gap: 3px; }
 .bar .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--line); }
 .bar.on { border-color: var(--lamp); background: color-mix(in srgb, var(--lamp) 14%, transparent); }
@@ -121,6 +122,7 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
       <div class="now">
         <span class="now-label">いま鳴っているコード</span>
         <span id="chord">–</span>
+        <span class="now-label" id="scene"></span>
       </div>
     </div>
     <div class="strip" id="strip" aria-label="小節ごとの進行"></div>
@@ -394,20 +396,23 @@ function pause() {
 $('play').addEventListener('click', () => { playing ? pause() : play(); });
 
 /* ---------- visuals ---------- */
-let chordAt = [], barEls = [], shown = -1;
+let chordAt = [], sectionAt = [], barEls = [], shown = -1;
 function buildStrip() {
   chordAt = SONG.chords.slice().sort((a, b) => a.beat - b.beat);
+  sectionAt = (SONG.sections || []).slice().sort((a, b) => a.bar - b.bar);
   barEls = []; shown = -1;
   const strip = $('strip'); strip.replaceChildren();
   for (let b = 0; b < SONG.bars; b++) {
     const el = document.createElement('div'); el.className = 'bar';
     const ch = document.createElement('div'); ch.className = 'chords';
     for (const c of chordAt) if (c.beat >= b * BPB && c.beat < (b + 1) * BPB) { const s = document.createElement('span'); s.textContent = c.label; ch.appendChild(s); }
+    const sec = document.createElement('div'); sec.className = 'sec';
+    const here = sectionAt.find((x) => x.bar === b); if (here) sec.textContent = here.label;
     const dots = document.createElement('div'); dots.className = 'dots';
     for (let i = 0; i < BPB; i++) dots.appendChild(document.createElement('i'));
-    el.append(ch, dots); strip.appendChild(el); barEls.push(el);
+    el.append(sec, ch, dots); strip.appendChild(el); barEls.push(el);
   }
-  $('chord').textContent = '–';
+  $('chord').textContent = '–'; $('scene').textContent = '';
 }
 function show(tick) {
   const beatPos = Math.floor(tick / TPB);
@@ -421,6 +426,9 @@ function show(tick) {
   let cur = chordAt[0];
   for (const c of chordAt) if (c.beat <= beatPos) cur = c;
   $('chord').textContent = cur ? cur.label : '–';
+  let sc = null;
+  for (const x of sectionAt) if (x.bar <= bar) sc = x;
+  $('scene').textContent = sc ? `場面: ${sc.label}` : '';
 }
 function frame() {
   raf = null;

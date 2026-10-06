@@ -17,6 +17,12 @@ export function validateScore(s) {
   if (!Number.isInteger(s.beatsPerBar) || s.beatsPerBar < 1) err('beatsPerBar must be a positive integer');
   if (!Number.isInteger(s.bars) || s.bars < 1) err('bars must be a positive integer');
   const total = s.beatsPerBar * s.bars;
+  if (s.sections !== undefined) {
+    if (!Array.isArray(s.sections)) err('sections must be an array');
+    else s.sections.forEach((c, i) => {
+      if (!Number.isInteger(c?.bar) || c.bar < 0 || c.bar >= s.bars || typeof c.label !== 'string' || !c.label) err(`sections[${i}] invalid`);
+    });
+  }
   if (!Array.isArray(s.chords)) err('chords must be an array');
   else s.chords.forEach((c, i) => {
     if (!(c.beat >= 0 && c.beat < total) || typeof c.label !== 'string') err(`chords[${i}] invalid`);
