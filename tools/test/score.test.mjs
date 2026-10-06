@@ -13,6 +13,11 @@ test('every song in songs/ is a valid score', () => {
   for (const f of songs) assert.deepEqual(validateScore(load(f)), [], f);
 });
 
+test('song versions are unique per id', () => {
+  const keys = songs.map((f) => { const s = load(f); return `${s.id}@${s.version}`; });
+  assert.equal(new Set(keys).size, keys.length);
+});
+
 test('validateScore rejects bad scores', () => {
   const good = load(songs[0]);
   const bad = structuredClone(good);
@@ -31,8 +36,9 @@ test('validateScore rejects bad scores', () => {
 test('buildPlayer embeds the score and refuses invalid input', () => {
   const song = load(songs[0]);
   song.title = '</script><b>x';
-  const html = buildPlayer(song, template);
+  const html = buildPlayer([song], template);
   assert.ok(!html.includes('__SONG_JSON__'));
   assert.ok(!html.includes('</script><b>'));
-  assert.throws(() => buildPlayer({ ...song, bpm: 1 }, template), /invalid score/);
+  assert.throws(() => buildPlayer([{ ...song, bpm: 1 }], template), /invalid score/);
+  assert.throws(() => buildPlayer([], template), /non-empty/);
 });

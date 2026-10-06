@@ -10,6 +10,7 @@ export function validateScore(s) {
   if (!s || typeof s !== 'object') return ['score must be an object'];
   if (s.format !== FORMAT) err(`format must be "${FORMAT}"`);
   for (const k of ['id', 'title']) if (typeof s[k] !== 'string' || !s[k]) err(`${k} must be a non-empty string`);
+  if (s.changes !== undefined && typeof s.changes !== 'string') err('changes must be a string');
   if (!Number.isInteger(s.version) || s.version < 1) err('version must be a positive integer');
   if (!(s.bpm >= 30 && s.bpm <= 200)) err('bpm must be 30..200');
   if (!(s.swing >= 0 && s.swing <= 1)) err('swing must be 0..1');

@@ -105,6 +105,11 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
     <h1 id="title"></h1>
     <p class="meta" id="desc"></p>
     <p class="meta" id="facts"></p>
+    <div class="ctl" id="versionBox">
+      <span class="lbl">版を選んで聴き比べる</span>
+      <div class="chips" id="versions"></div>
+      <p class="hint" id="changes"></p>
+    </div>
   </header>
 
   <section class="card" aria-label="プレーヤー">
@@ -118,8 +123,8 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
         <span id="chord">–</span>
       </div>
     </div>
-    <div class="strip" id="strip" aria-label="8小節の進行"></div>
-    <p class="hint">コードは「同時に鳴らす音のセット」のことです。上の帯は曲の8小節分で、鳴っている場所がオレンジに光ります。曲は最後まで行くと最初に戻って繰り返します。</p>
+    <div class="strip" id="strip" aria-label="小節ごとの進行"></div>
+    <p class="hint">コードは「同時に鳴らす音のセット」のことです。上の帯は曲を小節ごとに区切ったもので、鳴っている場所がオレンジに光ります。曲は最後まで行くと最初に戻って繰り返します。</p>
   </section>
 
   <section class="section" aria-label="調整">
@@ -146,6 +151,7 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
 
   <section class="section" aria-label="感想">
     <h2>この曲の感想</h2>
+    <p class="hint" id="noteFor"></p>
     <p class="hint">ここに書いた感想は保存され、次に曲を作り直すとき AI が読んで反映します。短い言葉で構いません。</p>
     <fieldset style="border:0;padding:0;margin:0;min-width:0">
       <legend class="lbl" style="font-weight:500;padding:0;margin-bottom:6px">どれくらい好きですか</legend>
@@ -168,7 +174,8 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
 </main>
 
 <script>
-const SONG = __SONG_JSON__;
+const SONGS = __SONG_JSON__;
+let SONG = SONGS[SONGS.length - 1]; // 既定は最新の版
 
 /* ---------- score -> events ---------- */
 const TPB = 12; // ticks per beat (supports 8ths, 16ths and triplets)
@@ -179,20 +186,24 @@ function freqOf(name) {
   const midi = 12 * (Number(m[3]) + 1) + SEMI[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
-const BPB = SONG.beatsPerBar;
-const TOTAL_TICKS = SONG.bars * BPB * TPB;
-const byTick = Array.from({ length: TOTAL_TICKS }, () => null);
-SONG.tracks.forEach((t, ti) => {
-  for (const [beat, dur, pitch, vel] of t.notes) {
-    const tick = Math.round(beat * TPB);
-    (byTick[tick] ||= []).push({ ti, inst: t.instrument, dur, vel, freq: DRUMS.includes(t.instrument) ? 0 : freqOf(pitch) });
-  }
-});
+let BPB, TOTAL_TICKS, byTick;
+function compile() {
+  BPB = SONG.beatsPerBar;
+  TOTAL_TICKS = SONG.bars * BPB * TPB;
+  byTick = Array.from({ length: TOTAL_TICKS }, () => null);
+  SONG.tracks.forEach((t, ti) => {
+    for (const [beat, dur, pitch, vel] of t.notes) {
+      const tick = Math.round(beat * TPB);
+      (byTick[tick] ||= []).push({ ti, inst: t.instrument, dur, vel, freq: DRUMS.includes(t.instrument) ? 0 : freqOf(pitch) });
+    }
+  });
+}
+compile();
 
 /* ---------- state ---------- */
-let ctx = null, master, mix, buses = [], wobbleGain, noiseBuf, rainGain;
+let ctx = null, master, mix, verb, buses = [], wobbleGain, noiseBuf, rainGain;
 let bpm = SONG.bpm, volume = 0.7, rainOn = true;
-const mutedParts = SONG.tracks.map(() => false);
+let mutedParts = SONG.tracks.map(() => false);
 let playing = false, timer = null, raf = null, pauseTimer = null;
 let tickPos = 0, tickTime = 0;
 const visQ = [];
@@ -221,18 +232,12 @@ function initAudio() {
   mix = ctx.createGain(); mix.gain.value = 0.9;
   mix.connect(hp); hp.connect(shaper); shaper.connect(tone); tone.connect(comp); comp.connect(master); master.connect(ctx.destination);
 
-  const verb = ctx.createConvolver(); verb.buffer = makeImpulse(2.4);
+  verb = ctx.createConvolver(); verb.buffer = makeImpulse(2.4);
   const verbLp = ctx.createBiquadFilter(); verbLp.type = 'lowpass'; verbLp.frequency.value = 3200;
   const verbOut = ctx.createGain(); verbOut.gain.value = 0.55;
   verb.connect(verbLp); verbLp.connect(verbOut); verbOut.connect(tone);
 
-  buses = SONG.tracks.map((t, i) => {
-    const g = ctx.createGain(); g.gain.value = mutedParts[i] ? 0 : t.gain;
-    g.connect(mix);
-    const s = ctx.createGain(); s.gain.value = SEND[t.instrument] ?? 0;
-    g.connect(s); s.connect(verb);
-    return g;
-  });
+  buildBuses();
 
   // slow tape-like pitch wobble shared by all tonal oscillators
   const lfo = ctx.createOscillator(); lfo.frequency.value = 0.55;
@@ -252,6 +257,15 @@ function initAudio() {
   const swellAmt = ctx.createGain(); swellAmt.gain.value = 0.012;
   swell.connect(swellAmt); swellAmt.connect(rainGain.gain); swell.start();
   rs.connect(rlp); rlp.connect(rhp); rhp.connect(rainGain); rainGain.connect(comp); rs.start();
+}
+function buildBuses() {
+  buses = SONG.tracks.map((t, i) => {
+    const g = ctx.createGain(); g.gain.value = mutedParts[i] ? 0 : t.gain;
+    g.connect(mix);
+    const s = ctx.createGain(); s.gain.value = SEND[t.instrument] ?? 0;
+    g.connect(s); s.connect(verb);
+    return g;
+  });
 }
 function osc(type, freq, t, out, { detune = 0, wobble = true } = {}) {
   const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq; o.detune.value = detune;
@@ -380,18 +394,21 @@ function pause() {
 $('play').addEventListener('click', () => { playing ? pause() : play(); });
 
 /* ---------- visuals ---------- */
-const chordAt = SONG.chords.slice().sort((a, b) => a.beat - b.beat);
-const strip = $('strip');
-const barEls = [];
-for (let b = 0; b < SONG.bars; b++) {
-  const el = document.createElement('div'); el.className = 'bar';
-  const ch = document.createElement('div'); ch.className = 'chords';
-  for (const c of chordAt) if (c.beat >= b * BPB && c.beat < (b + 1) * BPB) { const s = document.createElement('span'); s.textContent = c.label; ch.appendChild(s); }
-  const dots = document.createElement('div'); dots.className = 'dots';
-  for (let i = 0; i < BPB; i++) dots.appendChild(document.createElement('i'));
-  el.append(ch, dots); strip.appendChild(el); barEls.push(el);
+let chordAt = [], barEls = [], shown = -1;
+function buildStrip() {
+  chordAt = SONG.chords.slice().sort((a, b) => a.beat - b.beat);
+  barEls = []; shown = -1;
+  const strip = $('strip'); strip.replaceChildren();
+  for (let b = 0; b < SONG.bars; b++) {
+    const el = document.createElement('div'); el.className = 'bar';
+    const ch = document.createElement('div'); ch.className = 'chords';
+    for (const c of chordAt) if (c.beat >= b * BPB && c.beat < (b + 1) * BPB) { const s = document.createElement('span'); s.textContent = c.label; ch.appendChild(s); }
+    const dots = document.createElement('div'); dots.className = 'dots';
+    for (let i = 0; i < BPB; i++) dots.appendChild(document.createElement('i'));
+    el.append(ch, dots); strip.appendChild(el); barEls.push(el);
+  }
+  $('chord').textContent = '–';
 }
-let shown = -1;
 function show(tick) {
   const beatPos = Math.floor(tick / TPB);
   if (beatPos === shown) return;
@@ -415,13 +432,18 @@ function frame() {
 }
 
 /* ---------- controls ---------- */
-$('title').textContent = SONG.title;
-$('desc').textContent = SONG.description || '';
-const secs = Math.round(SONG.bars * BPB * 60 / SONG.bpm);
-$('facts').append('ローファイ / 元のテンポ ', Object.assign(document.createElement('span'), { className: 'mono', textContent: SONG.bpm + ' BPM' }),
-  ` / 約${secs}秒をくり返し / 版 v${SONG.version}`);
+function renderHeader() {
+  $('title').textContent = SONG.title;
+  $('desc').textContent = SONG.description || '';
+  const secs = Math.round(SONG.bars * BPB * 60 / SONG.bpm);
+  $('facts').replaceChildren('ローファイ / 元のテンポ ', Object.assign(document.createElement('span'), { className: 'mono', textContent: SONG.bpm + ' BPM' }),
+    ` / 約${secs}秒をくり返し / 版 v${SONG.version}`);
+  $('changes').textContent = SONG.changes ? `v${SONG.version} の変更点: ${SONG.changes}` : '';
+  $('noteFor').textContent = `いま聴いている版は v${SONG.version} です。感想にはこの版の番号が付きます。`;
+  $('versionBox').hidden = SONGS.length < 2;
+  [...$('versions').children].forEach((b, i) => b.setAttribute('aria-pressed', String(SONGS[i] === SONG)));
+}
 const tempo = $('tempo');
-tempo.value = SONG.bpm;
 const syncTempo = () => { bpm = Number(tempo.value); $('tempoOut').textContent = bpm + ' BPM'; };
 tempo.addEventListener('input', syncTempo); syncTempo();
 const vol = $('vol');
@@ -434,16 +456,35 @@ $('rain').addEventListener('change', (e) => {
   rainOn = e.target.checked;
   if (rainGain) rainGain.gain.setTargetAtTime(rainOn ? 0.07 : 0, ctx.currentTime, 0.2);
 });
-SONG.tracks.forEach((t, i) => {
-  const b = document.createElement('button'); b.type = 'button'; b.className = 'chip muted-part';
-  b.setAttribute('aria-pressed', 'true'); b.textContent = t.name;
-  b.addEventListener('click', () => {
-    mutedParts[i] = !mutedParts[i];
-    b.setAttribute('aria-pressed', String(!mutedParts[i]));
-    if (buses[i]) buses[i].gain.setTargetAtTime(mutedParts[i] ? 0 : t.gain, ctx.currentTime, 0.03);
+function renderParts() {
+  $('parts').replaceChildren();
+  SONG.tracks.forEach((t, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip muted-part';
+    b.setAttribute('aria-pressed', String(!mutedParts[i])); b.textContent = t.name;
+    b.addEventListener('click', () => {
+      mutedParts[i] = !mutedParts[i];
+      b.setAttribute('aria-pressed', String(!mutedParts[i]));
+      if (buses[i]) buses[i].gain.setTargetAtTime(mutedParts[i] ? 0 : t.gain, ctx.currentTime, 0.03);
+    });
+    $('parts').appendChild(b);
   });
-  $('parts').appendChild(b);
+}
+function switchSong(song) {
+  if (song === SONG) return;
+  SONG = song; compile();
+  mutedParts = SONG.tracks.map(() => false);
+  visQ.length = 0; tickPos = 0;
+  if (ctx) { buses.forEach((b) => b.disconnect()); buildBuses(); tickTime = ctx.currentTime + 0.08; }
+  tempo.value = SONG.bpm; syncTempo();
+  buildStrip(); renderParts(); renderHeader();
+}
+SONGS.forEach((song) => {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = `v${song.version}`;
+  b.addEventListener('click', () => switchSong(song));
+  $('versions').appendChild(b);
 });
+tempo.value = SONG.bpm; syncTempo();
+buildStrip(); renderParts(); renderHeader();
 
 /* ---------- listening notes ---------- */
 const TAGS = ['好き', 'ドラムが強い', 'ドラムが弱い', 'もっと切なく', 'もっと明るく', 'もっとゆっくり', 'もっと速く', '音が高くてきつい', '音がこもっている', '同じで飽きる', 'メロディがいい'];
