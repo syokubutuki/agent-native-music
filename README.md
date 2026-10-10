@@ -38,3 +38,14 @@ npm run lab -- render g0003-02 --duration 180  # 気に入ったものを長尺�
 - **v2（`specs/sound-lab-form.md`）**: ゲノムにエネルギー曲線 `form` が付き、時間とともに密度・旋律の開閉・明るさ・
   テンポ・音量・声部の出入りが変わる（`list` の ▁▃█▅ がその曲線）。明るさの天井 `ceilingHz` で痛い高域を抑える。
   v1 ゲノムはそのまま同じ音で鳴り、`evolve` に通すと v2 に昇格する。`evolve --duration 40` で子の長さを変えられる。
+
+### 試聴ページ（ブラウザで聴いて評価する）
+
+`npm run lab -- page` で `lab/site/`（`index.html` と MP3。ffmpeg が必要、無ければ `--format wav`）を作り、
+claude.ai の Artifact として公開している: https://claude.ai/artifact/91zKwk9wYWHvS5j6xYTkGj （非公開・所有者のみ）
+
+- ページ上で再生しながら ★1〜5 と時刻つきメモ（⏱ ボタン / `T` キー）を書くと、ページの保存領域（db の `ratings/<clipId>`）に自動保存される。
+- 波形の上の線がエネルギー曲線（v2）。クリックした位置から再生。「終わったら次へ」で連続再生。
+- 評価を台帳に取り込む: Claude が db の `ratings` を JSON に書き出し `npm run lab -- import <file.json>`
+  （score か note が変わった分だけ `lab/ratings.jsonl` に追記。何度実行しても重複しない）。
+- 新しい世代を足したら `page` を作り直し、同じ URL に再公開する（新しい MP3 だけ送れば既存の音声は残る）。

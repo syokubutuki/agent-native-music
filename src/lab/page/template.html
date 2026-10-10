@@ -1,0 +1,514 @@
+<title>Sound Lab 試聴ブース</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  /* Layout: one column of clip "tape cards" — scope strip on top, rating + note right under it, so listening and writing happen in the same place. */
+  :root {
+    --bg: #e9ece8;          /* lab bench, a grey leaning green */
+    --panel: #f7f8f5;
+    --ink: #18202a;
+    --ink-2: #4c5764;
+    --line: #c9cfc8;
+    --wave: #9aa6a3;
+    --signal: #0c6f7a;      /* scope trace */
+    --signal-soft: rgba(12, 111, 122, 0.14);
+    --mark: #c26a12;        /* selected rating, playhead */
+    --mark-ink: #ffffff;
+    --warn: #a3311f;
+    --font-display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", sans-serif;
+    --font-body: "IBM Plex Sans JP", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --r: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11161b; --panel: #192028; --ink: #dfe6ec; --ink-2: #93a0ad; --line: #2b3540;
+      --wave: #4b5864; --signal: #4fc0cc; --signal-soft: rgba(79, 192, 204, 0.16);
+      --mark: #f0a04b; --mark-ink: #1a1206; --warn: #ef7b62; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11161b; --panel: #192028; --ink: #dfe6ec; --ink-2: #93a0ad; --line: #2b3540;
+    --wave: #4b5864; --signal: #4fc0cc; --signal-soft: rgba(79, 192, 204, 0.16);
+    --mark: #f0a04b; --mark-ink: #1a1206; --warn: #ef7b62; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+    padding: 0 16px; padding-block: 20px 64px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 18px; }
+  header { display: grid; gap: 10px; }
+  .brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: 2.1rem; letter-spacing: 0.02em; line-height: 1; margin: 0; text-transform: uppercase; }
+  .sub { color: var(--ink-2); font-size: 0.86rem; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+  .gens { display: flex; flex-wrap: wrap; gap: 6px; }
+  .gens button {
+    font: 600 0.82rem var(--font-mono); padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink-2);
+  }
+  .gens button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .progress { font: 0.8rem var(--font-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 0.84rem; color: var(--ink-2); cursor: pointer; }
+  .notice { font-size: 0.84rem; padding: 8px 12px; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel); color: var(--ink-2); }
+  .notice.warn { color: var(--warn); border-color: currentColor; }
+  .keys { font: 0.74rem var(--font-mono); color: var(--ink-2); }
+  @media (pointer: coarse) { .keys { display: none; } }
+
+  .list { display: grid; gap: 14px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+    padding: 14px; display: grid; gap: 12px; scroll-margin-top: 16px;
+  }
+  .card.current { border-color: var(--signal); box-shadow: 0 0 0 1px var(--signal); }
+  .head { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center; }
+  .num { font-family: var(--font-display); font-weight: 800; font-size: 2.4rem; line-height: 0.9; font-variant-numeric: tabular-nums; }
+  .meta { min-width: 0; display: grid; gap: 2px; }
+  .id { font: 600 0.8rem var(--font-mono); }
+  .desc { font: 0.74rem var(--font-mono); color: var(--ink-2); overflow-wrap: anywhere; }
+  .badge { font: 600 0.74rem var(--font-mono); padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); white-space: nowrap; }
+  .badge.done { border-color: var(--mark); color: var(--mark); }
+
+  .deck { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; }
+  .play {
+    width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--ink); color: var(--bg); display: grid; place-items: center;
+  }
+  .play svg { width: 18px; height: 18px; fill: currentColor; }
+  .scope { display: grid; gap: 3px; min-width: 0; }
+  .scope canvas { width: 100%; height: 58px; display: block; cursor: pointer; border-radius: 6px; background: var(--bg); touch-action: none; }
+  .time { display: flex; justify-content: space-between; font: 0.72rem var(--font-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  .rate { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .rate button {
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; cursor: pointer;
+    padding: 6px 2px 5px; display: grid; gap: 1px; justify-items: center; min-width: 0;
+  }
+  .rate b { font: 800 1.35rem/1 var(--font-display); }
+  .rate span { font-size: 0.64rem; color: var(--ink-2); line-height: 1.25; text-align: center; }
+  .rate button[aria-pressed="true"] { background: var(--mark); border-color: var(--mark); color: var(--mark-ink); }
+  .rate button[aria-pressed="true"] span { color: var(--mark-ink); }
+
+  .note { display: grid; gap: 6px; }
+  .note textarea {
+    width: 100%; min-height: 64px; resize: vertical; font: 0.92rem/1.55 var(--font-body); color: var(--ink);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  }
+  .note-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .stamp {
+    font: 600 0.78rem var(--font-mono); padding: 5px 10px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--signal); color: var(--signal); background: transparent;
+  }
+  .stamp:disabled { opacity: 0.4; cursor: default; }
+  .saved { font: 0.74rem var(--font-mono); color: var(--ink-2); }
+  .saved.err { color: var(--warn); }
+  button:focus-visible, textarea:focus-visible, canvas:focus-visible, input:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .empty { color: var(--ink-2); padding: 24px 0; }
+  @media (max-width: 420px) {
+    .rate span { display: none; }
+    .num { font-size: 2rem; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>Sound Lab</h1>
+      <span class="sub">試聴ブース · 聴きながら ★ とメモをつける</span>
+    </div>
+    <div class="bar">
+      <div class="gens" id="gens" role="group" aria-label="世代"></div>
+      <span class="progress" id="progress"></span>
+      <label class="toggle"><input type="checkbox" id="autonext" checked> 終わったら次へ</label>
+    </div>
+    <div class="notice" id="status">評価の保存先に接続しています…</div>
+    <div class="keys">Space 再生/停止 · 1–5 評価 · J/K 次/前 · T 時刻つきメモ</div>
+  </header>
+  <main class="list" id="list"></main>
+</div>
+
+<script type="application/json" id="lab-data">__LAB_DATA__</script>
+<script>
+(() => {
+  const DATA = JSON.parse(document.getElementById('lab-data').textContent);
+  const LABELS = ['聴きたくない', '退屈', '残らない', '一部光る', '続きが気になる'];
+  const clips = DATA.clips;
+  const byId = new Map(clips.map((c) => [c.id, c]));
+  const gens = [...new Set(clips.map((c) => c.gen))].sort((a, b) => b - a);
+
+  // Ratings: the lab ledger baked into the page, overridden live by the page's db.
+  const ratings = new Map();
+  for (const c of clips) if (c.rating) ratings.set(c.id, { score: c.rating.score, note: c.rating.note || '' });
+
+  const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+                  set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+  let gen = Number(store.get('lab.gen')) || gens[0];
+  if (!gens.includes(gen)) gen = gens[0];
+
+  const audio = new Audio();
+  audio.preload = 'auto';
+  let currentId = null;
+  let focusId = null;
+  let db = null;
+  let readOnly = false;
+  const cards = new Map();
+
+  const $ = (sel, el = document) => el.querySelector(sel);
+  const fmt = (s) => { s = Math.max(0, Math.floor(s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>';
+  const ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></svg>';
+
+  function energyAt(points, x) {
+    if (x <= 0) return points[0].e;
+    if (x >= 1) return points[points.length - 1].e;
+    let i = 1;
+    while (points[i].t < x) i++;
+    const a = points[i - 1], b = points[i];
+    const u = (x - a.t) / (b.t - a.t);
+    const s = b.shape === 'exp' ? u * u * u : b.shape === 'jump' ? (u >= 1 ? 1 : 0) : u;
+    return Math.min(1, Math.max(0, a.e + (b.e - a.e) * s));
+  }
+
+  function genClips() { return clips.filter((c) => c.gen === gen); }
+
+  function renderGens() {
+    const el = $('#gens');
+    el.textContent = '';
+    for (const g of gens) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = `第${g}世代`;
+      b.setAttribute('aria-pressed', String(g === gen));
+      b.addEventListener('click', () => { gen = g; store.set('lab.gen', String(g)); renderGens(); renderList(); });
+      el.append(b);
+    }
+  }
+
+  function renderProgress() {
+    const list = genClips();
+    const done = list.filter((c) => ratings.get(c.id)?.score).length;
+    $('#progress').textContent = `${list.length}本中 ${done}本 評価済み`;
+  }
+
+  function renderList() {
+    const list = $('#list');
+    list.textContent = '';
+    cards.clear();
+    const items = genClips();
+    if (!items.length) { list.innerHTML = '<p class="empty">この世代にはまだクリップがありません。</p>'; return; }
+    for (const c of items) list.append(buildCard(c));
+    renderProgress();
+    requestAnimationFrame(() => cards.forEach((_, id) => draw(id)));
+  }
+
+  function buildCard(c) {
+    const el = document.createElement('article');
+    el.className = 'card';
+    el.id = c.id;
+    const n = c.id.split('-')[1];
+    const parents = c.parents.length ? `← ${c.parents.map((p) => p.replace(/^g0*(\d+)-0*(\d+)$/, '$1-$2')).join(' + ')}` : 'ランダム生成';
+    el.innerHTML = `
+      <div class="head">
+        <div class="num">${n}</div>
+        <div class="meta"><span class="id">${c.id} · ${parents}</span><span class="desc"></span></div>
+        <span class="badge"></span>
+      </div>
+      <div class="deck">
+        <button class="play" type="button" aria-label="再生">${ICON_PLAY}</button>
+        <div class="scope">
+          <canvas tabindex="0" aria-label="波形と展開カーブ。クリックでその位置から再生"></canvas>
+          <div class="time"><span class="pos">0:00</span><span>${c.form ? 'エネルギー曲線つき' : '展開なし (v1)'}</span><span>${fmt(c.durationSec)}</span></div>
+        </div>
+      </div>
+      <div class="rate" role="group" aria-label="評価"></div>
+      <div class="note">
+        <textarea id="note-${c.id}" placeholder="どこの・何が。例: [0:23] 急に引いて静かになる所が良い"></textarea>
+        <div class="note-bar">
+          <button class="stamp" type="button" disabled>⏱ 0:00 をメモに入れる</button>
+          <span class="saved"></span>
+        </div>
+      </div>`;
+    $('.desc', el).textContent = c.desc;
+    const rate = $('.rate', el);
+    LABELS.forEach((label, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = `<b>${i + 1}</b><span></span>`;
+      $('span', b).textContent = label;
+      b.setAttribute('aria-label', `${i + 1}: ${label}`);
+      b.addEventListener('click', () => { focusId = c.id; setScore(c.id, i + 1); });
+      rate.append(b);
+    });
+    $('.play', el).addEventListener('click', () => toggle(c.id));
+    const canvas = $('canvas', el);
+    canvas.addEventListener('pointerdown', (ev) => {
+      const r = canvas.getBoundingClientRect();
+      seek(c.id, Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)));
+    });
+    canvas.addEventListener('keydown', (ev) => {
+      if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') {
+        ev.preventDefault();
+        if (currentId === c.id) audio.currentTime = Math.max(0, audio.currentTime + (ev.key === 'ArrowRight' ? 5 : -5));
+      }
+    });
+    const ta = $('textarea', el);
+    let timer = null;
+    ta.addEventListener('focus', () => { focusId = c.id; });
+    ta.addEventListener('input', () => {
+      ta.dataset.dirty = '1';
+      setSaved(c.id, '未保存');
+      clearTimeout(timer);
+      timer = setTimeout(() => saveNote(c.id), 1200);
+    });
+    ta.addEventListener('blur', () => { clearTimeout(timer); if (ta.dataset.dirty) saveNote(c.id); });
+    $('.stamp', el).addEventListener('click', () => insertStamp(c.id));
+    el.addEventListener('pointerdown', () => { focusId = c.id; });
+    cards.set(c.id, el);
+    paintRating(c.id);
+    return el;
+  }
+
+  function paintRating(id) {
+    const el = cards.get(id);
+    if (!el) return;
+    const r = ratings.get(id) || {};
+    el.querySelectorAll('.rate button').forEach((b, i) => b.setAttribute('aria-pressed', String(r.score === i + 1)));
+    const ta = $('textarea', el);
+    if (document.activeElement !== ta && !ta.dataset.dirty) ta.value = r.note || '';
+    const badge = $('.badge', el);
+    badge.textContent = r.score ? `★${r.score}` : '未評価';
+    badge.classList.toggle('done', !!r.score);
+    for (const b of el.querySelectorAll('.rate button, textarea')) b.disabled = readOnly;
+  }
+
+  function setSaved(id, text, err = false) {
+    const s = $('.saved', cards.get(id) || document.createElement('div'));
+    if (!s) return;
+    s.textContent = text;
+    s.classList.toggle('err', err);
+  }
+
+  // One write at a time per document: chain writes for the same clip.
+  const chains = new Map();
+  function persist(id) {
+    const r = ratings.get(id) || {};
+    if (!db) { setSaved(id, 'この表示では保存されません', true); return; }
+    const body = { score: r.score ?? null, note: r.note || '', updatedAt: new Date().toISOString() };
+    setSaved(id, '保存中…');
+    const prev = chains.get(id) || Promise.resolve();
+    const next = prev.then(() => db.doc(`ratings/${id}`).set(body)).then(
+      () => setSaved(id, '保存済み'),
+      (e) => {
+        if (e && e.code === 'invalid_argument') { readOnly = true; showStatus('この共有レベルでは評価を保存できません（閲覧のみ）。', true); cards.forEach((_, k) => paintRating(k)); }
+        setSaved(id, e && e.code === 'quota_exceeded' ? '保存容量の上限です' : '保存できませんでした', true);
+      });
+    chains.set(id, next);
+  }
+
+  function setScore(id, score) {
+    if (readOnly) return;
+    const r = { ...(ratings.get(id) || {}) };
+    r.score = r.score === score ? null : score;
+    const ta = $('textarea', cards.get(id));
+    if (ta) r.note = ta.value;
+    ratings.set(id, r);
+    paintRating(id);
+    renderProgress();
+    persist(id);
+  }
+
+  function saveNote(id) {
+    const ta = $('textarea', cards.get(id));
+    if (!ta || readOnly) return;
+    const r = { ...(ratings.get(id) || {}), note: ta.value };
+    delete ta.dataset.dirty;
+    if ((ratings.get(id)?.note || '') === ta.value && ratings.get(id)) { setSaved(id, '保存済み'); return; }
+    ratings.set(id, r);
+    persist(id);
+  }
+
+  function insertStamp(id) {
+    const ta = $('textarea', cards.get(id));
+    if (!ta || currentId !== id) return;
+    const tag = `[${fmt(audio.currentTime)}] `;
+    const start = ta.selectionStart ?? ta.value.length;
+    const end = ta.selectionEnd ?? ta.value.length;
+    const before = ta.value.slice(0, start);
+    const pad = before && !/\s$/.test(before) ? ' ' : '';
+    ta.value = before + pad + tag + ta.value.slice(end);
+    const caret = (before + pad + tag).length;
+    ta.focus();
+    ta.setSelectionRange(caret, caret);
+    ta.dispatchEvent(new Event('input'));
+  }
+
+  // ---- playback ----
+  function load(id) {
+    if (currentId === id) return;
+    const prev = currentId;
+    currentId = id;
+    focusId = id;
+    audio.src = byId.get(id).audio;
+    if (prev) { cards.get(prev)?.classList.remove('current'); refreshDeck(prev); draw(prev); }
+    cards.get(id)?.classList.add('current');
+  }
+  function toggle(id) {
+    if (currentId !== id) { load(id); audio.play().catch(() => {}); }
+    else if (audio.paused) audio.play().catch(() => {});
+    else audio.pause();
+  }
+  function seek(id, frac) {
+    const dur = byId.get(id).durationSec;
+    if (currentId !== id) {
+      load(id);
+      audio.addEventListener('loadedmetadata', () => { audio.currentTime = frac * (audio.duration || dur); }, { once: true });
+      audio.play().catch(() => {});
+    } else {
+      audio.currentTime = frac * (audio.duration || dur);
+      if (audio.paused) audio.play().catch(() => {});
+    }
+  }
+  function refreshDeck(id) {
+    const el = cards.get(id);
+    if (!el) return;
+    const playing = id === currentId && !audio.paused;
+    const btn = $('.play', el);
+    btn.innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
+    btn.setAttribute('aria-label', playing ? '一時停止' : '再生');
+    const t = id === currentId ? audio.currentTime : 0;
+    $('.pos', el).textContent = fmt(t);
+    const stamp = $('.stamp', el);
+    stamp.disabled = id !== currentId || readOnly;
+    stamp.textContent = `⏱ ${fmt(t)} をメモに入れる`;
+  }
+  let raf = 0;
+  function tick() {
+    if (currentId) { refreshDeck(currentId); draw(currentId); }
+    raf = audio.paused ? 0 : requestAnimationFrame(tick);
+  }
+  audio.addEventListener('play', () => { if (!raf) raf = requestAnimationFrame(tick); refreshDeck(currentId); });
+  audio.addEventListener('pause', () => { refreshDeck(currentId); draw(currentId); });
+  audio.addEventListener('seeked', () => { refreshDeck(currentId); draw(currentId); });
+  audio.addEventListener('ended', () => {
+    if (!$('#autonext').checked) return;
+    const list = genClips();
+    const i = list.findIndex((c) => c.id === currentId);
+    const next = list[i + 1];
+    if (!next) return;
+    toggle(next.id);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    cards.get(next.id)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  });
+
+  // ---- scope drawing: loudness envelope as bars, energy curve as a trace, playhead ----
+  function draw(id) {
+    const el = cards.get(id);
+    if (!el) return;
+    const c = byId.get(id);
+    const canvas = $('canvas', el);
+    const dpr = window.devicePixelRatio || 1;
+    const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
+    const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    const dur = id === currentId && audio.duration ? audio.duration : c.durationSec;
+    const frac = id === currentId ? Math.min(1, (audio.currentTime || 0) / dur) : 0;
+    const env = c.env;
+    const n = env.length;
+    const bw = w / n;
+    const mid = h / 2;
+    const waveC = css('--wave'), sigC = css('--signal'), softC = css('--signal-soft'), markC = css('--mark');
+    for (let i = 0; i < n; i++) {
+      const amp = Math.max(1 * dpr, env[i] * (h * 0.44));
+      ctx.fillStyle = (i + 0.5) / n <= frac ? sigC : waveC;
+      ctx.fillRect(i * bw + bw * 0.15, mid - amp, Math.max(1, bw * 0.7), amp * 2);
+    }
+    if (c.form) {
+      const pts = c.form;
+      ctx.beginPath();
+      const steps = Math.max(60, Math.round(w / (2 * dpr)));
+      for (let i = 0; i <= steps; i++) {
+        const x = i / steps;
+        const y = h - 3 * dpr - energyAt(pts, x) * (h - 6 * dpr);
+        if (i === 0) ctx.moveTo(x * w, y); else ctx.lineTo(x * w, y);
+      }
+      ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+      ctx.fillStyle = softC; ctx.fill();
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const x = i / steps;
+        const y = h - 3 * dpr - energyAt(pts, x) * (h - 6 * dpr);
+        if (i === 0) ctx.moveTo(x * w, y); else ctx.lineTo(x * w, y);
+      }
+      ctx.strokeStyle = sigC; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+    }
+    if (id === currentId) {
+      ctx.fillStyle = markC;
+      ctx.fillRect(Math.round(frac * w) - dpr, 0, 2 * dpr, h);
+    }
+  }
+  new ResizeObserver(() => cards.forEach((_, id) => draw(id))).observe(document.body);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => cards.forEach((_, id) => draw(id)));
+  new MutationObserver(() => cards.forEach((_, id) => draw(id))).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---- keyboard ----
+  document.addEventListener('keydown', (ev) => {
+    const t = ev.target;
+    if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT')) {
+      if (ev.key === 'Escape') t.blur();
+      return;
+    }
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    const list = genClips();
+    const target = focusId && cards.has(focusId) ? focusId : currentId && cards.has(currentId) ? currentId : list[0]?.id;
+    if (!target) return;
+    if (ev.key === ' ') { ev.preventDefault(); toggle(target); }
+    else if (/^[1-5]$/.test(ev.key)) { setScore(target, Number(ev.key)); }
+    else if (ev.key === 'j' || ev.key === 'k') {
+      const i = list.findIndex((c) => c.id === target);
+      const next = list[Math.min(list.length - 1, Math.max(0, i + (ev.key === 'j' ? 1 : -1)))];
+      focusId = next.id;
+      cards.get(next.id).scrollIntoView({ block: 'start' });
+      toggle(next.id);
+    } else if (ev.key === 't' && target === currentId) { ev.preventDefault(); insertStamp(target); }
+  });
+
+  function showStatus(text, warn = false) {
+    const s = $('#status');
+    s.hidden = !text;
+    s.textContent = text || '';
+    s.classList.toggle('warn', warn);
+  }
+
+  try { $('#autonext').checked = store.get('lab.autonext') !== '0'; } catch {}
+  $('#autonext').addEventListener('change', (e) => store.set('lab.autonext', e.target.checked ? '1' : '0'));
+
+  renderGens();
+  renderList();
+
+  // ---- db: live ratings ----
+  (async () => {
+    db = window.claude ? await window.claude.use('db') : null;
+    if (!db) {
+      showStatus('この表示では評価を保存できません。claude.ai でこのページを開くと保存されます。', true);
+      return;
+    }
+    showStatus('');
+    db.collection('ratings').onSnapshot((snap) => {
+      for (const d of snap.docs) {
+        const v = d.data() || {};
+        ratings.set(d.id, { score: typeof v.score === 'number' ? v.score : null, note: typeof v.note === 'string' ? v.note : '' });
+        paintRating(d.id);
+      }
+      renderProgress();
+    }, (e) => {
+      if (e && e.code === 'revoked') showStatus('このページへのアクセスが変わりました。再読み込みしてください。', true);
+      else showStatus('評価の読み込みが止まりました。再読み込みしてください。', true);
+    });
+  })();
+})();
+</script>

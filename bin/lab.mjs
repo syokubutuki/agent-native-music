@@ -24,6 +24,7 @@ import {
   writeWav,
   genomePath,
 } from '../src/lab/store.mjs';
+import { buildPage, importRatings } from '../src/lab/page.mjs';
 
 const USAGE = `usage: node bin/lab.mjs <command> [options]
 
@@ -34,6 +35,8 @@ commands:
   rate    <id> <1-5> [note...]                                      record a rating (latest wins)
   list    [--gen N] [--rated] [--top N]                             show clips and ratings
   render  <id | genome.json> [--duration s] [--out path]            re-render (e.g. longer)
+  page    [--out dir] [--format mp3|wav]                            build the listening page (default <labDir>/site)
+  import  <ratings.json>                                            merge ratings saved on the page into ratings.jsonl
 
 common: --dir <labDir>  (default ./lab, or $LAB_DIR)`;
 
@@ -48,6 +51,7 @@ const OPTIONS = {
   gen: { type: 'string' },
   rated: { type: 'boolean' },
   out: { type: 'string' },
+  format: { type: 'string' },
   help: { type: 'boolean', short: 'h' },
 };
 
@@ -172,6 +176,23 @@ function cmdRender(dir, positionals, opts) {
   console.log(`[lab] ${rel(out)}  (${durationSec}s, ${((Date.now() - started) / 1000).toFixed(1)}s to render)`);
 }
 
+function cmdPage(dir, opts) {
+  const format = opts.format ?? 'mp3';
+  if (!['mp3', 'wav'].includes(format)) fail(`--format must be mp3 or wav (got ${format})`);
+  const { index, clips } = buildPage(dir, { outDir: opts.out ? path.resolve(opts.out) : undefined, format });
+  console.log(`[lab] ${rel(index)}  (${clips.length} clips, ${format})`);
+}
+
+function cmdImport(dir, positionals) {
+  const [file] = positionals;
+  if (!file) fail('usage: lab import <ratings.json>');
+  const input = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const known = new Set(listClips(dir).map((c) => c.id));
+  const added = importRatings(dir, input, known);
+  for (const r of added) console.log(`[lab] ${r.id} = ${r.score}${r.note ? `  "${r.note}"` : ''}`);
+  console.log(`[lab] imported ${added.length} rating(s)`);
+}
+
 function main() {
   let parsed;
   try {
@@ -198,6 +219,10 @@ function main() {
         return cmdList(dir, opts);
       case 'render':
         return cmdRender(dir, rest, opts);
+      case 'page':
+        return cmdPage(dir, opts);
+      case 'import':
+        return cmdImport(dir, rest);
       default:
         fail(`unknown command: ${command}\n\n${USAGE}`);
     }
