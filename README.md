@@ -35,3 +35,6 @@ npm run lab -- render g0003-02 --duration 180  # 気に入ったものを長尺�
 - 評価ログ `lab/ratings.jsonl` とゲノム JSON は小さいのでコミット推奨（好みの記録になる）。WAV は git 管理外。
 - 音色は fm / feedback（歪んだ弦ループ）/ bytebeat / noise の 4 種、調律は N 平均律か倍音列、
   リズムは声部ごとに周期の違うユークリッドリズム、途中で 1 回だけ規則が破れる（freeze / reverse / double / solo）。
+- **v2（`specs/sound-lab-form.md`）**: ゲノムにエネルギー曲線 `form` が付き、時間とともに密度・旋律の開閉・明るさ・
+  テンポ・音量・声部の出入りが変わる（`list` の ▁▃█▅ がその曲線）。明るさの天井 `ceilingHz` で痛い高域を抑える。
+  v1 ゲノムはそのまま同じ音で鳴り、`evolve` に通すと v2 に昇格する。`evolve --duration 40` で子の長さを変えられる。

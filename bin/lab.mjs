@@ -28,8 +28,8 @@ import {
 const USAGE = `usage: node bin/lab.mjs <command> [options]
 
 commands:
-  new     [--count 8] [--duration 20] [--seed N]                     random new generation
-  evolve  [--count 8] [--top 3 | --parents id,id] [--strength 0.3] [--seed N]
+  new     [--count 8] [--duration 30] [--seed N]                     random new generation
+  evolve  [--count 8] [--top 3 | --parents id,id] [--strength 0.3] [--duration s] [--seed N]
                                                                     next generation from rated favourites
   rate    <id> <1-5> [note...]                                      record a rating (latest wins)
   list    [--gen N] [--rated] [--top N]                             show clips and ratings
@@ -83,7 +83,7 @@ function cmdNew(dir, opts) {
       randomGenome(rng, { durationSec, meta: { id, generation: gen, parents: [], strength: 0 } }),
     );
     const { wav } = saveClip(dir, genome);
-    console.log(`  ${id}  ${describeGenome(genome).padEnd(44)} ${rel(wav)}`);
+    console.log(`  ${id}  ${describeGenome(genome).padEnd(53)} ${rel(wav)}`);
   }
 }
 
@@ -103,6 +103,7 @@ function pickParents(dir, opts) {
 function cmdEvolve(dir, opts) {
   const count = numOpt(opts.count, 'count', { int: true, min: 1, max: 100 }) ?? 8;
   const strength = numOpt(opts.strength, 'strength', { min: 0, max: 1 }) ?? 0.3;
+  const durationSec = numOpt(opts.duration, 'duration', { min: 0.1, max: 3600 });
   const seed = numOpt(opts.seed, 'seed', { int: true, min: 0, max: 0xffffffff }) ?? seedFromTime();
   const parents = pickParents(dir, opts);
   const rng = createRng(seed);
@@ -115,10 +116,11 @@ function cmdEvolve(dir, opts) {
     const base = b ? crossover(a.genome, b.genome, rng) : a.genome;
     const id = clipId(gen, i);
     const child = mutateGenome(base, rng, strength);
+    if (durationSec !== undefined) child.durationSec = durationSec;
     child.meta = { id, generation: gen, parents: b ? [a.id, b.id] : [a.id], strength };
     validateGenome(child);
     const { wav } = saveClip(dir, child);
-    console.log(`  ${id}  <- ${child.meta.parents.join('+').padEnd(18)} ${describeGenome(child).padEnd(44)} ${rel(wav)}`);
+    console.log(`  ${id}  <- ${child.meta.parents.join('+').padEnd(18)} ${describeGenome(child).padEnd(53)} ${rel(wav)}`);
   }
 }
 
@@ -149,7 +151,7 @@ function cmdList(dir, opts) {
     const score = c.rating ? `★${c.rating.score}` : '  -';
     const parents = c.genome.meta?.parents?.length ? `<- ${c.genome.meta.parents.join('+')}` : '';
     const note = c.rating?.note ? `"${c.rating.note}"` : '';
-    console.log(`${c.id}  ${score}  ${describeGenome(c.genome).padEnd(44)} ${parents.padEnd(21)} ${note}`.trimEnd());
+    console.log(`${c.id}  ${score}  ${describeGenome(c.genome).padEnd(53)} ${parents.padEnd(21)} ${note}`.trimEnd());
   }
 }
 

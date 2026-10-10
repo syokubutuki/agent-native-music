@@ -37,7 +37,10 @@ test('every voice type and break kind renders finite, bounded, non-silent audio'
     for (const kind of BREAK_KINDS) {
       const g = randomGenome(rng);
       g.voices = [randomVoice(rng, type), randomVoice(rng, type)];
-      g.voices.forEach((v) => (v.pulses = v.steps)); // guarantee notes inside a short clip
+      g.voices.forEach((v) => {
+        v.pulses = v.steps; // guarantee notes inside a short clip
+        v.entry = 0;
+      });
       g.break = { ...g.break, kind, at: 0.4, length: 0.3 };
       checkAudio(render(g, OPTS));
     }
@@ -45,7 +48,7 @@ test('every voice type and break kind renders finite, bounded, non-silent audio'
 });
 
 test('many random genomes render cleanly', () => {
-  for (let seed = 100; seed < 130; seed++) checkAudio(render(randomGenome(createRng(seed)), { ...OPTS, durationSec: 0.6 }));
+  for (let seed = 100; seed < 130; seed++) checkAudio(render(randomGenome(createRng(seed)), { ...OPTS, durationSec: 3 }));
 });
 
 test('euclid distributes pulses evenly and rotates', () => {

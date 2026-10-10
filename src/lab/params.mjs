@@ -170,3 +170,24 @@ export function validateFields(specMap, obj, path) {
   if (!obj || typeof obj !== 'object') throw new Error(`${path}: must be an object`);
   for (const [key, spec] of Object.entries(specMap)) validateValue(spec, obj[key], `${path}.${key}`);
 }
+
+// --- v2: macro form (energy curve) ---------------------------------------------------------
+
+export const FORM_SHAPES = ['linear', 'exp', 'jump'];
+export const FORM_MIN_POINTS = 3;
+export const FORM_MAX_POINTS = 7;
+export const FORM_MIN_GAP = 0.03;
+
+export const FORM_SPEC = {
+  fill: num(0, 0.6),
+  pitchCoupling: num(-1, 1),
+  brightCoupling: num(0, 1),
+  tempoBend: num(-1, 1),
+  dynamics: num(0, 1),
+  ceilingHz: num(1500, 5000, { log: true }),
+};
+
+// Per-voice field added in v2: the voice joins once the energy rises past `entry`.
+export const VOICE_FORM = {
+  entry: num(0, 0.9),
+};
