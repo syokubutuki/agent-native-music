@@ -52,6 +52,7 @@ header { display: flex; flex-direction: column; gap: 6px; }
 .now-label { font-size: 0.75rem; color: var(--muted); }
 #chord { font-family: var(--font-mono); font-size: 2rem; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
 .strip { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
+button.bar { font: inherit; color: inherit; background: transparent; cursor: pointer; }
 .bar { border: 1px solid var(--line); border-radius: 8px; padding: 8px 4px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; transition: background-color .12s, border-color .12s; }
 .bar .chords { font-family: var(--font-mono); font-size: 0.72rem; line-height: 1.25; text-align: center; overflow-wrap: anywhere; min-height: 2.5em; display: flex; flex-direction: column; justify-content: center; }
 .bar .sec { font-size: 0.64rem; line-height: 1.2; color: var(--muted); text-align: center; min-height: 1.2em; overflow-wrap: anywhere; }
@@ -59,6 +60,9 @@ header { display: flex; flex-direction: column; gap: 6px; }
 .bar .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--line); }
 .bar.on { border-color: var(--lamp); background: color-mix(in srgb, var(--lamp) 14%, transparent); }
 .bar.on .dots i.on { background: var(--lamp); }
+.seekrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.seekrow input { flex: 1 1 200px; min-width: 0; }
+.seekrow output { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .hint { font-size: 0.82rem; color: var(--muted); }
 .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px 24px; }
 .ctl { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -125,8 +129,13 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
         <span class="now-label" id="scene"></span>
       </div>
     </div>
+    <div class="chips" id="scenes" aria-label="場面へ移動"></div>
     <div class="strip" id="strip" aria-label="小節ごとの進行"></div>
-    <p class="hint">コードは「同時に鳴らす音のセット」のことです。上の帯は曲を小節ごとに区切ったもので、鳴っている場所がオレンジに光ります。曲は最後まで行くと最初に戻って繰り返します。</p>
+    <div class="seekrow">
+      <input id="seek" type="range" min="0" max="0" step="1" value="0" aria-label="再生位置">
+      <output id="seekOut" class="mono" aria-live="off"></output>
+    </div>
+    <p class="hint">帯の小節や上の場面ボタンを押すと、そこから再生します。バーを動かすと拍(ひと区切り)単位で好きな位置から聴けます。コードは「同時に鳴らす音のセット」のことです。曲は最後まで行くと最初に戻って繰り返します。</p>
   </section>
 
   <section class="section" aria-label="調整">
@@ -208,7 +217,7 @@ let ctx = null, master, mix, verb, buses = [], wobbleGain, noiseBuf, rainGain;
 let bpm = SONG.bpm, volume = 0.7, rainOn = true;
 let mutedParts = SONG.tracks.map(() => false);
 let playing = false, timer = null, raf = null, pauseTimer = null;
-let tickPos = 0, tickTime = 0;
+let tickPos = 0, tickTime = 0, curBeat = 0, dragging = false;
 const visQ = [];
 
 /* ---------- audio graph ---------- */
@@ -416,7 +425,7 @@ function setPlayingUI(on) {
 }
 async function play() {
   clearTimeout(pauseTimer);
-  if (!ctx) { initAudio(); tickTime = ctx.currentTime + 0.08; tickPos = 0; }
+  if (!ctx) { initAudio(); tickTime = ctx.currentTime + 0.08; }
   await ctx.resume();
   if (!playing) tickTime = Math.max(tickTime, ctx.currentTime + 0.05);
   master.gain.cancelScheduledValues(ctx.currentTime);
@@ -443,7 +452,8 @@ function buildStrip() {
   barEls = []; shown = -1;
   const strip = $('strip'); strip.replaceChildren();
   for (let b = 0; b < SONG.bars; b++) {
-    const el = document.createElement('div'); el.className = 'bar';
+    const el = document.createElement('button'); el.type = 'button'; el.className = 'bar'; el.setAttribute('aria-label', `${b + 1}小節目から再生`);
+    el.addEventListener('click', () => seekToBeat(b * BPB));
     const ch = document.createElement('div'); ch.className = 'chords';
     for (const c of chordAt) if (c.beat >= b * BPB && c.beat < (b + 1) * BPB) { const s = document.createElement('span'); s.textContent = c.label; ch.appendChild(s); }
     const sec = document.createElement('div'); sec.className = 'sec';
@@ -453,11 +463,39 @@ function buildStrip() {
     el.append(sec, ch, dots); strip.appendChild(el); barEls.push(el);
   }
   $('chord').textContent = '–'; $('scene').textContent = '';
+  const sc = $('scenes'); sc.replaceChildren();
+  for (const x of sectionAt) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = `▶ ${x.label}`;
+    b.addEventListener('click', () => seekToBeat(x.bar * BPB));
+    sc.appendChild(b);
+  }
+  sc.hidden = sectionAt.length === 0;
+  const sk = $('seek'); sk.max = SONG.bars * BPB - 1; sk.value = 0; curBeat = 0; updatePos();
+}
+function fmtTime(sec) { const s = Math.max(0, Math.round(sec)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function posLabel(beat) {
+  return `${Math.floor(beat / BPB) + 1}小節目 ${beat % BPB + 1}拍目 ・ ${fmtTime(beat * 60 / bpm)} / ${fmtTime(SONG.bars * BPB * 60 / bpm)}`;
+}
+function updatePos(beat = curBeat) { $('seekOut').textContent = posLabel(beat); }
+// 任意の位置から再生する。鳴っている音は短く消してから、その拍の頭から始める
+function seekToBeat(beat) {
+  beat = Math.max(0, Math.min(SONG.bars * BPB - 1, Math.round(beat)));
+  tickPos = beat * TPB; visQ.length = 0; curBeat = beat;
+  if (ctx) {
+    const old = buses, now = ctx.currentTime;
+    for (const b of old) { b.gain.cancelScheduledValues(now); playing ? b.gain.setTargetAtTime(0, now, 0.008) : b.gain.setValueAtTime(0, now); }
+    setTimeout(() => old.forEach((b) => b.disconnect()), 300);
+    buildBuses(); tickTime = now + 0.06;
+  }
+  shown = -1; show(tickPos);
+  if (!playing) play();
 }
 function show(tick) {
   const beatPos = Math.floor(tick / TPB);
   if (beatPos === shown) return;
-  shown = beatPos;
+  shown = beatPos; curBeat = beatPos;
+  if (!dragging) $('seek').value = beatPos;
+  updatePos(beatPos);
   const bar = Math.floor(beatPos / BPB), inBar = beatPos % BPB;
   barEls.forEach((el, i) => {
     el.classList.toggle('on', i === bar);
@@ -492,8 +530,13 @@ function renderHeader() {
   [...$('versions').children].forEach((b, i) => b.setAttribute('aria-pressed', String(SONGS[i] === SONG)));
 }
 const tempo = $('tempo');
-const syncTempo = () => { bpm = Number(tempo.value); $('tempoOut').textContent = bpm + ' BPM'; };
+const syncTempo = () => { bpm = Number(tempo.value); $('tempoOut').textContent = bpm + ' BPM'; if (typeof updatePos === 'function' && BPB) updatePos(); };
 tempo.addEventListener('input', syncTempo); syncTempo();
+const seek = $('seek');
+seek.addEventListener('pointerdown', () => { dragging = true; });
+seek.addEventListener('pointerup', () => { dragging = false; });
+seek.addEventListener('input', () => updatePos(Number(seek.value)));
+seek.addEventListener('change', () => { dragging = false; seekToBeat(Number(seek.value)); });
 const vol = $('vol');
 const syncVol = () => {
   volume = Number(vol.value) / 100; $('volOut').textContent = vol.value + '%';
