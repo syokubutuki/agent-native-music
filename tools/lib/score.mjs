@@ -1,7 +1,7 @@
 // 楽譜データ (anm-score/1) の検証。web/player.template.html の読み込み仕様と対応させる。
 export const FORMAT = 'anm-score/1';
-export const PITCHED = ['epiano', 'pluck', 'pad', 'bass'];
-export const DRUMS = ['kick', 'snare', 'hat'];
+export const PITCHED = ['epiano', 'pluck', 'pad', 'airpad', 'bell', 'bass'];
+export const PITCHLESS = ['kick', 'snare', 'hat', 'riser']; // pitch は '-' を書く
 const PITCH_RE = /^[A-G][#b]?-?\d$/;
 
 export function validateScore(s) {
@@ -30,7 +30,7 @@ export function validateScore(s) {
   if (!Array.isArray(s.tracks) || s.tracks.length === 0) return [...errors, 'tracks must be a non-empty array'];
   s.tracks.forEach((t, ti) => {
     const at = `tracks[${ti}]`;
-    const drum = DRUMS.includes(t.instrument);
+    const drum = PITCHLESS.includes(t.instrument);
     if (!drum && !PITCHED.includes(t.instrument)) err(`${at}.instrument unknown: ${t.instrument}`);
     if (typeof t.name !== 'string' || !t.name) err(`${at}.name required`);
     if (!(t.gain >= 0 && t.gain <= 1.5)) err(`${at}.gain must be 0..1.5`);

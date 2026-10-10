@@ -183,6 +183,7 @@ let SONG = SONGS[SONGS.length - 1]; // 既定は最新の版
 const TPB = 12; // ticks per beat (supports 8ths, 16ths and triplets)
 const SEMI = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 const DRUMS = ['kick', 'snare', 'hat'];
+const NOPITCH = [...DRUMS, 'riser'];
 function freqOf(name) {
   const m = /^([A-G])([#b]?)(-?\d)$/.exec(name);
   const midi = 12 * (Number(m[3]) + 1) + SEMI[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
@@ -196,7 +197,7 @@ function compile() {
   SONG.tracks.forEach((t, ti) => {
     for (const [beat, dur, pitch, vel] of t.notes) {
       const tick = Math.round(beat * TPB);
-      (byTick[tick] ||= []).push({ ti, inst: t.instrument, dur, vel, freq: DRUMS.includes(t.instrument) ? 0 : freqOf(pitch) });
+      (byTick[tick] ||= []).push({ ti, inst: t.instrument, dur, vel, freq: NOPITCH.includes(t.instrument) ? 0 : freqOf(pitch) });
     }
   });
 }
@@ -219,7 +220,7 @@ function makeImpulse(seconds) {
   }
   return buf;
 }
-const SEND = { epiano: 0.45, pluck: 0.8, pad: 0.6, bass: 0, kick: 0, snare: 0.35, hat: 0.08 };
+const SEND = { epiano: 0.45, pluck: 0.8, pad: 0.6, airpad: 0.85, bell: 1, riser: 0.25, bass: 0, kick: 0, snare: 0.35, hat: 0.08 };
 function initAudio() {
   ctx = new (window.AudioContext || window.webkitAudioContext)();
   master = ctx.createGain(); master.gain.value = 0;
@@ -285,6 +286,11 @@ function env(g, t, peak, attack, tau, dur, relTau) {
   g.gain.setTargetAtTime(peak * 0.38, t + attack, tau);
   g.gain.setTargetAtTime(0, t + dur, relTau);
 }
+// route a note through a stereo panner (falls back to mono where unsupported)
+function panTo(out, p) {
+  if (!ctx.createStereoPanner) return out;
+  const sp = ctx.createStereoPanner(); sp.pan.value = p; sp.connect(out); return sp;
+}
 const INST = {
   epiano(t, e, out) {
     const spb = 60 / bpm, dur = e.dur * spb, peak = e.vel * 0.2;
@@ -311,6 +317,40 @@ const INST = {
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(e.vel * 0.05, t + 0.7);
     g.gain.setTargetAtTime(0, t + dur, 0.5);
     for (const o of [osc('sawtooth', e.freq, t, lp, { detune: -7 }), osc('sawtooth', e.freq, t, lp, { detune: 7 })]) o.stop(t + dur + 3);
+  },
+  // 晴れ間用: 高い音が長く伸びて消える、あちこちから聞こえるきらめき(木漏れ日)
+  bell(t, e, out) {
+    const dest = panTo(out, Math.random() * 1.4 - 0.7);
+    const g = ctx.createGain(); g.connect(dest);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(e.vel * 0.15, t + 0.004);
+    g.gain.setTargetAtTime(0, t + 0.004, 0.6);
+    const h2 = ctx.createGain(); h2.gain.value = 0.28; h2.connect(g);
+    const h3 = ctx.createGain(); h3.gain.value = 0.1; h3.connect(g);
+    for (const o of [osc('sine', e.freq, t, g), osc('sine', e.freq * 2.01, t, h2), osc('sine', e.freq * 2.76, t, h3)]) o.stop(t + 4);
+  },
+  // 晴れ間用: ゆっくり立ち上がり、左右に広がる温かいパッド
+  airpad(t, e, out) {
+    const spb = 60 / bpm, dur = e.dur * spb;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = 0.3;
+    const g = ctx.createGain(); lp.connect(g); g.connect(out);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(e.vel * 0.045, t + 1.1);
+    g.gain.setTargetAtTime(0, t + dur, 0.8);
+    const left = ctx.createGain(), right = ctx.createGain();
+    left.connect(panTo(lp, -0.6)); right.connect(panTo(lp, 0.6));
+    const mid = ctx.createGain(); mid.gain.value = 0.6; mid.connect(lp);
+    const end = t + dur + 4.5;
+    for (const o of [osc('sawtooth', e.freq, t, left, { detune: -9 }), osc('sawtooth', e.freq, t, right, { detune: 9 }), osc('sine', e.freq, t, mid)]) o.stop(end);
+  },
+  // 予感用: 音の高さが上へ登っていく、ざわざわした音のせり上がり
+  riser(t, e, out) {
+    const spb = 60 / bpm, dur = e.dur * spb;
+    const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.1;
+    bp.frequency.setValueAtTime(350, t); bp.frequency.exponentialRampToValueAtTime(6500, t + dur);
+    const g = ctx.createGain(); s.connect(bp); bp.connect(g); g.connect(out);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(e.vel * 0.18, t + dur * 0.97);
+    g.gain.linearRampToValueAtTime(0, t + dur + 0.06);
+    s.start(t); s.stop(t + dur + 0.1);
   },
   bass(t, e, out) {
     const spb = 60 / bpm, dur = e.dur * spb;
