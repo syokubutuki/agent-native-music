@@ -1,5 +1,41 @@
 [
   {
+    "id": "ame-ame-ame-v2-talk",
+    "group": "あめ あめ あめ。",
+    "label": "v2-talk",
+    "title": "あめ あめ あめ。（v2・読み上げ方式）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v2-talk.wav",
+    "durationSec": 191.25
+  },
+  {
+    "id": "ame-ame-ame-v2-sing",
+    "group": "あめ あめ あめ。",
+    "label": "v2-sing",
+    "title": "あめ あめ あめ。（v2・歌唱方式）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v2-sing.wav",
+    "durationSec": 191.25
+  },
+  {
+    "id": "ame-ame-ame-v2-hard",
+    "group": "あめ あめ あめ。",
+    "label": "v2-hard",
+    "title": "あめ あめ あめ。（v2・歌唱方式・機械的）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v2-hard.wav",
+    "durationSec": 191.25
+  },
+  {
+    "id": "ame-ame-ame-v2-talk-inst",
+    "group": "あめ あめ あめ。",
+    "label": "v2-talk",
+    "title": "インスト（歌なし）",
+    "desc": "128 BPM · A major",
+    "wav": "out/inst-v2-talk.wav",
+    "durationSec": 191.25
+  },
+  {
     "id": "ame-ame-ame-v1",
     "group": "あめ あめ あめ。",
     "label": "v1",

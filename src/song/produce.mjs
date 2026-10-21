@@ -369,9 +369,12 @@ export function sectionLevels(sections, total, { sr, bpm }) {
 
 const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26 };
 
-export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, log = () => {} } = {}) {
+// vocalMode: 'talk' (talk voices made to sing), 'sing' (singing voices, smooth tuning) or 'hard'
+// (singing voices pinned to the notes). Defaults to the score's own choice.
+export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, vocalMode, log = () => {} } = {}) {
   const { bpm } = score.meta;
-  const tuning = score.meta.tuning ?? { mode: 'hard' };
+  const mode = vocalMode ?? score.meta.vocalMode ?? 'sing';
+  const tuning = vocalMode === 'hard' ? { mode: 'hard' } : vocalMode === 'sing' ? { mode: 'soft', keep: 0.5, smooth: 3 } : (score.meta.tuning ?? { mode: 'hard' });
   const { tracks, vocals, chops: arrangeChops, totalBeats } = arrange(score.sections);
   const total = Math.round(((totalBeats + 8) * 60 * sr) / bpm); // two bars of tail
   const ctx = { sr, bpm };
@@ -429,9 +432,9 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
     fs.writeFileSync(file, JSON.stringify(q));
     return q;
   };
-  const sing = async (q, name) => {
-    const file = `${workDir}/vocal-${name}-${hash([q, voiceStyle])}.wav`;
-    if (!fs.existsSync(file)) fs.writeFileSync(file, await frameSynthesis(q, voiceStyle, { engine }));
+  const sing = async (q, name, style = voiceStyle) => {
+    const file = `${workDir}/vocal-${name}-${hash([q, style])}.wav`;
+    if (!fs.existsSync(file)) fs.writeFileSync(file, await frameSynthesis(q, style, { engine }));
     return loadWav(file, sr).channels[0];
   };
 
@@ -441,7 +444,7 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   const lead = 1;
   const singers = score.meta.singers ?? {};
   const talkLog = [];
-  for (const sec of vocals.filter((v) => v.singer && score.meta.vocalMode === 'talk')) {
+  for (const sec of vocals.filter((v) => v.singer && mode === 'talk')) {
     const who = singers[sec.singer];
     for (const ph of splitPhrases(capForTalk(sec.notes, bpm))) {
       const at = sec.startBeat + ph.beat;
@@ -488,7 +491,10 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
     log(`vocal ${sec.name} (talk)`);
   }
   if (talkLog.length) log(`talk fallbacks to singing voice: ${talkLog.length}\n  ${talkLog.join('\n  ')}`);
-  for (const sec of vocals.filter((v) => !(v.singer && score.meta.vocalMode === 'talk'))) {
+  for (const sec of vocals.filter((v) => !(v.singer && mode === 'talk'))) {
+    const who = sec.singer ? singers[sec.singer] : null;
+    const style = who ? who.singStyle : voiceStyle;
+    const pan = who ? ((who.pan + 1) * Math.PI) / 4 : Math.PI / 4;
     const sc = toScore(sec.notes, bpm, { leadBeats: lead });
     const query = await cachedQuery(sc);
     const hz = (i) => midiHz(sc.notes[i].key);
@@ -499,13 +505,13 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
       for (let i = 0; i < mono.length; i++) {
         const j = offset + i + d;
         if (j < 0 || j >= total) continue;
-        if (side <= 0) bus.left[j] += mono[i];
-        if (side >= 0) bus.right[j] += mono[i];
+        if (side <= 0) bus.left[j] += mono[i] * (side === 0 ? Math.cos(pan) * Math.SQRT2 : 1);
+        if (side >= 0) bus.right[j] += mono[i] * (side === 0 ? Math.sin(pan) * Math.SQRT2 : 1);
       }
     };
-    put(await sing(tuned, sec.name), vocal);
+    put(await sing(tuned, sec.name, style), vocal);
     if (sec.double) {
-      const nat = await sing(query, `${sec.name}-double`);
+      const nat = await sing(query, `${sec.name}-double`, style);
       put(nat, double, { side: -1 });
       put(nat, double, { side: 1, delay: 11 });
     }

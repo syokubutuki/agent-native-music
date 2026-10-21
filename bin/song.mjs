@@ -18,7 +18,9 @@ const USAGE = `usage: node bin/song.mjs <command> <songDir>
 commands:
   voices <songDir>   sing the audition phrase with every candidate voice (needs a running VOICEVOX engine)
   chorus <songDir>   fast hard-tuned chorus over a grid-locked bed, once per candidate voice
-  produce <songDir>  render a produced song from <songDir>/score.mjs: full mix + instrumental (needs VOICEVOX)`;
+  produce <songDir> [--mode talk|sing|hard]
+                     render a produced song from <songDir>/score.mjs: full mix + instrumental (needs VOICEVOX).
+                     --mode overrides how the voices sing (talk voices / singing voices / singing pinned to the notes)`;
 
 function fail(msg) {
   console.error(`[song] ${msg}`);
@@ -107,7 +109,10 @@ async function cmdChorus(songDir) {
   updatePageManifest(songDir, chorus.group, items);
 }
 
-async function cmdProduce(songDir) {
+const MODE_LABEL = { talk: '読み上げ方式', sing: '歌唱方式', hard: '歌唱方式・機械的' };
+
+async function cmdProduce(songDir, vocalMode) {
+  if (vocalMode && !MODE_LABEL[vocalMode]) fail(`--mode must be talk, sing or hard (got ${vocalMode})`);
   const { pathToFileURL } = await import('node:url');
   const { produce } = await import('../src/song/produce.mjs');
   const score = await import(pathToFileURL(path.join(songDir, 'score.mjs')).href);
@@ -115,8 +120,9 @@ async function cmdProduce(songDir) {
   const work = path.join(outDir, 'work');
   fs.mkdirSync(work, { recursive: true });
   const t0 = Date.now();
-  const res = await produce(score, { voiceStyle: score.meta.voice.style, workDir: work, log: (m) => console.log(`[song] ${m}`) });
-  const version = score.meta.version ?? 1;
+  const res = await produce(score, { voiceStyle: score.meta.voice.style, workDir: work, vocalMode, log: (m) => console.log(`[song] ${m}`) });
+  const version = `${score.meta.version ?? 1}${vocalMode ? `-${vocalMode}` : ''}`;
+  const modeNote = vocalMode ? `・${MODE_LABEL[vocalMode]}` : '';
   const group = `${score.meta.title}`;
   const files = { full: path.join(outDir, `full-v${version}.wav`), instrumental: path.join(outDir, `inst-v${version}.wav`) };
   fs.writeFileSync(files.full, encodeWav(res.full));
@@ -124,14 +130,17 @@ async function cmdProduce(songDir) {
   const v = score.meta.voice;
   // keep earlier versions on the page for comparison; newest first
   const manifest = path.join(songDir, 'page.json');
+  const mine = new Set([`${path.basename(songDir)}-v${version}`, `${path.basename(songDir)}-v${version}-inst`]);
   const older = fs.existsSync(manifest)
-    ? JSON.parse(fs.readFileSync(manifest, 'utf8')).filter((i) => i.group === group && !i.id.startsWith(`${path.basename(songDir)}-v${version}`))
+    ? JSON.parse(fs.readFileSync(manifest, 'utf8')).filter((i) => i.group === group && !mine.has(i.id))
     : [];
   updatePageManifest(songDir, group, [
-    { id: `${path.basename(songDir)}-v${version}`, group, label: `v${version}`, title: `${score.meta.title}（完成版 v${version}）`,
+    { id: `${path.basename(songDir)}-v${version}`, group, label: `v${version}`, title: `${score.meta.title}（v${score.meta.version ?? 1}${modeNote}）`,
       desc: `${score.meta.bpm} BPM · ${score.meta.key} · VOICEVOX:${v.name}（${v.styleName}）`, wav: path.relative(songDir, files.full), durationSec: res.durationSec },
+...(vocalMode && vocalMode !== 'talk' ? [] : [ // the instrumental is the same for every vocal mode: list it once
     { id: `${path.basename(songDir)}-v${version}-inst`, group, label: `v${version}`, title: 'インスト（歌なし）',
       desc: `${score.meta.bpm} BPM · ${score.meta.key}`, wav: path.relative(songDir, files.instrumental), durationSec: res.durationSec },
+    ]),
     ...older,
   ]);
   console.log(`[song] ${path.relative(process.cwd(), files.full)}  (${res.durationSec.toFixed(1)}s, peak ${res.full.peak.toFixed(2)}, ${((Date.now() - t0) / 1000).toFixed(0)}s)`);
@@ -145,7 +154,10 @@ if (!command || !songDir) {
 try {
   if (command === 'voices') await cmdVoices(path.resolve(songDir));
   else if (command === 'chorus') await cmdChorus(path.resolve(songDir));
-  else if (command === 'produce') await cmdProduce(path.resolve(songDir));
+  else if (command === 'produce') {
+    const i = process.argv.indexOf('--mode');
+    await cmdProduce(path.resolve(songDir), i > 0 ? process.argv[i + 1] : undefined);
+  }
   else fail(`unknown command: ${command}\n\n${USAGE}`);
 } catch (err) {
   fail(err.message);
