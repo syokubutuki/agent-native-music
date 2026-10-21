@@ -80,7 +80,8 @@ test('MusicXML export: every measure is full, every sung note carries one lyric'
 test('every lyric line in a song is the lyric of notes that start at that line', () => {
   for (const song of vocalSongs) {
     const v = song.tracks.find((t) => t.vocal);
-    const joined = song.lyrics.map((l) => l.text.replace(/\s/g, '')).join('');
+    const hira = (x) => x.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+    const joined = hira(song.lyrics.map((l) => l.text.replace(/\s/g, '')).join(''));
     const sung = [...v.notes].sort((a, b) => a[0] - b[0]).map((n) => n[4]).join('');
     assert.equal(sung, joined, song.id);
   }
