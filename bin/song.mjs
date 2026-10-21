@@ -18,9 +18,9 @@ const USAGE = `usage: node bin/song.mjs <command> <songDir>
 commands:
   voices <songDir>   sing the audition phrase with every candidate voice (needs a running VOICEVOX engine)
   chorus <songDir>   fast hard-tuned chorus over a grid-locked bed, once per candidate voice
-  produce <songDir> [--mode talk|sing|hard]
+  produce <songDir> [--mode talk|talkhard|sing|hard]
                      render a produced song from <songDir>/score.mjs: full mix + instrumental (needs VOICEVOX).
-                     --mode overrides how the voices sing (talk voices / singing voices / singing pinned to the notes)`;
+                     --mode overrides how the voices sing (talk voices / talk voices pitch-pinned / singing voices / singing pinned)`;
 
 function fail(msg) {
   console.error(`[song] ${msg}`);
@@ -109,10 +109,10 @@ async function cmdChorus(songDir) {
   updatePageManifest(songDir, chorus.group, items);
 }
 
-const MODE_LABEL = { talk: '読み上げ方式', sing: '歌唱方式', hard: '歌唱方式・機械的' };
+const MODE_LABEL = { talk: '読み上げ方式', talkhard: '読み上げ方式・機械的', sing: '歌唱方式', hard: '歌唱方式・機械的' };
 
 async function cmdProduce(songDir, vocalMode) {
-  if (vocalMode && !MODE_LABEL[vocalMode]) fail(`--mode must be talk, sing or hard (got ${vocalMode})`);
+  if (vocalMode && !MODE_LABEL[vocalMode]) fail(`--mode must be talk, talkhard, sing or hard (got ${vocalMode})`);
   const { pathToFileURL } = await import('node:url');
   const { produce } = await import('../src/song/produce.mjs');
   const score = await import(pathToFileURL(path.join(songDir, 'score.mjs')).href);

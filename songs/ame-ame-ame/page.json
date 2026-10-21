@@ -1,5 +1,32 @@
 [
   {
+    "id": "ame-ame-ame-v3-talkhard",
+    "group": "あめ あめ あめ。",
+    "label": "v3-talkhard",
+    "title": "あめ あめ あめ。（v3・読み上げ方式・機械的）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v3-talkhard.wav",
+    "durationSec": 191.25
+  },
+  {
+    "id": "ame-ame-ame-v3-talk",
+    "group": "あめ あめ あめ。",
+    "label": "v3-talk",
+    "title": "あめ あめ あめ。（v3・読み上げ方式）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v3-talk.wav",
+    "durationSec": 191.25
+  },
+  {
+    "id": "ame-ame-ame-v3-talk-inst",
+    "group": "あめ あめ あめ。",
+    "label": "v3-talk",
+    "title": "インスト（歌なし）",
+    "desc": "128 BPM · A major",
+    "wav": "out/inst-v3-talk.wav",
+    "durationSec": 191.25
+  },
+  {
     "id": "ame-ame-ame-v2-talk",
     "group": "あめ あめ あめ。",
     "label": "v2-talk",

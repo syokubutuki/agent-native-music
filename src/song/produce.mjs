@@ -2,6 +2,7 @@
 
 import { createBus, kick, clap, hat, riser, impact, bass, supersaw, pluck, bell, chip, toy, snare, futureChords, marimba, roundBass, shaker, lightKick, slideWhistle } from './synth.mjs';
 import { talkQuery, talkSynthesis } from './talksing.mjs';
+import { correctPitch } from './psola.mjs';
 import { decodeWav } from '../lab/wav.mjs';
 import { reverb, pingPong, sidechainCurve, applyGain, eq, compress, levelTo, mixInto, master } from './fx.mjs';
 import { toScore, singQuery, frameSynthesis, hardTune, softTune, midiHz, vowelOf } from './voicevox.mjs';
@@ -369,7 +370,8 @@ export function sectionLevels(sections, total, { sr, bpm }) {
 
 const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26 };
 
-// vocalMode: 'talk' (talk voices made to sing), 'sing' (singing voices, smooth tuning) or 'hard'
+// vocalMode: 'talk' (talk voices made to sing), 'talkhard' (talk voices, then PSOLA pitch correction
+// pinning every note: talk timbre, machine pitch), 'sing' (singing voices, smooth tuning) or 'hard'
 // (singing voices pinned to the notes). Defaults to the score's own choice.
 export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, vocalMode, log = () => {} } = {}) {
   const { bpm } = score.meta;
@@ -444,7 +446,29 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   const lead = 1;
   const singers = score.meta.singers ?? {};
   const talkLog = [];
-  for (const sec of vocals.filter((v) => v.singer && mode === 'talk')) {
+  const talkLike = mode === 'talk' || mode === 'talkhard';
+  // Target pitch over a rendered phrase: each note's pitch from its onset, moving to the next note
+  // over 12 ms — the "pinned" contour the talk voice is corrected to in talkhard mode.
+  const phraseTarget = (notes, leadSec) => {
+    const onsets = [];
+    let t = leadSec;
+    for (const n of notes) {
+      onsets.push(t);
+      t += (n.beats * 60) / bpm;
+    }
+    const glide = 0.012;
+    return (time) => {
+      let i = 0;
+      while (i + 1 < notes.length && time >= onsets[i + 1]) i++;
+      const here = midiHz(notes[i].key);
+      if (i + 1 < notes.length && time > onsets[i + 1] - glide) {
+        const u = (time - (onsets[i + 1] - glide)) / glide;
+        return here * (midiHz(notes[i + 1].key) / here) ** u;
+      }
+      return here;
+    };
+  };
+  for (const sec of vocals.filter((v) => v.singer && talkLike)) {
     const who = singers[sec.singer];
     for (const ph of splitPhrases(capForTalk(sec.notes, bpm))) {
       const at = sec.startBeat + ph.beat;
@@ -465,6 +489,7 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
         if (qa.ok) {
           mono = loadWav(wfile, sr).channels[0];
           leadSec = tq.leadSec;
+          if (mode === 'talkhard') mono = correctPitch(mono, sr, phraseTarget(ph.notes, leadSec));
         } else talkLog.push(`${sec.name}@${ph.beat}: ${qa.reason}`);
       } catch (err) {
         talkLog.push(`${sec.name}@${ph.beat}: ${err.message.slice(0, 120)}`);
@@ -473,7 +498,8 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
         // fallback: the same character's singing voice, smooth-tuned
         const sc = toScore(ph.notes, bpm, { leadBeats: lead });
         const q = await cachedQuery(sc);
-        const tuned = softTune(q, sc, (i) => midiHz(sc.notes[i].key), { keep: 0.5, smooth: 3 });
+        const fhz = (i) => midiHz(sc.notes[i].key);
+        const tuned = mode === 'talkhard' ? hardTune(q, sc, fhz, { glide: 1 }) : softTune(q, sc, fhz, { keep: 0.5, smooth: 3 });
         const file = `${workDir}/vocal-fallback-${hash([tuned, who.singStyle])}.wav`;
         if (!fs.existsSync(file)) fs.writeFileSync(file, await frameSynthesis(tuned, who.singStyle, { engine }));
         mono = loadWav(file, sr).channels[0];
@@ -491,7 +517,7 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
     log(`vocal ${sec.name} (talk)`);
   }
   if (talkLog.length) log(`talk fallbacks to singing voice: ${talkLog.length}\n  ${talkLog.join('\n  ')}`);
-  for (const sec of vocals.filter((v) => !(v.singer && mode === 'talk'))) {
+  for (const sec of vocals.filter((v) => !(v.singer && talkLike))) {
     const who = sec.singer ? singers[sec.singer] : null;
     const style = who ? who.singStyle : voiceStyle;
     const pan = who ? ((who.pan + 1) * Math.PI) / 4 : Math.PI / 4;
