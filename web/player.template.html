@@ -155,7 +155,7 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
     <div class="controls">
       <div class="ctl">
         <label for="tempo"><span>テンポ(速さ)</span><output id="tempoOut"></output></label>
-        <input id="tempo" type="range" min="50" max="110" step="1">
+        <input id="tempo" type="range" min="30" max="300" step="1">
       </div>
       <div class="ctl">
         <label for="vol"><span>音量</span><output id="volOut"></output></label>
@@ -585,6 +585,11 @@ function renderHeader() {
   }));
 }
 const tempo = $('tempo');
+// 曲ごとに元のテンポの半分〜1.5倍を動かせるようにする(速い曲の元のテンポが範囲外になって遅く鳴るのを防ぐ)
+function setupTempo() {
+  tempo.min = Math.round(SONG.bpm * 0.5); tempo.max = Math.round(SONG.bpm * 1.5);
+  tempo.value = SONG.bpm; syncTempo();
+}
 const syncTempo = () => { bpm = Number(tempo.value); $('tempoOut').textContent = bpm + ' BPM'; if (typeof updatePos === 'function' && BPB) updatePos(); };
 tempo.addEventListener('input', syncTempo); syncTempo();
 const seek = $('seek');
@@ -622,7 +627,7 @@ function switchSong(song) {
   mutedParts = SONG.tracks.map(() => false);
   visQ.length = 0; tickPos = 0;
   if (ctx) { buses.forEach((b) => b.disconnect()); buildBuses(); tickTime = ctx.currentTime + 0.08; }
-  tempo.value = SONG.bpm; syncTempo();
+  setupTempo();
   buildStrip(); renderParts(); renderHeader();
   if (idChanged && typeof subscribeNotes === 'function') subscribeNotes();
 }
@@ -631,7 +636,7 @@ IDS.forEach((id) => {
   b.addEventListener('click', () => switchSong(latestOf(id)));
   $('songs').appendChild(b);
 });
-tempo.value = SONG.bpm; syncTempo();
+setupTempo();
 buildStrip(); renderParts(); renderHeader();
 
 /* ---------- listening notes ---------- */

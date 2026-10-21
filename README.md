@@ -33,7 +33,7 @@ npm run test:tools     # 楽譜の検証・ビルドのテスト
 `vocal: true` の `lead` トラック(1音1モーラのひらがな、単旋律、小節をまたがない)を MusicXML に書き出す。NEUTRINO など MusicXML を読める歌声合成ソフトに渡すための形式。
 
 ```
-node tools/export-musicxml.mjs songs/sketch-d-zenbu-suuji-v1.json   # -> exports/musicxml/*.musicxml
+node tools/export-musicxml.mjs songs/sketch-f-betsuni-v1.json   # -> exports/musicxml/*.musicxml
 ```
 
 書き出したファイルは `exports/musicxml/` にコミットしてある。歌声にした WAV は試聴ページに取り込む予定(未実装)。
