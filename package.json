@@ -5,6 +5,7 @@
   "scripts": {
     "codex": "node tools/codex-worker.mjs",
     "test:tools": "node --test tools/test/codex-worker.test.mjs tools/test/score.test.mjs",
-    "build:player": "node tools/build-player.mjs"
+    "build:player": "node tools/build-player.mjs",
+    "test:voicevox": "python3 -m unittest tools/test/voicevox_sing_test.py"
   }
 }

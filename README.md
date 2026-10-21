@@ -37,3 +37,7 @@ node tools/export-musicxml.mjs songs/sketch-f-betsuni-v1.json   # -> exports/mus
 ```
 
 書き出したファイルは `exports/musicxml/` にコミットしてある。歌声にした WAV は試聴ページに取り込む予定(未実装)。
+
+## 声を付ける(VOICEVOX / NEUTRINO)
+- VOICEVOX: `tools/voicevox-sing.py` を自分のPCで実行する。手順は `docs/voicevox-howto.md`。
+- NEUTRINO: 規約上クラウドでは動かさず、手元で使う。手順は `docs/neutrino-howto.md`。
