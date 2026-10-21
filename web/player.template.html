@@ -70,6 +70,12 @@ button.bar { font: inherit; color: inherit; background: transparent; cursor: poi
 .partscore { display: flex; flex-wrap: wrap; gap: 8px 18px; }
 .partscore label { display: flex; align-items: center; gap: 6px; font-weight: 500; }
 .partscore select { font: inherit; padding: 4px 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.vocal-rows { display: flex; flex-direction: column; gap: 12px; }
+.vrow { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.vrow .vname { font-weight: 700; }
+.vrow .vline { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.vrow input[type="file"] { font: inherit; max-width: 100%; min-width: 0; }
+.btn.sub { background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 500; padding: 5px 14px; }
 .hint { font-size: 0.82rem; color: var(--muted); }
 .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px 24px; }
 .ctl { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -172,6 +178,17 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
     </div>
   </section>
 
+  <section class="section" id="vocalBox" aria-label="歌声" hidden>
+    <h2>歌声を重ねる</h2>
+    <p class="hint">歌声合成ソフト(NEUTRINO など)で作った歌声の音声ファイル(WAV など)を選ぶと、この曲に重ねて鳴ります。ファイルはこのブラウザの中だけで使われ、「ページに保存」を押すまで外には送られません。仮の電子音の歌メロは、歌声を選ぶと自動で消えます。</p>
+    <div id="vocalRows" class="vocal-rows"></div>
+    <div class="ctl">
+      <label for="vOffset"><span>声のずれ補正(秒)</span><output id="vOffsetOut"></output></label>
+      <input id="vOffset" type="range" min="-1" max="1" step="0.01" value="0">
+      <p class="hint">声が曲より遅れるときはマイナス、早いときはプラスへ。テンポつまみを動かすと、声の高さも一緒に変わります。</p>
+    </div>
+  </section>
+
   <section class="section" aria-label="感想">
     <h2>この曲の感想</h2>
     <p class="hint" id="noteFor"></p>
@@ -236,7 +253,7 @@ function compile() {
 compile();
 
 /* ---------- state ---------- */
-let ctx = null, master, mix, musicBus, verb, buses = [], wobbleGain, noiseBuf, rainGain;
+let ctx = null, master, mix, musicBus, verb, compNode, vocalBus, buses = [], wobbleGain, noiseBuf, rainGain;
 let bpm = SONG.bpm, volume = 0.7, rainOn = true;
 let mutedParts = SONG.tracks.map(() => false);
 let playing = false, timer = null, raf = null, pauseTimer = null;
@@ -267,6 +284,8 @@ function initAudio() {
   mix = ctx.createGain(); mix.gain.value = 0.9;
   musicBus = ctx.createGain(); musicBus.connect(mix); // キックに合わせて沈める(サイドチェイン風)対象のまとめ先
   mix.connect(hp); hp.connect(shaper); shaper.connect(tone); tone.connect(comp); comp.connect(master); master.connect(ctx.destination);
+  compNode = comp;
+  vocalBus = ctx.createGain(); vocalBus.connect(comp); // 取り込んだ歌声は加工の鎖を通さず、コンプレッサーの手前に直接つなぐ
 
   verb = ctx.createConvolver(); verb.buffer = makeImpulse(2.4);
   const verbLp = ctx.createBiquadFilter(); verbLp.type = 'lowpass'; verbLp.frequency.value = 3200;
@@ -499,8 +518,54 @@ function schedule() {
     if (tickPos % 3 === 0) visQ.push({ time: tickTime, tick: tickPos });
     tickTime += 60 / bpm / TPB;
     tickPos = (tickPos + 1) % TOTAL_TICKS;
+    if (tickPos === 0) startVocals(tickTime, 0); // くり返しの頭で歌声も頭から
   }
 }
+
+/* ---------- 取り込んだ歌声(WAV など) ---------- */
+let vocalBuf = [], vocalRaw = [], vocalSrc = [], vocalGain = [], vocalMuted = [], vocalName = [];
+let vocalOffset = 0, dbRef = null, assetsRef = null;
+const vocalTracks = () => SONG.tracks.map((t, i) => [t, i]).filter(([t]) => t.vocal);
+function vocalGainNode(k) {
+  if (!vocalGain[k]) { vocalGain[k] = ctx.createGain(); vocalGain[k].connect(vocalBus); }
+  vocalGain[k].gain.value = vocalMuted[k] ? 0 : 1;
+  return vocalGain[k];
+}
+function stopVocals() {
+  if (!ctx) return;
+  for (const v of vocalSrc) { try { v.g.gain.setTargetAtTime(0, ctx.currentTime, 0.01); v.src.stop(ctx.currentTime + 0.08); } catch {} }
+  vocalSrc = [];
+}
+// その拍の頭(tick)から、時刻 when に合わせて歌声を鳴らし始める。曲の元のテンポで書き出された音声が前提
+function startVocals(when, tick) {
+  if (!ctx) return;
+  stopVocals();
+  const rate = bpm / SONG.bpm, pos = tick / TPB * 60 / SONG.bpm + vocalOffset;
+  vocalBuf.forEach((buf, k) => {
+    if (!buf) return;
+    let off = pos, at = when;
+    if (off < 0) { at = when - off / rate; off = 0; }
+    if (off >= buf.duration) return;
+    const src = ctx.createBufferSource(); src.buffer = buf; src.playbackRate.value = rate;
+    src.connect(vocalGainNode(k));
+    src.start(Math.max(at, ctx.currentTime), off);
+    const rec = { src, g: vocalGain[k], k };
+    src.onended = () => { vocalSrc = vocalSrc.filter((x) => x !== rec); };
+    vocalSrc.push(rec);
+  });
+}
+async function decodePending() {
+  for (const [k, raw] of Object.entries(vocalRaw)) {
+    if (!raw || vocalBuf[k]) continue;
+    try { vocalBuf[k] = await ctx.decodeAudioData(raw.slice(0)); setVocalStatus(Number(k), `読み込み済み(${vocalBuf[k].duration.toFixed(1)}秒)`); autoMuteGuide(Number(k)); }
+    catch { setVocalStatus(Number(k), 'この音声ファイルは読み込めませんでした。', true); vocalRaw[k] = null; }
+  }
+}
+function autoMuteGuide(trackIdx) { // 歌声が入ったら、仮の電子音の歌メロを消す
+  if (!mutedParts[trackIdx]) { mutedParts[trackIdx] = true; if (buses[trackIdx]) buses[trackIdx].gain.setTargetAtTime(0, ctx.currentTime, 0.03); renderParts(); }
+}
+function resetVocals() { stopVocals(); vocalBuf = []; vocalRaw = []; vocalMuted = []; vocalName = []; }
+function setVocalStatus(k, msg, isErr) { const el = $('vstatus' + k); if (el) { el.textContent = msg; el.classList.toggle('err', !!isErr); } }
 
 /* ---------- transport ---------- */
 const $ = (id) => document.getElementById(id);
@@ -511,10 +576,12 @@ async function play() {
   clearTimeout(pauseTimer);
   if (!ctx) { initAudio(); tickTime = ctx.currentTime + 0.08; }
   await ctx.resume();
+  await decodePending();
   if (!playing) tickTime = Math.max(tickTime, ctx.currentTime + 0.05);
   master.gain.cancelScheduledValues(ctx.currentTime);
   master.gain.setTargetAtTime(volume, ctx.currentTime, 0.04);
   playing = true; setPlayingUI(true);
+  if (!vocalSrc.length) startVocals(tickTime, tickPos);
   schedule();
   timer = setInterval(schedule, 25);
   if (!raf) raf = requestAnimationFrame(frame);
@@ -578,6 +645,7 @@ function seekToBeat(beat) {
     for (const b of old) { b.gain.cancelScheduledValues(now); playing ? b.gain.setTargetAtTime(0, now, 0.008) : b.gain.setValueAtTime(0, now); }
     setTimeout(() => old.forEach((b) => b.disconnect()), 300);
     buildBuses(); tickTime = now + 0.06;
+    startVocals(tickTime, tickPos);
   }
   shown = -1; show(tickPos);
   if (!playing) play();
@@ -638,7 +706,7 @@ function setupTempo() {
   tempo.min = Math.round(SONG.bpm * 0.5); tempo.max = Math.round(SONG.bpm * 1.5);
   tempo.value = SONG.bpm; syncTempo();
 }
-const syncTempo = () => { bpm = Number(tempo.value); $('tempoOut').textContent = bpm + ' BPM'; if (typeof updatePos === 'function' && BPB) updatePos(); };
+const syncTempo = () => { bpm = Number(tempo.value); $('tempoOut').textContent = bpm + ' BPM'; if (typeof updatePos === 'function' && BPB) updatePos(); if (typeof vocalSrc !== 'undefined') for (const v of vocalSrc) v.src.playbackRate.value = bpm / SONG.bpm; };
 tempo.addEventListener('input', syncTempo); syncTempo();
 const seek = $('seek');
 seek.addEventListener('pointerdown', () => { dragging = true; });
@@ -674,9 +742,10 @@ function switchSong(song) {
   SONG = song; compile();
   mutedParts = SONG.tracks.map(() => false);
   visQ.length = 0; tickPos = 0;
+  resetVocals();
   if (ctx) { buses.forEach((b) => b.disconnect()); buildBuses(); tickTime = ctx.currentTime + 0.08; }
   setupTempo();
-  buildStrip(); renderParts(); renderHeader();
+  buildStrip(); renderParts(); renderHeader(); renderVocalRows(); loadSavedVocals();
   if (idChanged && typeof subscribeNotes === 'function') subscribeNotes();
 }
 IDS.forEach((id) => {
@@ -686,6 +755,77 @@ IDS.forEach((id) => {
 });
 setupTempo();
 buildStrip(); renderParts(); renderHeader();
+
+/* ---------- 歌声の取り込みUI ---------- */
+const vOffset = $('vOffset');
+vOffset.addEventListener('input', () => { vocalOffset = Number(vOffset.value); $('vOffsetOut').textContent = (vocalOffset >= 0 ? '+' : '') + vocalOffset.toFixed(2) + ' 秒'; });
+vOffset.addEventListener('change', () => { if (playing && ctx) startVocals(ctx.currentTime + 0.05, tickPosNow()); });
+vOffset.dispatchEvent(new Event('input'));
+function tickPosNow() { return Math.max(0, curBeat) * TPB; }
+const vdoc = (k) => `vocals/${SONG.id}-v${SONG.version}-p${k}`;
+function renderVocalRows() {
+  const box = $('vocalRows'); box.replaceChildren();
+  const vt = vocalTracks();
+  $('vocalBox').hidden = vt.length === 0;
+  for (const [t, k] of vt) {
+    const row = document.createElement('div'); row.className = 'vrow';
+    const nm = document.createElement('span'); nm.className = 'vname'; nm.textContent = t.name.replace('(仮の電子音)', '');
+    const line = document.createElement('div'); line.className = 'vline';
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'audio/*,.wav,.mp3,.m4a,.ogg,.webm'; inp.id = 'vfile' + k; inp.setAttribute('aria-label', nm.textContent + ' の歌声ファイル');
+    const st = document.createElement('span'); st.className = 'status'; st.id = 'vstatus' + k; st.setAttribute('role', 'status'); st.textContent = vocalBuf[k] ? '読み込み済み' : 'まだ選ばれていません';
+    const mute = document.createElement('button'); mute.type = 'button'; mute.className = 'chip muted-part'; mute.textContent = '歌声'; mute.setAttribute('aria-pressed', String(!vocalMuted[k]));
+    mute.addEventListener('click', () => { vocalMuted[k] = !vocalMuted[k]; mute.setAttribute('aria-pressed', String(!vocalMuted[k])); if (vocalGain[k]) vocalGain[k].gain.setTargetAtTime(vocalMuted[k] ? 0 : 1, ctx.currentTime, 0.02); });
+    const save = document.createElement('button'); save.type = 'button'; save.className = 'btn sub'; save.textContent = 'ページに保存'; save.id = 'vsave' + k; save.hidden = true;
+    save.addEventListener('click', () => saveVocal(k, save));
+    inp.addEventListener('change', async () => {
+      const f = inp.files && inp.files[0]; if (!f) return;
+      if (!ctx) initAudio();
+      setVocalStatus(k, '読み込み中…');
+      try {
+        vocalBuf[k] = await ctx.decodeAudioData(await f.arrayBuffer()); vocalName[k] = f.name;
+        setVocalStatus(k, `読み込み済み: ${f.name}(${vocalBuf[k].duration.toFixed(1)}秒)`); autoMuteGuide(k);
+        save.hidden = !(dbRef && assetsRef);
+        if (playing) startVocals(ctx.currentTime + 0.05, tickPosNow());
+      } catch { vocalBuf[k] = null; setVocalStatus(k, 'この音声ファイルは読み込めませんでした。WAV か MP3 を選んでください。', true); }
+    });
+    line.append(inp, mute, save); row.append(nm, line, st); box.appendChild(row);
+  }
+}
+// 声のWAVを、ブラウザの中で小さな webm(Opus)にしてページに保存する。WAVは保存先に直接置けない形式のため
+async function saveVocal(k, btn) {
+  if (!(dbRef && assetsRef && vocalBuf[k])) return;
+  btn.disabled = true; setVocalStatus(k, '保存用に変換しています(曲の長さぶんかかります)…');
+  try {
+    await ctx.resume();
+    const dest = ctx.createMediaStreamDestination(), src = ctx.createBufferSource(); src.buffer = vocalBuf[k]; src.connect(dest);
+    const rec = new MediaRecorder(dest.stream, { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 192000 }), chunks = [];
+    rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+    const done = new Promise((res) => { rec.onstop = res; src.onended = () => setTimeout(() => rec.stop(), 150); });
+    rec.start(); src.start();
+    await done;
+    const blob = new Blob(chunks, { type: 'audio/webm' });
+    const up = await assetsRef.upload(blob, { type: 'video/webm' });
+    await dbRef.doc(vdoc(k)).set({ assetId: up.id, name: vocalName[k] || '', bytes: up.sizeBytes, savedAt: new Date().toISOString() });
+    setVocalStatus(k, 'ページに保存しました。次に開いても自動で読み込まれます。');
+  } catch (e) { setVocalStatus(k, '保存できませんでした。このまま聴くことはできます。', true); }
+  finally { btn.disabled = false; }
+}
+async function loadSavedVocals() {
+  if (!dbRef) return;
+  const vt = vocalTracks(), mySong = SONG;
+  for (const [, k] of vt) {
+    try {
+      const d = await dbRef.doc(vdoc(k)).get();
+      if (SONG !== mySong || !d.exists) continue;
+      const r = await fetch('/_blob/' + d.data().assetId);
+      if (!r.ok) continue;
+      vocalRaw[k] = await r.arrayBuffer(); vocalName[k] = d.data().name || '';
+      setVocalStatus(k, '保存済みの歌声があります(再生すると読み込みます)');
+      if (ctx) await decodePending();
+    } catch {}
+  }
+}
+renderVocalRows();
 
 /* ---------- listening notes ---------- */
 const TAGS = ['好き', 'ドラムが強い', 'ドラムが弱い', 'もっと切なく', 'もっと明るく', 'もっとゆっくり', 'もっと速く', '音が高くてきつい', '音がこもっている', '同じで飽きる', 'メロディがいい'];
@@ -767,6 +907,10 @@ status('感想の保存を準備しています…');
   notesCol = db.collection('notes');
   $('save').disabled = false; status('');
   subscribeNotes();
+  dbRef = db;
+  try { assetsRef = await window.claude?.use?.('assets'); } catch { assetsRef = null; }
+  vocalTracks().forEach(([, k]) => { const b = $('vsave' + k); if (b) b.hidden = !(assetsRef && vocalBuf[k]); });
+  loadSavedVocals();
 })();
 let unsubNotes = null;
 function subscribeNotes() {
