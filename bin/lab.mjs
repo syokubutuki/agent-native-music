@@ -35,7 +35,7 @@ commands:
   rate    <id> <1-5> [note...]                                      record a rating (latest wins)
   list    [--gen N] [--rated] [--top N]                             show clips and ratings
   render  <id | genome.json> [--duration s] [--out path]            re-render (e.g. longer)
-  page    [--out dir] [--format mp3|wav]                            build the listening page (default <labDir>/site)
+  page    [--out dir] [--format mp3|wav] [--songs dir]              build the listening page (default <labDir>/site, songs ./songs)
   import  <ratings.json>                                            merge ratings saved on the page into ratings.jsonl
 
 common: --dir <labDir>  (default ./lab, or $LAB_DIR)`;
@@ -52,6 +52,7 @@ const OPTIONS = {
   rated: { type: 'boolean' },
   out: { type: 'string' },
   format: { type: 'string' },
+  songs: { type: 'string' },
   help: { type: 'boolean', short: 'h' },
 };
 
@@ -179,7 +180,11 @@ function cmdRender(dir, positionals, opts) {
 function cmdPage(dir, opts) {
   const format = opts.format ?? 'mp3';
   if (!['mp3', 'wav'].includes(format)) fail(`--format must be mp3 or wav (got ${format})`);
-  const { index, clips } = buildPage(dir, { outDir: opts.out ? path.resolve(opts.out) : undefined, format });
+  const { index, clips } = buildPage(dir, {
+    outDir: opts.out ? path.resolve(opts.out) : undefined,
+    format,
+    songsDir: path.resolve(opts.songs ?? 'songs'),
+  });
   console.log(`[lab] ${rel(index)}  (${clips.length} clips, ${format})`);
 }
 

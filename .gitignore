@@ -3,3 +3,4 @@ node_modules/
 lab/**/*.wav
 lab/renders/
 lab/site/
+songs/**/*.wav

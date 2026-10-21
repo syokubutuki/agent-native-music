@@ -1,0 +1,30 @@
+{
+  "title": "ぜんぶちょうだい",
+  "theme": "毒と甘さ（執着系）",
+  "bpm": 180,
+  "vocalFeel": "half-time: melodies are written in 16ths of the 180 BPM grid, phrased like 90 BPM",
+  "key": { "tonic": "A", "mode": "phrygian" },
+  "seed": "lab/gen-0003/g0003-01.json",
+  "audition": {
+    "group": "歌声の候補",
+    "note": "サビ頭の 1 フレーズを、声だけで歌わせたもの",
+    "notes": [
+      ["ぜ", "A4", 2], ["ん", "A4", 2], ["ぶ", "C5", 4], ["あ", "D5", 2], ["げ", "E5", 2], ["る", "D5", 2], ["か", "C5", 2], ["ら", "Bb4", 4],
+      ["ぜ", "A4", 2], ["ん", "A4", 2], ["ぶ", "C5", 4], ["ちょ", "D5", 2], ["う", "F5", 2], ["だ", "Bb4", 4], ["い", "A4", 10]
+    ],
+    "voices": [
+      { "id": "v-metan-amaama", "style": 3000, "name": "四国めたん", "styleName": "あまあま" },
+      { "id": "v-metan-sexy", "style": 3004, "name": "四国めたん", "styleName": "セクシー" },
+      { "id": "v-metan-hisohiso", "style": 3037, "name": "四国めたん", "styleName": "ヒソヒソ" },
+      { "id": "v-sora-sexy", "style": 3017, "name": "九州そら", "styleName": "セクシー" },
+      { "id": "v-himari", "style": 3014, "name": "冥鳴ひまり", "styleName": "ノーマル" },
+      { "id": "v-tsumugi", "style": 3008, "name": "春日部つむぎ", "styleName": "ノーマル" },
+      { "id": "v-ritsu-queen", "style": 3065, "name": "波音リツ", "styleName": "クイーン" },
+      { "id": "v-sayo", "style": 3046, "name": "小夜/SAYO", "styleName": "ノーマル" },
+      { "id": "v-nana", "style": 3054, "name": "春歌ナナ", "styleName": "ノーマル" },
+      { "id": "v-nia", "style": 3074, "name": "琴詠ニア", "styleName": "ノーマル" },
+      { "id": "v-mochiko-sexy", "style": 3066, "name": "もち子さん", "styleName": "セクシー／あん子" },
+      { "id": "v-miko", "style": 3043, "name": "櫻歌ミコ", "styleName": "ノーマル" }
+    ]
+  }
+}

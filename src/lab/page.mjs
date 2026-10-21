@@ -7,26 +7,23 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { listClips, loadRatings, writeWav, appendRating } from './store.mjs';
 import { describeGenome } from './genome.mjs';
+import { decodeWav } from './wav.mjs';
 
 const TEMPLATE = path.join(path.dirname(fileURLToPath(import.meta.url)), 'page', 'template.html');
 const ENVELOPE_BINS = 160;
 
-// RMS loudness per bin, normalized to the loudest bin, from a 16-bit stereo WAV written by wav.mjs.
+// RMS loudness per bin (all channels), normalized to the loudest bin.
 export function wavEnvelope(file, bins = ENVELOPE_BINS) {
-  const buf = fs.readFileSync(file);
-  const frames = (buf.length - 44) >> 2;
+  const { channels } = decodeWav(fs.readFileSync(file));
+  const frames = channels[0].length;
   const out = new Array(bins).fill(0);
   const per = Math.max(1, Math.floor(frames / bins));
   for (let b = 0; b < bins; b++) {
     let sum = 0;
     const start = b * per;
     const end = Math.min(frames, start + per);
-    for (let i = start; i < end; i++) {
-      const l = buf.readInt16LE(44 + i * 4) / 32768;
-      const r = buf.readInt16LE(46 + i * 4) / 32768;
-      sum += (l * l + r * r) / 2;
-    }
-    out[b] = end > start ? Math.sqrt(sum / (end - start)) : 0;
+    for (let i = start; i < end; i++) for (const ch of channels) sum += ch[i] * ch[i];
+    out[b] = end > start ? Math.sqrt(sum / ((end - start) * channels.length)) : 0;
   }
   const max = Math.max(...out, 1e-9);
   return out.map((v) => Math.round((v / max) * 100) / 100);
@@ -48,30 +45,60 @@ function encodeAudio(wav, outFile, format) {
   if (res.status !== 0) throw new Error(`ffmpeg failed for ${wav}: ${res.stderr || res.error?.message}`);
 }
 
-export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3' } = {}) {
+// Extra page items from songs: each `<songsDir>/<song>/page.json` lists
+// [{id, group, label, title, desc, wav (relative to the song dir), durationSec, form?}].
+function songItems(songsDir) {
+  if (!songsDir || !fs.existsSync(songsDir)) return [];
+  const items = [];
+  for (const name of fs.readdirSync(songsDir).sort()) {
+    const manifest = path.join(songsDir, name, 'page.json');
+    if (!fs.existsSync(manifest)) continue;
+    for (const item of JSON.parse(fs.readFileSync(manifest, 'utf8'))) {
+      items.push({ ...item, wav: path.join(songsDir, name, item.wav) });
+    }
+  }
+  return items;
+}
+
+export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3', songsDir } = {}) {
   if (format === 'mp3' && !hasFfmpeg()) throw new Error('ffmpeg not found: install it, or use --format wav');
   const audioDir = path.join(outDir, 'audio');
   fs.mkdirSync(audioDir, { recursive: true });
   const ratings = loadRatings(dir);
-  const clips = listClips(dir).map(({ id, gen, genome, wav }) => {
+  const short = (id) => id.replace(/^g0*(\d+)-0*(\d+)$/, '$1-$2');
+  const labClips = listClips(dir).map(({ id, gen, genome, wav }) => {
     if (!fs.existsSync(wav)) writeWav(wav, genome);
-    const audioName = `${id}.${format}`;
-    encodeAudio(wav, path.join(audioDir, audioName), format);
-    const r = ratings.get(id);
+    const parents = genome.meta?.parents ?? [];
     return {
       id,
-      gen,
-      parents: genome.meta?.parents ?? [],
+      group: `第${gen}世代`,
+      label: id.split('-')[1],
+      title: `${id} · ${parents.length ? `← ${parents.map(short).join(' + ')}` : 'ランダム生成'}`,
       desc: describeGenome(genome),
       durationSec: genome.durationSec,
+      wav,
+      form: genome.form ? genome.form.points : null,
+    };
+  });
+  const extra = songItems(songsDir);
+  const newestFirst = labClips.sort((a, b) => Number(b.id.slice(1, 5)) - Number(a.id.slice(1, 5)) || a.id.localeCompare(b.id));
+  const clips = [...extra, ...newestFirst].map(({ wav, ...item }) => {
+    if (!fs.existsSync(wav)) throw new Error(`missing audio for ${item.id}: ${wav}`);
+    const audioName = `${item.id}.${format}`;
+    encodeAudio(wav, path.join(audioDir, audioName), format);
+    const r = ratings.get(item.id);
+    return {
+      form: null,
+      ...item,
       audio: `audio/${audioName}`,
       env: wavEnvelope(wav),
-      form: genome.form ? genome.form.points : null,
       rating: r ? { score: r.score, note: r.note ?? '' } : null,
     };
   });
   // `<` escaped so clip data can never close the script tag it lives in.
-  const json = JSON.stringify({ builtAt: new Date().toISOString(), clips }).replace(/</g, '\\u003c');
+  // Groups in first-appearance order: song work first, then lab generations newest first.
+  const groups = [...new Set(clips.map((c) => c.group))];
+  const json = JSON.stringify({ builtAt: new Date().toISOString(), groups, clips }).replace(/</g, '\\u003c');
   const html = fs.readFileSync(TEMPLATE, 'utf8').replace('__LAB_DATA__', () => json);
   const index = path.join(outDir, 'index.html');
   fs.writeFileSync(index, html);
