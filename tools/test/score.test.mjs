@@ -86,3 +86,11 @@ test('every lyric line in a song is the lyric of notes that start at that line',
     assert.equal(sung, joined, song.id);
   }
 });
+
+test('rhyme analysis: vowels and shared endings', async () => {
+  const { vowels, analyze, morae } = await import('../rhyme.mjs');
+  assert.equal(vowels('べつに'), 'eui');
+  assert.deepEqual(morae('ひゃくじゅう'), ['ひゃ', 'く', 'じゅ', 'う']);
+  const r = analyze(['きにしてない', 'きたいしてない', 'だけど']);
+  assert.ok(r.perLine[1].endWithPrev >= 3);
+});
