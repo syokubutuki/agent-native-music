@@ -63,6 +63,13 @@ button.bar { font: inherit; color: inherit; background: transparent; cursor: poi
 .seekrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .seekrow input { flex: 1 1 200px; min-width: 0; }
 .seekrow output { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lyrics { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.lyrics li { padding: 4px 10px; border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 0.95rem; border: 1px solid transparent; }
+.lyrics li:hover { border-color: var(--line); }
+.lyrics li.on { color: var(--ink); font-weight: 700; background: color-mix(in srgb, var(--lamp) 14%, transparent); border-color: var(--lamp); }
+.partscore { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.partscore label { display: flex; align-items: center; gap: 6px; font-weight: 500; }
+.partscore select { font: inherit; padding: 4px 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
 .hint { font-size: 0.82rem; color: var(--muted); }
 .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px 24px; }
 .ctl { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -110,6 +117,10 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
     <h1 id="title"></h1>
     <p class="meta" id="desc"></p>
     <p class="meta" id="facts"></p>
+    <div class="ctl" id="songBox">
+      <span class="lbl">曲を選ぶ</span>
+      <div class="chips" id="songs"></div>
+    </div>
     <div class="ctl" id="versionBox">
       <span class="lbl">版を選んで聴き比べる</span>
       <div class="chips" id="versions"></div>
@@ -135,6 +146,7 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
       <input id="seek" type="range" min="0" max="0" step="1" value="0" aria-label="再生位置">
       <output id="seekOut" class="mono" aria-live="off"></output>
     </div>
+    <ol class="lyrics" id="lyrics" aria-label="歌詞"></ol>
     <p class="hint">帯の小節や上の場面ボタンを押すと、そこから再生します。バーを動かすと拍(ひと区切り)単位で好きな位置から聴けます。コードは「同時に鳴らす音のセット」のことです。曲は最後まで行くと最初に戻って繰り返します。</p>
   </section>
 
@@ -169,6 +181,14 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
       <div class="rating" id="rating"></div>
     </fieldset>
     <div class="ctl">
+      <span class="lbl">部分ごとの点数(任意。1=いまいち 5=とても良い)</span>
+      <div class="partscore">
+        <label for="sMelody">メロディ <select id="sMelody"></select></label>
+        <label for="sBacking">伴奏・音 <select id="sBacking"></select></label>
+        <label for="sLyrics">歌詞 <select id="sLyrics"></select></label>
+      </div>
+    </div>
+    <div class="ctl">
       <span class="lbl">当てはまるものを選ぶ</span>
       <div class="chips" id="tags"></div>
     </div>
@@ -186,7 +206,10 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
 
 <script>
 const SONGS = __SONG_JSON__;
-let SONG = SONGS[SONGS.length - 1]; // 既定は最新の版
+const IDS = [...new Set(SONGS.map((x) => x.id))];
+const versionsOf = (id) => SONGS.filter((x) => x.id === id);
+const latestOf = (id) => versionsOf(id).slice(-1)[0];
+let SONG = latestOf(IDS[0]); // 既定は先頭の曲の最新版
 
 /* ---------- score -> events ---------- */
 const TPB = 12; // ticks per beat (supports 8ths, 16ths and triplets)
@@ -229,7 +252,7 @@ function makeImpulse(seconds) {
   }
   return buf;
 }
-const SEND = { epiano: 0.45, pluck: 0.8, pad: 0.6, airpad: 0.85, bell: 1, riser: 0.25, bass: 0, kick: 0, snare: 0.35, hat: 0.08 };
+const SEND = { lead: 0.5, epiano: 0.45, pluck: 0.8, pad: 0.6, airpad: 0.85, bell: 1, riser: 0.25, bass: 0, kick: 0, snare: 0.35, hat: 0.08 };
 function initAudio() {
   ctx = new (window.AudioContext || window.webkitAudioContext)();
   master = ctx.createGain(); master.gain.value = 0;
@@ -361,6 +384,19 @@ const INST = {
     g.gain.linearRampToValueAtTime(0, t + dur + 0.06);
     s.start(t); s.stop(t + dur + 0.1);
   },
+  // 歌のメロディの仮の音(歌声合成ソフトで歌わせる前の目印)。ゆるいビブラート付き
+  lead(t, e, out) {
+    const spb = 60 / bpm, dur = e.dur * spb;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2800;
+    const g = ctx.createGain(); lp.connect(g); g.connect(out);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(e.vel * 0.26, t + 0.03);
+    g.gain.setTargetAtTime(0, t + Math.max(dur - 0.04, 0.05), 0.06);
+    const o1 = osc('triangle', e.freq, t, lp), o2 = osc('sine', e.freq, t, lp, { detune: 3 });
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 5.3;
+    const lg = ctx.createGain(); lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(12, t + Math.min(dur * 0.6, 0.5));
+    lfo.connect(lg); lg.connect(o1.detune); lg.connect(o2.detune); lfo.start(t);
+    const end = t + dur + 0.6; o1.stop(end); o2.stop(end); lfo.stop(end);
+  },
   bass(t, e, out) {
     const spb = 60 / bpm, dur = e.dur * spb;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
@@ -470,6 +506,14 @@ function buildStrip() {
     sc.appendChild(b);
   }
   sc.hidden = sectionAt.length === 0;
+  const ly = $('lyrics'); ly.replaceChildren();
+  for (const l of SONG.lyrics || []) {
+    const li = document.createElement('li'); li.textContent = l.text; li.tabIndex = 0; li.setAttribute('role', 'button');
+    const go = () => seekToBeat(l.beat);
+    li.addEventListener('click', go); li.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } });
+    ly.appendChild(li);
+  }
+  ly.hidden = !(SONG.lyrics && SONG.lyrics.length);
   const sk = $('seek'); sk.max = SONG.bars * BPB - 1; sk.value = 0; curBeat = 0; updatePos();
 }
 function fmtTime(sec) { const s = Math.max(0, Math.round(sec)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
@@ -507,6 +551,9 @@ function show(tick) {
   let sc = null;
   for (const x of sectionAt) if (x.bar <= bar) sc = x;
   $('scene').textContent = sc ? `場面: ${sc.label}` : '';
+  const ls = SONG.lyrics || []; let li = -1;
+  ls.forEach((l, i) => { if (l.beat <= beatPos) li = i; });
+  [...$('lyrics').children].forEach((el, i) => el.classList.toggle('on', i === li));
 }
 function frame() {
   raf = null;
@@ -522,12 +569,20 @@ function renderHeader() {
   $('title').textContent = SONG.title;
   $('desc').textContent = SONG.description || '';
   const secs = Math.round(SONG.bars * BPB * 60 / SONG.bpm);
-  $('facts').replaceChildren('ローファイ / 元のテンポ ', Object.assign(document.createElement('span'), { className: 'mono', textContent: SONG.bpm + ' BPM' }),
+  $('facts').replaceChildren('元のテンポ ', Object.assign(document.createElement('span'), { className: 'mono', textContent: SONG.bpm + ' BPM' }),
     ` / 約${secs}秒をくり返し / 版 v${SONG.version}`);
   $('changes').textContent = SONG.changes ? `v${SONG.version} の変更点: ${SONG.changes}` : '';
-  $('noteFor').textContent = `いま聴いている版は v${SONG.version} です。感想にはこの版の番号が付きます。`;
-  $('versionBox').hidden = SONGS.length < 2;
-  [...$('versions').children].forEach((b, i) => b.setAttribute('aria-pressed', String(SONGS[i] === SONG)));
+  $('noteFor').textContent = `いま聴いているのは「${SONG.title}」v${SONG.version} です。感想には曲名と版の番号が付きます。`;
+  $('songBox').hidden = IDS.length < 2;
+  [...$('songs').children].forEach((b, i) => b.setAttribute('aria-pressed', String(IDS[i] === SONG.id)));
+  const vs = versionsOf(SONG.id);
+  $('versionBox').hidden = vs.length < 2;
+  $('versions').replaceChildren(...vs.map((song) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = `v${song.version}`;
+    b.setAttribute('aria-pressed', String(song === SONG));
+    b.addEventListener('click', () => switchSong(song));
+    return b;
+  }));
 }
 const tempo = $('tempo');
 const syncTempo = () => { bpm = Number(tempo.value); $('tempoOut').textContent = bpm + ' BPM'; if (typeof updatePos === 'function' && BPB) updatePos(); };
@@ -562,17 +617,19 @@ function renderParts() {
 }
 function switchSong(song) {
   if (song === SONG) return;
+  const idChanged = song.id !== SONG.id;
   SONG = song; compile();
   mutedParts = SONG.tracks.map(() => false);
   visQ.length = 0; tickPos = 0;
   if (ctx) { buses.forEach((b) => b.disconnect()); buildBuses(); tickTime = ctx.currentTime + 0.08; }
   tempo.value = SONG.bpm; syncTempo();
   buildStrip(); renderParts(); renderHeader();
+  if (idChanged && typeof subscribeNotes === 'function') subscribeNotes();
 }
-SONGS.forEach((song) => {
-  const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = `v${song.version}`;
-  b.addEventListener('click', () => switchSong(song));
-  $('versions').appendChild(b);
+IDS.forEach((id) => {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = latestOf(id).title;
+  b.addEventListener('click', () => switchSong(latestOf(id)));
+  $('songs').appendChild(b);
 });
 tempo.value = SONG.bpm; syncTempo();
 buildStrip(); renderParts(); renderHeader();
@@ -581,6 +638,10 @@ buildStrip(); renderParts(); renderHeader();
 const TAGS = ['好き', 'ドラムが強い', 'ドラムが弱い', 'もっと切なく', 'もっと明るく', 'もっとゆっくり', 'もっと速く', '音が高くてきつい', '音がこもっている', '同じで飽きる', 'メロディがいい'];
 const RATINGS = [[1, 'いまいち'], [2, 'うーん'], [3, 'ふつう'], [4, '好き'], [5, 'とても好き']];
 let rating = 0; const chosen = new Set();
+for (const id of ['sMelody', 'sBacking', 'sLyrics']) {
+  const el = $(id); el.append(new Option('–', '0'));
+  for (let i = 1; i <= 5; i++) el.append(new Option(String(i), String(i)));
+}
 RATINGS.forEach(([v, label]) => {
   const id = 'r' + v, i = document.createElement('input'), l = document.createElement('label');
   i.type = 'radio'; i.name = 'rating'; i.id = id; i.value = v; l.htmlFor = id; l.textContent = v + ' ' + label;
@@ -610,6 +671,10 @@ function renderNotes(docs) {
     const ver = document.createElement('span'); ver.className = 'mono'; ver.textContent = `v${n.songVersion} / ${n.bpm} BPM`;
     head.append(when, ver);
     if (n.rating) { const r = document.createElement('span'); r.textContent = `好き度 ${n.rating}/5`; head.appendChild(r); }
+    if (n.parts) {
+      const ps = [['メロディ', n.parts.melody], ['伴奏・音', n.parts.backing], ['歌詞', n.parts.lyrics]].filter(([, v]) => v > 0).map(([k, v]) => `${k} ${v}`);
+      if (ps.length) { const r = document.createElement('span'); r.textContent = ps.join(' / '); head.appendChild(r); }
+    }
     const del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = '削除';
     del.addEventListener('click', async () => {
       if (!del.classList.contains('confirm')) { del.classList.add('confirm'); del.textContent = 'もう一度押すと削除'; return; }
@@ -624,11 +689,14 @@ function renderNotes(docs) {
 $('save').addEventListener('click', async () => {
   const text = $('noteText').value.trim();
   if (!notesCol) return;
-  if (!rating && !chosen.size && !text) { status('好き度・当てはまるもの・文章のどれかを入れてください。', true); return; }
+  const parts = { melody: Number($('sMelody').value), backing: Number($('sBacking').value), lyrics: Number($('sLyrics').value) };
+  const anyPart = parts.melody || parts.backing || parts.lyrics;
+  if (!rating && !anyPart && !chosen.size && !text) { status('好き度・部分ごとの点数・当てはまるもの・文章のどれかを入れてください。', true); return; }
   const btn = $('save'); btn.disabled = true; status('保存中…');
   try {
-    await notesCol.add({ songId: SONG.id, songVersion: SONG.version, bpm, rating, tags: [...chosen], text, createdAt: new Date().toISOString() });
+    await notesCol.add({ songId: SONG.id, songVersion: SONG.version, bpm, rating, tags: [...chosen], parts, text, createdAt: new Date().toISOString() });
     $('noteText').value = ''; chosen.clear(); rating = 0;
+    for (const id of ['sMelody', 'sBacking', 'sLyrics']) $(id).value = '0';
     document.querySelectorAll('#tags .chip').forEach((c) => c.setAttribute('aria-pressed', 'false'));
     document.querySelectorAll('#rating input').forEach((c) => { c.checked = false; });
     status('保存しました。');
@@ -645,9 +713,16 @@ status('感想の保存を準備しています…');
   if (!db) { status('この表示では感想を保存できません(ログインして開くと使えます)。', true); renderNotes([]); return; }
   notesCol = db.collection('notes');
   $('save').disabled = false; status('');
-  notesCol.where('songId', '==', SONG.id).orderBy('createdAt', 'desc').limit(100).onSnapshot(
+  subscribeNotes();
+})();
+let unsubNotes = null;
+function subscribeNotes() {
+  if (!notesCol) return;
+  if (unsubNotes) unsubNotes();
+  $('notes').replaceChildren();
+  unsubNotes = notesCol.where('songId', '==', SONG.id).orderBy('createdAt', 'desc').limit(100).onSnapshot(
     (snap) => renderNotes(snap.docs),
     () => { status('過去の感想を読み込めませんでした。', true); }
   );
-})();
+}
 </script>

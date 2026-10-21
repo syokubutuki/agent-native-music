@@ -22,7 +22,8 @@ export function buildPlayer(songs, template) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const paths = (args.length ? args : readdirSync(resolve(root, 'songs')).filter((f) => f.endsWith('.json')).sort().map((f) => `songs/${f}`)).map((f) => resolve(root, f));
-  const songs = paths.map((f) => JSON.parse(readFileSync(f, 'utf8')));
+  const songs = paths.map((f) => JSON.parse(readFileSync(f, 'utf8')))
+    .sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.id.localeCompare(b.id) || a.version - b.version);
   const html = buildPlayer(songs, readFileSync(resolve(root, 'web/player.template.html'), 'utf8'));
   const out = resolve(root, 'dist/player.html');
   mkdirSync(dirname(out), { recursive: true });
