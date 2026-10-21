@@ -1,0 +1,272 @@
+// Instruments for produced songs: drums, bass, supersaw chords, pluck lead, FX.
+// Every instrument renders note events into stereo Float32 buffers at a fixed sample rate.
+// Events: { beat, beats, midi, vel } — times in quarter-note beats of the song's BPM.
+
+import { createRng } from '../lab/rng.mjs';
+import { createSvf } from '../lab/dsp.mjs';
+
+const TAU = Math.PI * 2;
+export const mtof = (m) => 440 * 2 ** ((m - 69) / 12);
+
+// PolyBLEP keeps saws and squares from aliasing into harsh highs.
+function blep(t, dt) {
+  if (t < dt) {
+    t /= dt;
+    return t + t - t * t - 1;
+  }
+  if (t > 1 - dt) {
+    t = (t - 1) / dt;
+    return t * t + t + t + 1;
+  }
+  return 0;
+}
+const saw = (p, dt) => 2 * p - 1 - blep(p, dt);
+const square = (p, dt) => (p < 0.5 ? 1 : -1) + blep(p, dt) - blep((p + 0.5) % 1, dt);
+
+export function createBus(total) {
+  return { left: new Float32Array(total), right: new Float32Array(total) };
+}
+
+function place(ctx, ev) {
+  return Math.round((ev.beat * 60 * ctx.sr) / ctx.bpm);
+}
+function lengthOf(ctx, beats) {
+  return Math.round((beats * 60 * ctx.sr) / ctx.bpm);
+}
+
+// Equal-power pan into a bus.
+function add(bus, i, x, pan = 0) {
+  if (i < 0 || i >= bus.left.length) return;
+  const a = ((pan + 1) * Math.PI) / 4;
+  bus.left[i] += x * Math.cos(a) * Math.SQRT2;
+  bus.right[i] += x * Math.sin(a) * Math.SQRT2;
+}
+
+// --- drums ------------------------------------------------------------------------------------
+
+export function kick(ctx, events, bus) {
+  const len = Math.round(0.45 * ctx.sr);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    let ph = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / ctx.sr;
+      const f = 44 + 120 * Math.exp(-t / 0.032);
+      ph += (TAU * f) / ctx.sr;
+      const amp = Math.min(1, t / 0.0015) * Math.exp(-t / 0.2);
+      const click = n < 0.003 * ctx.sr ? (1 - n / (0.003 * ctx.sr)) * 0.4 : 0;
+      add(bus, s0 + n, Math.tanh(1.6 * (Math.sin(ph) * amp + click)) * (ev.vel ?? 1));
+    }
+  }
+}
+
+export function clap(ctx, events, bus, seed = 11) {
+  const rng = createRng(seed);
+  const len = Math.round(0.35 * ctx.sr);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const bp = createSvf('bp', 1400, 1.1, ctx.sr);
+    const lp = createSvf('lp', 7000, 0.7, ctx.sr);
+    let ph = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / ctx.sr;
+      // three quick slaps then a short room tail
+      let env = 0;
+      for (const o of [0, 0.011, 0.022]) if (t >= o) env = Math.max(env, Math.exp(-(t - o) / 0.006));
+      env = Math.max(env, 0.55 * Math.exp(-Math.max(0, t - 0.022) / 0.11) * (t >= 0.022 ? 1 : 0));
+      ph += (TAU * 190) / ctx.sr;
+      const body = Math.sin(ph) * Math.exp(-t / 0.05) * 0.35;
+      add(bus, s0 + n, (lp(bp(rng.uniform(-1, 1))) * 2.2 * env + body) * (ev.vel ?? 1));
+    }
+  }
+}
+
+export function hat(ctx, events, bus, seed = 23) {
+  const rng = createRng(seed);
+  for (const ev of events) {
+    const open = ev.open;
+    const len = Math.round((open ? 0.32 : 0.06) * ctx.sr);
+    const s0 = place(ctx, ev);
+    const hp = createSvf('hp', 7500, 0.8, ctx.sr);
+    const lp = createSvf('lp', 12500, 0.7, ctx.sr); // keep the top soft: no piercing highs
+    for (let n = 0; n < len; n++) {
+      const t = n / ctx.sr;
+      const env = Math.exp(-t / (open ? 0.11 : 0.018));
+      add(bus, s0 + n, lp(hp(rng.uniform(-1, 1))) * env * (ev.vel ?? 1), ev.pan ?? 0.15);
+    }
+  }
+}
+
+// Noise sweep that rises over its length (build-ups).
+export function riser(ctx, events, bus, seed = 31) {
+  const rng = createRng(seed);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const len = lengthOf(ctx, ev.beats);
+    let st1 = 0;
+    let st2 = 0;
+    for (let n = 0; n < len; n++) {
+      const u = n / len;
+      const f = 300 * (9000 / 300) ** u;
+      const g = Math.tan((Math.PI * Math.min(f, ctx.sr * 0.45)) / ctx.sr);
+      const k = 1 / 3;
+      const a1 = 1 / (1 + g * (g + k));
+      const v0 = rng.uniform(-1, 1);
+      const v3 = v0 - st2;
+      const v1 = a1 * st1 + g * a1 * v3;
+      const v2 = st2 + g * a1 * st1 + g * g * a1 * v3;
+      st1 = 2 * v1 - st1;
+      st2 = 2 * v2 - st2;
+      const amp = u ** 2 * (ev.vel ?? 1);
+      add(bus, s0 + n, v1 * k * amp * 1.5, Math.sin(u * TAU * 3) * 0.5);
+    }
+  }
+}
+
+// Low boom + filtered noise for section downbeats.
+export function impact(ctx, events, bus, seed = 37) {
+  const rng = createRng(seed);
+  const len = Math.round(1.6 * ctx.sr);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const lp = createSvf('lp', 2500, 0.7, ctx.sr);
+    let ph = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / ctx.sr;
+      ph += (TAU * (38 + 60 * Math.exp(-t / 0.08))) / ctx.sr;
+      const boom = Math.sin(ph) * Math.exp(-t / 0.5);
+      const air = lp(rng.uniform(-1, 1)) * Math.exp(-t / 0.35) * 0.5;
+      add(bus, s0 + n, (boom + air) * (ev.vel ?? 1));
+    }
+  }
+}
+
+// --- tonal ------------------------------------------------------------------------------------
+
+function adsr(n, gateLen, a, d, s, r) {
+  if (n < gateLen) {
+    if (n < a) return n / a;
+    return s + (1 - s) * Math.exp(-(n - a) / d);
+  }
+  const atGate = gateLen < a ? gateLen / a : s + (1 - s) * Math.exp(-(gateLen - a) / d);
+  return atGate * Math.exp(-(n - gateLen) / r);
+}
+
+// Funky mono bass: two saws + sub, plucked lowpass.
+export function bass(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const gate = lengthOf(ctx, ev.beats);
+    const len = gate + Math.round(0.08 * sr);
+    const f = mtof(ev.midi);
+    const lp = createSvf('lp', 400, 1.4, sr);
+    let p1 = 0;
+    let p2 = 0.3;
+    let ps = 0;
+    const dt1 = f / sr;
+    const dt2 = (f * 1.006) / sr;
+    // cutoff changes per sample: rebuild filter coefficients cheaply every 32 samples
+    let filt = lp;
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      if (n % 32 === 0) {
+        const cut = 180 + 2200 * Math.exp(-t / 0.07) * (ev.vel ?? 1);
+        filt = retune(filt, 'lp', cut, 1.4, sr);
+      }
+      p1 = (p1 + dt1) % 1;
+      p2 = (p2 + dt2) % 1;
+      ps = (ps + dt1) % 1;
+      const raw = 0.5 * saw(p1, dt1) + 0.5 * saw(p2, dt2);
+      const env = adsr(n, gate, 0.002 * sr, 0.12 * sr, 0.75, 0.03 * sr);
+      const y = Math.tanh(1.3 * (filt(raw) * 0.9 + Math.sin(ps * TAU) * 0.6)) * env * (ev.vel ?? 1);
+      add(bus, s0 + n, y);
+    }
+  }
+}
+
+// SVF whose coefficients can move while keeping its state.
+function retune(prev, mode, cutoffHz, q, sr) {
+  const state = prev.__state ?? { ic1: 0, ic2: 0 };
+  const g = Math.tan((Math.PI * Math.min(cutoffHz, sr * 0.45)) / sr);
+  const k = 1 / q;
+  const a1 = 1 / (1 + g * (g + k));
+  const a2 = g * a1;
+  const a3 = g * a2;
+  const fn = (v0) => {
+    const v3 = v0 - state.ic2;
+    const v1 = a1 * state.ic1 + a2 * v3;
+    const v2 = state.ic2 + a2 * state.ic1 + a3 * v3;
+    state.ic1 = 2 * v1 - state.ic1;
+    state.ic2 = 2 * v2 - state.ic2;
+    return mode === 'lp' ? v2 : mode === 'bp' ? v1 : v0 - k * v1 - v2;
+  };
+  fn.__state = state;
+  return fn;
+}
+
+const DETUNE = [-0.11, -0.055, 0, 0.055, 0.11]; // semitones
+const SPREAD = [-0.8, -0.4, 0, 0.4, 0.8];
+
+// Supersaw chords. kind 'stab' (short, bright, offbeat pumps) or 'pad' (slow, darker, sustained).
+export function supersaw(ctx, events, bus, { kind = 'stab', seed = 41 } = {}) {
+  const sr = ctx.sr;
+  const rng = createRng(seed);
+  const stab = kind === 'stab';
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const gate = lengthOf(ctx, ev.beats);
+    const rel = (stab ? 0.09 : 0.45) * sr;
+    const len = gate + Math.round(rel * 5);
+    const osc = DETUNE.map((d, i) => ({ p: rng.next(), dt: mtof(ev.midi + d) / sr, pan: SPREAD[i] }));
+    let fl = createSvf('lp', 1000, 0.8, sr);
+    let fr = createSvf('lp', 1000, 0.8, sr);
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      if (n % 32 === 0) {
+        const cut = stab ? 1600 + 3600 * Math.exp(-t / 0.08) : 2200;
+        fl = retune(fl, 'lp', cut, 0.8, sr);
+        fr = retune(fr, 'lp', cut, 0.8, sr);
+      }
+      let l = 0;
+      let r = 0;
+      for (const o of osc) {
+        o.p = (o.p + o.dt) % 1;
+        const v = saw(o.p, o.dt);
+        const a = ((o.pan + 1) * Math.PI) / 4;
+        l += v * Math.cos(a);
+        r += v * Math.sin(a);
+      }
+      const env = stab ? adsr(n, gate, 0.003 * sr, 0.12 * sr, 0.35, rel) : adsr(n, gate, 0.18 * sr, 0.6 * sr, 0.8, rel);
+      const g = (env * (ev.vel ?? 1)) / 3;
+      const i = s0 + n;
+      if (i >= bus.left.length) break;
+      bus.left[i] += fl(l) * g;
+      bus.right[i] += fr(r) * g;
+    }
+  }
+}
+
+// Pluck lead for the instrumental riff: square + saw through a fast-closing lowpass.
+export function pluck(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const gate = lengthOf(ctx, ev.beats);
+    const len = gate + Math.round(0.25 * sr);
+    const f = mtof(ev.midi);
+    const dt = f / sr;
+    let p = 0;
+    let p2 = 0.5;
+    let filt = createSvf('lp', 3000, 1.2, sr);
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      if (n % 32 === 0) filt = retune(filt, 'lp', 700 + 5200 * Math.exp(-t / 0.09), 1.6, sr);
+      p = (p + dt) % 1;
+      p2 = (p2 + dt * 2.003) % 1;
+      const raw = 0.6 * square(p, dt) + 0.4 * saw(p2, dt * 2.003);
+      const env = adsr(n, gate, 0.001 * sr, 0.16 * sr, 0.2, 0.06 * sr);
+      add(bus, s0 + n, filt(raw) * env * 0.8 * (ev.vel ?? 1), ev.pan ?? 0);
+    }
+  }
+}

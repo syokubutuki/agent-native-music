@@ -4,3 +4,4 @@ lab/**/*.wav
 lab/renders/
 lab/site/
 songs/**/*.wav
+songs/**/out/work/

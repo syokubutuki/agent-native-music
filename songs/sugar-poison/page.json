@@ -1,0 +1,20 @@
+[
+  {
+    "id": "sugar-poison-v1",
+    "group": "シュガシュガポイズン",
+    "label": "v1",
+    "title": "シュガシュガポイズン（完成版 v1）",
+    "desc": "164 BPM · C# minor · VOICEVOX:櫻歌ミコ（ノーマル）",
+    "wav": "out/full-v1.wav",
+    "durationSec": 172.68292517006802
+  },
+  {
+    "id": "sugar-poison-v1-inst",
+    "group": "シュガシュガポイズン",
+    "label": "v1",
+    "title": "インスト（歌なし）",
+    "desc": "164 BPM · C# minor",
+    "wav": "out/inst-v1.wav",
+    "durationSec": 172.68292517006802
+  }
+]

@@ -17,7 +17,8 @@ const USAGE = `usage: node bin/song.mjs <command> <songDir>
 
 commands:
   voices <songDir>   sing the audition phrase with every candidate voice (needs a running VOICEVOX engine)
-  chorus <songDir>   fast hard-tuned chorus over a grid-locked bed, once per candidate voice`;
+  chorus <songDir>   fast hard-tuned chorus over a grid-locked bed, once per candidate voice
+  produce <songDir>  render a produced song from <songDir>/score.mjs: full mix + instrumental (needs VOICEVOX)`;
 
 function fail(msg) {
   console.error(`[song] ${msg}`);
@@ -106,6 +107,30 @@ async function cmdChorus(songDir) {
   updatePageManifest(songDir, chorus.group, items);
 }
 
+async function cmdProduce(songDir) {
+  const { pathToFileURL } = await import('node:url');
+  const { produce } = await import('../src/song/produce.mjs');
+  const score = await import(pathToFileURL(path.join(songDir, 'score.mjs')).href);
+  const outDir = path.join(songDir, 'out');
+  const work = path.join(outDir, 'work');
+  fs.mkdirSync(work, { recursive: true });
+  const t0 = Date.now();
+  const res = await produce(score, { voiceStyle: score.meta.voice.style, workDir: work, log: (m) => console.log(`[song] ${m}`) });
+  const version = score.meta.version ?? 1;
+  const group = `${score.meta.title}`;
+  const files = { full: path.join(outDir, `full-v${version}.wav`), instrumental: path.join(outDir, `inst-v${version}.wav`) };
+  fs.writeFileSync(files.full, encodeWav(res.full));
+  fs.writeFileSync(files.instrumental, encodeWav(res.instrumental));
+  const v = score.meta.voice;
+  updatePageManifest(songDir, group, [
+    { id: `${path.basename(songDir)}-v${version}`, group, label: `v${version}`, title: `${score.meta.title}（完成版 v${version}）`,
+      desc: `${score.meta.bpm} BPM · ${score.meta.key} · VOICEVOX:${v.name}（${v.styleName}）`, wav: path.relative(songDir, files.full), durationSec: res.durationSec },
+    { id: `${path.basename(songDir)}-v${version}-inst`, group, label: `v${version}`, title: 'インスト（歌なし）',
+      desc: `${score.meta.bpm} BPM · ${score.meta.key}`, wav: path.relative(songDir, files.instrumental), durationSec: res.durationSec },
+  ]);
+  console.log(`[song] ${path.relative(process.cwd(), files.full)}  (${res.durationSec.toFixed(1)}s, peak ${res.full.peak.toFixed(2)}, ${((Date.now() - t0) / 1000).toFixed(0)}s)`);
+}
+
 const [command, songDir] = process.argv.slice(2);
 if (!command || !songDir) {
   console.log(USAGE);
@@ -114,6 +139,7 @@ if (!command || !songDir) {
 try {
   if (command === 'voices') await cmdVoices(path.resolve(songDir));
   else if (command === 'chorus') await cmdChorus(path.resolve(songDir));
+  else if (command === 'produce') await cmdProduce(path.resolve(songDir));
   else fail(`unknown command: ${command}\n\n${USAGE}`);
 } catch (err) {
   fail(err.message);
