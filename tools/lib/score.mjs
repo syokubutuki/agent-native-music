@@ -1,7 +1,7 @@
 // 楽譜データ (anm-score/1) の検証。web/player.template.html の読み込み仕様と対応させる。
 export const FORMAT = 'anm-score/1';
-export const PITCHED = ['epiano', 'pluck', 'pad', 'airpad', 'bell', 'bass', 'lead'];
-export const PITCHLESS = ['kick', 'snare', 'hat', 'riser']; // pitch は '-' を書く
+export const PITCHED = ['epiano', 'pluck', 'pad', 'airpad', 'bell', 'bass', 'lead', 'sub808', 'stab'];
+export const PITCHLESS = ['kick', 'snare', 'hat', 'riser', 'clap', 'ohat']; // pitch は '-' を書く
 const PITCH_RE = /^[A-G][#b]?-?\d$/;
 
 export function validateScore(s) {
@@ -10,6 +10,7 @@ export function validateScore(s) {
   if (!s || typeof s !== 'object') return ['score must be an object'];
   if (s.format !== FORMAT) err(`format must be "${FORMAT}"`);
   for (const k of ['id', 'title']) if (typeof s[k] !== 'string' || !s[k]) err(`${k} must be a non-empty string`);
+  if (s.sidechain !== undefined && typeof s.sidechain !== 'boolean') err('sidechain must be a boolean');
   if (s.order !== undefined && typeof s.order !== 'number') err('order must be a number');
   if (s.changes !== undefined && typeof s.changes !== 'string') err('changes must be a string');
   if (!Number.isInteger(s.version) || s.version < 1) err('version must be a positive integer');

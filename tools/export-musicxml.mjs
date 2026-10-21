@@ -58,7 +58,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const song = JSON.parse(readFileSync(songPath, 'utf8'));
   const outDir = resolve(process.argv[3] ?? resolve(root, 'exports/musicxml'));
   mkdirSync(outDir, { recursive: true });
-  const out = resolve(outDir, basename(songPath, '.json') + '.musicxml');
-  writeFileSync(out, toMusicXml(song));
-  console.log('wrote', out);
+  const vocals = song.tracks.filter((t) => t.vocal);
+  vocals.forEach((tk, i) => {
+    const out = resolve(outDir, basename(songPath, '.json') + (i ? `-part${i + 1}` : '') + '.musicxml');
+    writeFileSync(out, toMusicXml(song, tk));
+    console.log('wrote', out, `(${tk.name})`);
+  });
 }

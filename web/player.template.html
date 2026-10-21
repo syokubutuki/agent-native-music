@@ -207,15 +207,15 @@ textarea { font: inherit; width: 100%; min-height: 96px; resize: vertical; paddi
 <script>
 const SONGS = __SONG_JSON__;
 const IDS = [...new Set(SONGS.map((x) => x.id))];
-const versionsOf = (id) => SONGS.filter((x) => x.id === id);
+const versionsOf = (id) => SONGS.filter((x) => x.id === id).sort((a, b) => a.version - b.version);
 const latestOf = (id) => versionsOf(id).slice(-1)[0];
 let SONG = latestOf(IDS[0]); // 既定は先頭の曲の最新版
 
 /* ---------- score -> events ---------- */
 const TPB = 12; // ticks per beat (supports 8ths, 16ths and triplets)
 const SEMI = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
-const DRUMS = ['kick', 'snare', 'hat'];
-const NOPITCH = [...DRUMS, 'riser'];
+const DRUMS = ['kick', 'snare', 'hat', 'clap', 'ohat'];
+const NOPITCH = [...DRUMS, 'riser', 'clap', 'ohat'];
 function freqOf(name) {
   const m = /^([A-G])([#b]?)(-?\d)$/.exec(name);
   const midi = 12 * (Number(m[3]) + 1) + SEMI[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
@@ -236,7 +236,7 @@ function compile() {
 compile();
 
 /* ---------- state ---------- */
-let ctx = null, master, mix, verb, buses = [], wobbleGain, noiseBuf, rainGain;
+let ctx = null, master, mix, musicBus, verb, buses = [], wobbleGain, noiseBuf, rainGain;
 let bpm = SONG.bpm, volume = 0.7, rainOn = true;
 let mutedParts = SONG.tracks.map(() => false);
 let playing = false, timer = null, raf = null, pauseTimer = null;
@@ -252,7 +252,7 @@ function makeImpulse(seconds) {
   }
   return buf;
 }
-const SEND = { lead: 0.5, epiano: 0.45, pluck: 0.8, pad: 0.6, airpad: 0.85, bell: 1, riser: 0.25, bass: 0, kick: 0, snare: 0.35, hat: 0.08 };
+const SEND = { sub808: 0, clap: 0.4, ohat: 0.15, stab: 0.35, lead: 0.5, epiano: 0.45, pluck: 0.8, pad: 0.6, airpad: 0.85, bell: 1, riser: 0.25, bass: 0, kick: 0, snare: 0.35, hat: 0.08 };
 function initAudio() {
   ctx = new (window.AudioContext || window.webkitAudioContext)();
   master = ctx.createGain(); master.gain.value = 0;
@@ -265,6 +265,7 @@ function initAudio() {
   for (let i = 0; i < curve.length; i++) { const x = (i / 512) - 1; curve[i] = Math.tanh(1.6 * x) / Math.tanh(1.6); }
   shaper.curve = curve; shaper.oversample = '2x';
   mix = ctx.createGain(); mix.gain.value = 0.9;
+  musicBus = ctx.createGain(); musicBus.connect(mix); // キックに合わせて沈める(サイドチェイン風)対象のまとめ先
   mix.connect(hp); hp.connect(shaper); shaper.connect(tone); tone.connect(comp); comp.connect(master); master.connect(ctx.destination);
 
   verb = ctx.createConvolver(); verb.buffer = makeImpulse(2.4);
@@ -293,10 +294,14 @@ function initAudio() {
   swell.connect(swellAmt); swellAmt.connect(rainGain.gain); swell.start();
   rs.connect(rlp); rlp.connect(rhp); rhp.connect(rainGain); rainGain.connect(comp); rs.start();
 }
+const DUCKED = ['epiano', 'pluck', 'pad', 'airpad', 'bell', 'bass', 'sub808', 'stab'];
+function duck(t) { // キックの瞬間に伴奏をへこませ、すぐ戻す
+  musicBus.gain.setValueAtTime(0.42, t); musicBus.gain.linearRampToValueAtTime(1, t + 0.17);
+}
 function buildBuses() {
   buses = SONG.tracks.map((t, i) => {
     const g = ctx.createGain(); g.gain.value = mutedParts[i] ? 0 : t.gain;
-    g.connect(mix);
+    g.connect(DUCKED.includes(t.instrument) ? musicBus : mix);
     const s = ctx.createGain(); s.gain.value = SEND[t.instrument] ?? 0;
     g.connect(s); s.connect(verb);
     return g;
@@ -411,6 +416,47 @@ const INST = {
     o.frequency.exponentialRampToValueAtTime(46, t + 0.13);
     g.gain.setValueAtTime(e.vel * 0.85, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
     o.stop(t + 0.4);
+    if (SONG.sidechain) { // 立ち上がりのカチッという音を足して、輪郭を出す
+      const c = ctx.createGain(); c.connect(out); c.gain.setValueAtTime(e.vel * 0.22, t); c.gain.exponentialRampToValueAtTime(0.001, t + 0.012);
+      osc('triangle', 1800, t, c, { wobble: false }).stop(t + 0.02);
+    }
+  },
+  // 低音の太い「ブーン」。キックと同時に鳴らす。小さいスピーカーでも聞こえるよう倍音を足す
+  sub808(t, e, out) {
+    const spb = 60 / bpm, dur = e.dur * spb;
+    const g = ctx.createGain(); g.connect(out);
+    const o = osc('sine', e.freq, t, g, { wobble: false });
+    o.frequency.setValueAtTime(e.freq * 1.7, t); o.frequency.exponentialRampToValueAtTime(e.freq, t + 0.07);
+    const h = ctx.createGain(); h.gain.value = 0.22; h.connect(g);
+    const o2 = osc('triangle', e.freq * 2, t, h, { wobble: false });
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(e.vel * 0.62, t + 0.006);
+    g.gain.setTargetAtTime(0, t + Math.max(dur * 0.85, 0.12), 0.08);
+    o.stop(t + dur + 0.8); o2.stop(t + dur + 0.8);
+  },
+  // 手拍子。ずらした3回の短いノイズと、残響の尾
+  clap(t, e, out) {
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1500; bp.Q.value = 0.9;
+    const g = ctx.createGain(); bp.connect(g); g.connect(out);
+    g.gain.setValueAtTime(0, t);
+    for (const [off, pk] of [[0, 1], [0.011, 0.9], [0.022, 0.8]]) { g.gain.setValueAtTime(e.vel * 0.34 * pk, t + off); g.gain.exponentialRampToValueAtTime(0.02, t + off + 0.008); }
+    g.gain.setValueAtTime(e.vel * 0.3, t + 0.03); g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+    const n = noise(t, 0.26); n.connect(bp);
+  },
+  // 開いたハイハット(シャーン)
+  ohat(t, e, out) {
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000;
+    const g = ctx.createGain(); hp.connect(g); g.connect(out);
+    g.gain.setValueAtTime(e.vel * 0.12, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+    noise(t, 0.32).connect(hp);
+  },
+  // 鋭いシンセの和音(ズバッと鳴って、すぐ閉じる)
+  stab(t, e, out) {
+    const spb = 60 / bpm, dur = Math.min(e.dur * spb, 0.5);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 3;
+    lp.frequency.setValueAtTime(4200, t); lp.frequency.exponentialRampToValueAtTime(650, t + dur + 0.05);
+    const g = ctx.createGain(); lp.connect(g); g.connect(out);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(e.vel * 0.09, t + 0.004); g.gain.setTargetAtTime(0, t + dur * 0.6, 0.06);
+    for (const d of [-13, 0, 13]) osc('sawtooth', e.freq, t, lp, { detune: d }).stop(t + dur + 0.5);
   },
   snare(t, e, out) {
     const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1900; bp.Q.value = 0.7;
@@ -445,7 +491,9 @@ function schedule() {
       for (const e of evs) {
         const jitter = DRUMS.includes(e.inst) ? 0.003 : 0.006;
         const ev = { ...e, vel: Math.min(1, e.vel * (0.92 + Math.random() * 0.16)) };
-        INST[e.inst](Math.max(ctx.currentTime, when + (Math.random() * 2 - 1) * jitter), ev, buses[e.ti]);
+        const at = Math.max(ctx.currentTime, when + (Math.random() * 2 - 1) * jitter);
+        INST[e.inst](at, ev, buses[e.ti]);
+        if (SONG.sidechain && e.inst === 'kick') duck(at);
       }
     }
     if (tickPos % 3 === 0) visQ.push({ time: tickTime, tick: tickPos });
