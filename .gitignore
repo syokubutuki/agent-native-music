@@ -9,6 +9,7 @@ dist/
 # Rendered audio is reproducible from spec + commit (see renders/*/manifest.json).
 # WAVs are not committed; manifests, analysis and reports are.
 renders/**/*.wav
+renders/**/*.webm
 candidates/**/*.wav
 experiments/**/*.wav
 # Numba cache

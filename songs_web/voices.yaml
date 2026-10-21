@@ -1,0 +1,8 @@
+# 歌パートごとの VOICEVOX 声の割り当て（音楽監督判断）。style id は /singers の frame_decode スタイル。
+# octave: ガイドメロディからのオクターブ移動。volume: VOICEVOX volumeScale。
+utsuranai-v1-p0: {style: 3002, octave: 0, volume: 1.0}      # 四国めたん ノーマル: 吸血鬼の主人公
+utsuranai-v1-p1: {style: 3008, octave: 0, volume: 0.8}      # 春日部つむぎ: 合いの手（主役と声色を分ける）
+konotabiwa-v1-p0: {style: 3014, octave: 0, volume: 1.0}     # 冥鳴ひまり: 落ち着いた丁寧すぎる謝罪
+konotabiwa-v2-p0: {style: 3014, octave: 0, volume: 1.0}
+konotabiwa-v2-p1: {style: 3013, octave: -1, volume: 0.8}    # 青山龍星（1オクターブ下）: 記者の合いの手
+zenbu-suuji-v1-p0: {style: 3003, octave: 0, volume: 1.0}    # ずんだもん: 数字の早口

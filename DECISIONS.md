@@ -79,3 +79,19 @@
 - Decision: このクラウドセッションでは実装を Claude が代行し、仕様は `specs/` に書いて `executed by: claude` を記録する。
   人間の Windows 環境、または (a) 環境のネットワーク許可に `api.openai.com` を追加し (b) 認証情報を環境変数で渡したクラウド環境で Codex に委譲する。
 - Reason: 委譲の仕組みは整ったが、このコンテナの外向き通信と認証の 2 点が不足。
+
+## D-011 Web プレーヤー曲の歌声を VOICEVOX で合成
+
+- 依頼: Artifact「Agent Native Music」の歌パート（仮の電子音）に VOICEVOX で歌声を付ける。
+- Attempt: GitHub Releases からエンジンのバイナリ取得 → このセッションでは不可（GitHub API/Release が 403）。
+  Docker Hub の `voicevox/voicevox_engine:cpu-ubuntu24.04-0.25.2` を `dockerd` 起動のうえ pull → 成功。
+- 方式: `tools/voicevox_sing.py`。曲データ（`songs_web/scores.json`、Artifact の SONGS から抽出）の歌トラックを
+  VOICEVOX の Score（93.75 fps フレーム）に変換 → `sing_frame_audio_query`（歌唱用 6000）→ `frame_synthesis`（声のスタイル）。
+  声の割り当て（音楽判断）は `songs_web/voices.yaml`。境界はフレーム丸めを積み上げて累積ずれなし、ノート開始と終了にプレーヤーと同じスウィングを適用。
+- Result 1: そのまま変換すると HTTP 500（`operands could not be broadcast`）。原因は、スウィングで終端と次の開始の間にできる
+  1 フレーム程度の休符。子音は直前の休符から時間を借りるため、極短の休符で破綻する。
+- Decision: 0.08 秒未満の隙間は前の音を伸ばしてつなぐ（`MIN_REST`）。全 6 パート成功。長い音の f0 を自己相関で確認し、
+  B4/C#5/Eb5 がガイドと ±1% 以内、長さも曲尺（utsuranai 42.44 秒）と一致。
+- 配信: Artifact assets は WAV 不可のため webm/opus 128k に変換して upload、DB `vocals/<曲>-v<版>-p<トラック>` に assetId を登録
+  （プレーヤー既存の「ページに保存」と同じ形式なので自動読込・ガイド自動ミュートがそのまま働く）。クレジット `VOICEVOX:<キャラ名>` を状態表示に出す。
+- 主観: 聴取なし・推定。早口ラップ部（16 分音符 ≈ 0.09 秒/音）は VOICEVOX 歌唱で滑舌が崩れる可能性が高い — 人間の聴取で確認する。

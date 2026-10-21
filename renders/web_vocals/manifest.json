@@ -1,0 +1,32 @@
+{
+  "utsuranai-v1-p0": {
+    "style": 3002,
+    "sha256": "42c48cbd9b5d76a962560dc4ae8560d71f899f39d312bfabfeabbfda637f6543",
+    "notes": 286
+  },
+  "utsuranai-v1-p1": {
+    "style": 3008,
+    "sha256": "946f0aa3a5015c695ad7dff0c23c68de94ca21007d4fb3045b8fa156b182f4b9",
+    "notes": 34
+  },
+  "konotabiwa-v1-p0": {
+    "style": 3014,
+    "sha256": "7b5cb0ea880856c4779b600354552812ac8d332756cb0e45c91256d49c1d635d",
+    "notes": 280
+  },
+  "konotabiwa-v2-p0": {
+    "style": 3014,
+    "sha256": "b5dfac8445f3ca77c3137798e0ca2f9033dde79e0e3f0805b652ab55c22b70c6",
+    "notes": 281
+  },
+  "konotabiwa-v2-p1": {
+    "style": 3013,
+    "sha256": "e5bbd7ba85ae64ca8a0081bc7543a73d654be75fdc54aaeb3b4b22bed63a7dec",
+    "notes": 22
+  },
+  "zenbu-suuji-v1-p0": {
+    "style": 3003,
+    "sha256": "7828f193de9b2baf27f8638e872d2099adf938f2d4931ad51784958dafa88c0b",
+    "notes": 325
+  }
+}
