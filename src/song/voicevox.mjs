@@ -85,3 +85,44 @@ export function hardTune(query, score, hz, { glide = 1 } = {}) {
 }
 
 export const midiHz = (key) => 440 * 2 ** ((key - 69) / 12);
+
+// Smooth tuning: centre each note on its target but keep `keep` (0..1) of the teacher's own movement
+// around that note (vibrato, scoops), then glide between notes with a log-domain one-pole of
+// `smooth` frames. keep 0 + smooth 0 is hardTune; keep ~0.5 + smooth ~3 sings legato.
+export function softTune(query, score, hz, { keep = 0.5, smooth = 3 } = {}) {
+  const idx = frameNoteIndex(query, score);
+  const medians = new Map();
+  query.f0.forEach((f, i) => {
+    if (f > 0 && score.notes[idx[i]].key != null) {
+      if (!medians.has(idx[i])) medians.set(idx[i], []);
+      medians.get(idx[i]).push(f);
+    }
+  });
+  for (const [k, list] of medians) medians.set(k, list.sort((a, b) => a - b)[list.length >> 1]);
+  const target = query.f0.map((f, i) =>
+    f > 0 && medians.has(idx[i]) ? Math.log(hz(idx[i])) + keep * (Math.log(f) - Math.log(medians.get(idx[i]))) : null,
+  );
+  const a = smooth > 0 ? Math.exp(-1 / smooth) : 0;
+  let state = null;
+  const f0 = query.f0.map((f, i) => {
+    if (target[i] == null) {
+      if (f <= 0) state = null; // unvoiced gap: restart the glide
+      return f;
+    }
+    state = state == null ? target[i] : a * state + (1 - a) * target[i];
+    return Math.exp(state);
+  });
+  return { ...query, f0 };
+}
+
+// Vowel kana for a mora, used to extend a syllable across notes (melisma).
+const VOWEL_ROWS = {
+  あ: 'あかさたなはまやらわがざだばぱぁゃ', い: 'いきしちにひみりぎじぢびぴぃ', う: 'うくすつぬふむゆるぐずづぶぷぅゅ',
+  え: 'えけせてねへめれげぜでべぺぇ', お: 'おこそとのほもよろをごぞどぼぽぉょ',
+};
+export function vowelOf(mora) {
+  if (mora.endsWith('ん')) return 'ん';
+  const last = mora[mora.length - 1];
+  for (const [v, row] of Object.entries(VOWEL_ROWS)) if (row.includes(last)) return v;
+  throw new Error(`no vowel for ${mora}`);
+}

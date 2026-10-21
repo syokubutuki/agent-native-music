@@ -2,7 +2,7 @@
 
 import { createBus, kick, clap, hat, riser, impact, bass, supersaw, pluck } from './synth.mjs';
 import { reverb, pingPong, sidechainCurve, applyGain, eq, compress, levelTo, mixInto, master } from './fx.mjs';
-import { toScore, singQuery, frameSynthesis, hardTune, midiHz } from './voicevox.mjs';
+import { toScore, singQuery, frameSynthesis, hardTune, softTune, midiHz, vowelOf } from './voicevox.mjs';
 import { pitchToMidi } from './notes.mjs';
 import { loadWav } from './mix.mjs';
 import fs from 'node:fs';
@@ -94,17 +94,49 @@ function drumBar(style, barIndex, bars) {
   return out;
 }
 
-export function parseBar(bar) {
+// Tokens: "lyric:pitch:sixteenths", "-n" rest, "~:pitch:n" holds the previous syllable's vowel on a new
+// pitch (melisma), "|" is an optional visual bar line.
+export function parseTokens(text) {
   const notes = [];
-  for (const tok of bar.trim().split(/\s+/)) {
-    if (tok.startsWith('-')) notes.push({ key: null, lyric: '', beats: Number(tok.slice(1)) / 4 });
-    else {
-      const [lyric, pitch, n] = tok.split(':');
-      notes.push({ key: pitchToMidi(pitch), lyric, beats: Number(n) / 4 });
+  let lastLyric = null;
+  for (const tok of text.trim().split(/\s+/)) {
+    if (tok === '|') continue;
+    if (tok.startsWith('-')) {
+      notes.push({ key: null, lyric: '', beats: Number(tok.slice(1)) / 4 });
+      continue;
     }
+    const [lyric, pitch, n] = tok.split(':');
+    if (!pitch || !Number(n)) throw new Error(`bad token: ${tok}`);
+    const sung = lyric === '~' ? (lastLyric ? vowelOf(lastLyric) : null) : lyric;
+    if (!sung) throw new Error(`melisma with nothing to hold: ${text}`);
+    notes.push({ key: pitchToMidi(pitch), lyric: sung, beats: Number(n) / 4 });
+    lastLyric = sung;
   }
+  return notes;
+}
+
+export function parseBar(bar) {
+  const notes = parseTokens(bar);
   const total = notes.reduce((a, n) => a + n.beats, 0);
   if (Math.abs(total - 4) > 1e-9) throw new Error(`bar is ${total * 4}/16 sixteenths: ${bar}`);
+  return notes;
+}
+
+// Phrase-based vocals: [[startSixteenth, tokens], ...] placed freely inside the section — phrases may
+// cross bar lines and take whatever length their words need. Gaps become rests.
+export function parsePhrases(phrases, bars) {
+  const total = bars * 16;
+  const notes = [];
+  let at = 0;
+  for (const [start, text] of phrases) {
+    if (start < at) throw new Error(`phrase at ${start} overlaps the previous one (ends ${at}): ${text}`);
+    if (start > at) notes.push({ key: null, lyric: '', beats: (start - at) / 4 });
+    const ns = parseTokens(text);
+    notes.push(...ns);
+    at = start + ns.reduce((a, n) => a + n.beats * 4, 0);
+    if (at > total) throw new Error(`phrase runs past the section end (${at} > ${total}): ${text}`);
+  }
+  if (at < total) notes.push({ key: null, lyric: '', beats: (total - at) / 4 });
   return notes;
 }
 
@@ -149,7 +181,10 @@ export function arrange(sections) {
         }
       }
     }
-    if (sec.vocal) vocals.push({ name: sec.name, startBeat: start, bars: sec.bars, double: !!sec.double, notes: sec.vocal.flatMap(parseBar) });
+    if (sec.vocal) {
+      const notes = sec.phrases ? parsePhrases(sec.vocal, sec.bars) : sec.vocal.flatMap(parseBar);
+      vocals.push({ name: sec.name, startBeat: start, bars: sec.bars, double: !!sec.double, notes });
+    }
     bar0 += sec.bars;
   }
   return { tracks: t, vocals, totalBeats: bar0 * 4 };
@@ -174,6 +209,7 @@ const STEM_DB = { kick: -12, clap: -20, hat: -28, bass: -15, stab: -21, pad: -26
 
 export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, log = () => {} } = {}) {
   const { bpm } = score.meta;
+  const tuning = score.meta.tuning ?? { mode: 'hard' };
   const { tracks, vocals, totalBeats } = arrange(score.sections);
   const total = Math.round(((totalBeats + 8) * 60 * sr) / bpm); // two bars of tail
   const ctx = { sr, bpm };
@@ -218,7 +254,8 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
     const qfile = `${workDir}/query-${qkey}.json`;
     const query = fs.existsSync(qfile) ? JSON.parse(fs.readFileSync(qfile, 'utf8')) : await singQuery(score, { engine });
     fs.writeFileSync(qfile, JSON.stringify(query));
-    const tuned = hardTune(query, score, (i) => midiHz(score.notes[i].key), { glide: 2 });
+    const hz = (i) => midiHz(score.notes[i].key);
+    const tuned = tuning.mode === 'hard' ? hardTune(query, score, hz, { glide: 2 }) : softTune(query, score, hz, tuning);
     const offset = Math.round(((sec.startBeat - lead) * 60 * sr) / bpm);
     const put = async (q, bus, { delay = 0, gain = 1, side = 0 }) => {
       // cache by query + voice so re-mixing does not re-sing

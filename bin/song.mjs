@@ -122,11 +122,17 @@ async function cmdProduce(songDir) {
   fs.writeFileSync(files.full, encodeWav(res.full));
   fs.writeFileSync(files.instrumental, encodeWav(res.instrumental));
   const v = score.meta.voice;
+  // keep earlier versions on the page for comparison; newest first
+  const manifest = path.join(songDir, 'page.json');
+  const older = fs.existsSync(manifest)
+    ? JSON.parse(fs.readFileSync(manifest, 'utf8')).filter((i) => i.group === group && !i.id.startsWith(`${path.basename(songDir)}-v${version}`))
+    : [];
   updatePageManifest(songDir, group, [
     { id: `${path.basename(songDir)}-v${version}`, group, label: `v${version}`, title: `${score.meta.title}（完成版 v${version}）`,
       desc: `${score.meta.bpm} BPM · ${score.meta.key} · VOICEVOX:${v.name}（${v.styleName}）`, wav: path.relative(songDir, files.full), durationSec: res.durationSec },
     { id: `${path.basename(songDir)}-v${version}-inst`, group, label: `v${version}`, title: 'インスト（歌なし）',
       desc: `${score.meta.bpm} BPM · ${score.meta.key}`, wav: path.relative(songDir, files.instrumental), durationSec: res.durationSec },
+    ...older,
   ]);
   console.log(`[song] ${path.relative(process.cwd(), files.full)}  (${res.durationSec.toFixed(1)}s, peak ${res.full.peak.toFixed(2)}, ${((Date.now() - t0) / 1000).toFixed(0)}s)`);
 }
