@@ -270,3 +270,139 @@ export function pluck(ctx, events, bus) {
     }
   }
 }
+
+// --- kawaii layer --------------------------------------------------------------------------------
+
+// Music-box / glockenspiel bell: two-operator FM with a decaying index, softened above 6 kHz.
+export function bell(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const len = Math.round(0.9 * sr);
+    const f = mtof(ev.midi);
+    const lp = createSvf('lp', 6000, 0.7, sr);
+    let pc = 0;
+    let pm = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      const index = 2.2 * Math.exp(-t / 0.06);
+      pm += (TAU * f * 3.5) / sr;
+      pc += (TAU * f) / sr;
+      const y = Math.sin(pc + index * Math.sin(pm)) * Math.exp(-t / 0.28) * Math.min(1, t / 0.001);
+      add(bus, s0 + n, lp(y) * (ev.vel ?? 1), ev.pan ?? 0);
+    }
+  }
+}
+
+// Chiptune lead: 25% pulse with delayed vibrato and a short slide into each note.
+export function chip(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const gate = lengthOf(ctx, ev.beats);
+    const len = gate + Math.round(0.05 * sr);
+    const f = mtof(ev.midi);
+    const lp = createSvf('lp', 5200, 0.7, sr);
+    let p = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      const slide = 2 ** ((-0.6 * Math.exp(-t / 0.018)) / 12);
+      const vib = t > 0.09 ? 2 ** ((0.25 * Math.sin(TAU * 6 * t)) / 12) : 1;
+      const dt = (f * slide * vib) / sr;
+      p = (p + dt) % 1;
+      const pulse = (p < 0.25 ? 1 : -1) + blep(p, dt) - blep((p + 0.75) % 1, dt);
+      const env = n < gate ? Math.min(1, n / (0.002 * sr)) : Math.exp(-(n - gate) / (0.012 * sr));
+      add(bus, s0 + n, lp(pulse) * 0.5 * env * (ev.vel ?? 1), ev.pan ?? 0);
+    }
+  }
+}
+
+// Toy noises: 'squeak' (rubber toy), 'pop' (bubble), 'sparkle' (two coin blips).
+export function toy(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    let ph = 0;
+    if (ev.kind === 'squeak') {
+      const len = Math.round(0.16 * sr);
+      for (let n = 0; n < len; n++) {
+        const t = n / sr;
+        const f = 900 + 1300 * Math.min(1, t / 0.06) + 120 * Math.sin(TAU * 38 * t);
+        ph += (TAU * f) / sr;
+        const env = Math.min(1, t / 0.004) * Math.exp(-t / 0.07);
+        add(bus, s0 + n, (Math.sin(ph) + 0.25 * Math.sin(2 * ph)) * env * (ev.vel ?? 1), ev.pan ?? 0.3);
+      }
+    } else if (ev.kind === 'pop') {
+      const len = Math.round(0.07 * sr);
+      for (let n = 0; n < len; n++) {
+        const t = n / sr;
+        ph += (TAU * (350 + 1100 * (t / 0.07))) / sr;
+        add(bus, s0 + n, Math.sin(ph) * Math.exp(-t / 0.018) * (ev.vel ?? 1), ev.pan ?? -0.3);
+      }
+    } else {
+      for (const [o, f] of [[0, 1568], [0.07, 2093]]) {
+        const start = s0 + Math.round(o * sr);
+        const len = Math.round(0.12 * sr);
+        let p = 0;
+        for (let n = 0; n < len; n++) {
+          const t = n / sr;
+          p = (p + f / sr) % 1;
+          add(bus, start + n, (p < 0.5 ? 1 : -1) * 0.35 * Math.exp(-t / 0.05) * (ev.vel ?? 1), ev.pan ?? 0.4);
+        }
+      }
+    }
+  }
+}
+
+// Snappy snare: tuned body + bright noise, for the half-time drop.
+export function snare(ctx, events, bus, seed = 53) {
+  const rng = createRng(seed);
+  const len = Math.round(0.28 * ctx.sr);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const bp = createSvf('bp', 2600, 0.7, ctx.sr);
+    let ph = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / ctx.sr;
+      ph += (TAU * (210 + 60 * Math.exp(-t / 0.01))) / ctx.sr;
+      const body = Math.sin(ph) * Math.exp(-t / 0.045);
+      const noise = bp(rng.uniform(-1, 1)) * 2 * Math.exp(-t / 0.07);
+      add(bus, s0 + n, Math.tanh(1.4 * (0.7 * body + noise)) * (ev.vel ?? 1));
+    }
+  }
+}
+
+// Future-bass chord chops: supersaw voices that start `bend` semitones flat and slide up, with a
+// quick swell attack — the "wobbly, rising" chord hits of the genre.
+export function futureChords(ctx, events, bus, seed = 47) {
+  const sr = ctx.sr;
+  const rng = createRng(seed);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const gate = lengthOf(ctx, ev.beats);
+    const len = gate + Math.round(0.12 * sr);
+    const bendLen = lengthOf(ctx, ev.bendBeats ?? 0.25);
+    const osc = DETUNE.map((d, i) => ({ p: rng.next(), d, pan: SPREAD[i] }));
+    const fl = createSvf('lp', 3800, 0.9, sr);
+    const fr = createSvf('lp', 3800, 0.9, sr);
+    for (let n = 0; n < len; n++) {
+      const bend = ev.bend ? ev.bend * Math.max(0, 1 - n / bendLen) ** 2 : 0;
+      let l = 0;
+      let r = 0;
+      for (const o of osc) {
+        const dt = mtof(ev.midi + o.d - bend) / sr;
+        o.p = (o.p + dt) % 1;
+        const v = saw(o.p, dt);
+        const a = ((o.pan + 1) * Math.PI) / 4;
+        l += v * Math.cos(a);
+        r += v * Math.sin(a);
+      }
+      const env = n < gate ? Math.min(1, n / (0.012 * sr)) : Math.exp(-(n - gate) / (0.03 * sr));
+      const g = (env * (ev.vel ?? 1)) / 3;
+      const i = s0 + n;
+      if (i >= bus.left.length) break;
+      bus.left[i] += fl(l) * g;
+      bus.right[i] += fr(r) * g;
+    }
+  }
+}

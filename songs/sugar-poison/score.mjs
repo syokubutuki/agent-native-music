@@ -4,7 +4,7 @@
 
 export const meta = {
   title: 'シュガシュガポイズン',
-  version: 2,
+  version: 3,
   bpm: 164,
   key: 'C# minor',
   // v2: voice moved into its measured sweet spot (speech centre F4; melody E4–D#5) and sung legato
@@ -53,37 +53,53 @@ const PRE = [
   [0, '-2 と:C#5:2 け:B4:2 て:A4:6 ~:G#4:2 -2 | と:B4:2 け:A4:2 て:G#4:8 -4'],
   [32, '-2 と:C#5:2 け:B4:2 て:A4:4 ゆ:B4:2 く:C#5:2 -2 | の:D#5:8 ~:C#5:4 -4'],
   [64, '-2 ゆ:A4:2 め:A4:2 と:C#5:4 う:C#5:2 つ:B4:2 つ:A4:2 | の:B4:8 ~:A4:4 -4'],
-  [96, '-4 ぜ:C#5:2 ん:C#5:2 ぶ:B4:4 あ:A4:2 げ:B4:2 | る:C#5:4 か:D#5:4 ら:D#5:4 -4'],
+  [96, '-4 ぜ:C#5:2 ん:C#5:2 ぶ:B4:4 あ:A4:2 げ:B4:2 | る:C#5:4 か:D#5:4 ら:D#5:4 ね:C#5:2 -2'], // 「ね」 sung alone in the stop
 ];
 const BRIDGE = [
   [0, '-2 ゆ:C#5:2 ら:B4:2 ゆ:A4:2 ら:B4:2 ゆ:C#5:4 れ:B4:2 | て:A4:8 ~:G#4:4 -4'],
   [32, '-2 そ:A4:2 れ:A4:2 で:C#5:2 も:C#5:4 ほ:B4:2 し:A4:2 | い:G#4:4 の:C5:8 -4'],
 ];
-const POST = [line(0, C_HOOK, 'ゆめに'), line(64, C_HOOK, 'ゆめに')];
 const OUTRO = [[20, 'も:B4:4 う:A4:4 い:G#4:2 ち:A4:2 ど:G#4:8']];
 
+// kawaii layer (v3): chipmunk vocal chops (written at sounding pitch, an octave above the lead) and a
+// music box that plays the hook before anyone sings it.
+const CHOP_HOOK = 'あ:A5:2 ま:B5:2 い:C#6:6 ~:B5:2 あ:A5:2 ま:B5:2 | い:B5:6 ~:A5:2 -8';
+const CHOP_STUTTER = 'あ:G#5:1 -1 あ:G#5:1 -1 あ:G#5:2 ま:B5:2 い:C#6:4 -4 | -8 ま:B5:2 ~:A5:2 い:G#5:4';
+const DROP_CHOPS = [[0, CHOP_HOOK], [32, CHOP_STUTTER], [64, CHOP_HOOK], [96, 'あ:G#5:1 -1 あ:G#5:1 -1 あ:G#5:2 ま:B5:2 い:C#6:4 -4 | ね:C#6:4 -12']];
+const BOX_HOOK = 'a:A5:2 a:B5:2 a:C#6:6 a:B5:2 a:A5:2 a:B5:2 | a:B5:6 a:A5:2 a:G#5:2 a:A5:2 a:B5:2 -2';
+const INTRO_BOX = [[0, BOX_HOOK], [64, BOX_HOOK]];
+const OUTRO_BOX = [[0, BOX_HOOK]];
+
 // Chord cycles (one chord per bar).
-const CH = { chorus: ['A', 'B', 'G#m', 'C#m'], verse: ['C#m', 'A', 'E', 'B'], pre: ['F#m', 'G#m', 'A', 'B'], bridge: ['A', 'A', 'F#m', 'G#'] };
+// v3: 7ths and 9ths for the sweeter kawaii colour; the melody is unchanged.
+const CH = {
+  chorus: ['Amaj7', 'Badd9', 'G#m7', 'C#m9'],
+  verse: ['C#m9', 'Amaj7', 'Emaj7', 'Badd9'],
+  pre: ['F#m7', 'G#m7', 'Amaj7', 'Badd9'],
+  bridge: ['Amaj7', 'Amaj7', 'F#m7', 'G#7'],
+};
 
 export const sections = [
-  { name: 'intro', level: [0.55, 0.8], bars: 8, chords: CH.chorus, drums: 'intro', bass: 'chorus', bassFrom: 4, stabs: false, pad: true, riff: true },
-  { name: 'verse1', level: [0.6, 0.65], bars: 16, chords: CH.verse, drums: 'verse', bass: 'verse', pad: true, phrases: true, vocal: VERSE1 },
-  { name: 'pre1', level: [0.7, 0.95], bars: 8, chords: CH.pre, drums: 'pre', bass: 'pre', stabs: true, riser: true, phrases: true, vocal: PRE },
-  { name: 'chorus1', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'chorus', bass: 'chorus', stabs: true, pad: true, riffLow: true, impact: true, double: true, phrases: true, vocal: CHORUS },
-  { name: 'post1', level: [1, 1], bars: 8, chords: CH.chorus, drums: 'chorus', bass: 'chorus', stabs: true, riff: true, phrases: true, vocal: POST },
-  { name: 'verse2', level: [0.62, 0.66], bars: 8, chords: CH.verse, drums: 'verse', bass: 'verse', pad: true, phrases: true, vocal: VERSE2 },
-  { name: 'pre2', level: [0.7, 0.95], bars: 8, chords: CH.pre, drums: 'pre', bass: 'pre', stabs: true, riser: true, phrases: true, vocal: PRE },
-  { name: 'chorus2', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'chorus', bass: 'chorus', stabs: true, pad: true, riffLow: true, impact: true, double: true, phrases: true, vocal: CHORUS },
+  { name: 'intro', level: [0.55, 0.8], bars: 8, chords: CH.chorus, drums: 'intro', bass: 'chorus', bassFrom: 4, pad: true, riff: true, riffSynth: 'chip', riffFrom: 4, phrases: true, bellPhrases: INTRO_BOX },
+  { name: 'verse1', level: [0.6, 0.65], bars: 16, chords: CH.verse, drums: 'verse', bass: 'verse', pad: true, toys: 'verse', phrases: true, vocal: VERSE1 },
+  { name: 'pre1', level: [0.7, 0.95], bars: 8, chords: CH.pre, drums: 'pre', bass: 'pre', stabs: true, riser: true, stopLastBeat: true, phrases: true, vocal: PRE },
+  { name: 'chorus1', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'chorus', bass: 'chorus', stabs: true, pad: true, riffLow: true, bells: 'arp', toys: 'chorus', impact: true, double: true, phrases: true, vocal: CHORUS },
+  { name: 'drop1', level: [1.15, 1.15], bars: 8, chords: CH.chorus, drums: 'drop', bass: 'drop', future: true, riff: true, riffSynth: 'chip', bells: 'arp', toys: 'drop', phrases: true, chops: DROP_CHOPS },
+  { name: 'verse2', level: [0.62, 0.66], bars: 8, chords: CH.verse, drums: 'verse', bass: 'verse', pad: true, toys: 'verse', phrases: true, vocal: VERSE2 },
+  { name: 'pre2', level: [0.7, 0.95], bars: 8, chords: CH.pre, drums: 'pre', bass: 'pre', stabs: true, riser: true, stopLastBeat: true, phrases: true, vocal: PRE },
+  { name: 'chorus2', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'chorus', bass: 'chorus', stabs: true, pad: true, riffLow: true, bells: 'arp', toys: 'chorus', impact: true, double: true, phrases: true, vocal: CHORUS },
+  { name: 'drop2', level: [1.15, 1.15], bars: 8, chords: CH.chorus, drums: 'drop', bass: 'drop', future: true, riff: true, riffSynth: 'chip', bells: 'arp', toys: 'drop', phrases: true, chops: DROP_CHOPS },
   { name: 'bridge', level: [0.45, 0.9], bars: 8, chords: CH.bridge, drums: 'bridge', bass: 'long', pad: true, riserLast: 4, phrases: true, vocal: BRIDGE },
-  { name: 'chorus3', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'chorus', bass: 'chorus', stabs: true, pad: true, riff: true, impact: true, double: true, phrases: true, vocal: CHORUS },
-  { name: 'outro', level: [0.9, 0.6], bars: 4, chords: CH.chorus, drums: 'outro', bass: 'chorus', riff: true, pad: true, phrases: true, vocal: OUTRO },
+  { name: 'chorus3', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'chorus', bass: 'chorus', stabs: true, pad: true, riff: true, riffSynth: 'chip', bells: 'arp', toys: 'chorus', impact: true, double: true, phrases: true, vocal: CHORUS },
+  { name: 'outro', level: [0.9, 0.6], bars: 4, chords: CH.chorus, drums: 'none', pad: true, toys: 'outro', phrases: true, vocal: OUTRO, bellPhrases: OUTRO_BOX },
 ];
 
 export const lyrics = {
   verse1: 'まよなかの まどに / なまえを なぞる / やさしい ふりが / いちばん こわいの / ぬるい こたえは / いらない / ねえ ふかく ふかく / しずめて',
-  pre: 'とけて とけて / とけて ゆくの / ゆめと うつつの / ぜんぶ あげるから',
+  pre: 'とけて とけて / とけて ゆくの / ゆめと うつつの / ぜんぶ あげるから（ね）',
   chorus: 'あまい あまい ゆめに / とけて とけて きえる / あまい あまい どくに / ぬれて わたしのもの',
   verse2: 'しろい くびすじ / ゆびで なぞるの / あかい しずくが / おちて きえるまで',
   bridge: 'ゆらゆら ゆれて / それでも ほしいの',
   outro: 'もう いちど',
+  drop: '（声の切り貼り）あまぁい / あ、あ、あまい / ね',
 };

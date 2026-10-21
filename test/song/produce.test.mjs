@@ -5,16 +5,21 @@ import { vowelOf, softTune } from '../../src/song/voicevox.mjs';
 import { sections, meta } from '../../songs/sugar-poison/score.mjs';
 import { createBus, kick, bass, supersaw, pluck } from '../../src/song/synth.mjs';
 
-test('chords: triads, bass roots in E1..D#2, voicings above G#3', () => {
+test('chords: triads first, extensions stacked above the triad, bass roots in E1..D#2', () => {
   assert.deepEqual(chord('C#m').pcs, [1, 4, 8]);
-  assert.deepEqual(chord('G#').pcs, [8, 0, 3]);
-  assert.equal(chord('C#m').bassRoot, 37);
-  assert.equal(chord('E').bassRoot, 28);
-  for (const s of ['A', 'B', 'G#m', 'C#m', 'E', 'F#m', 'G#']) {
-    const v = voicing(s);
-    assert.equal(v.length, 3);
-    assert.ok(v.every((m) => m >= 56 && m < 68));
-    assert.deepEqual(new Set(v.map((m) => m % 12)), new Set(chord(s).pcs));
+  assert.deepEqual(chord('G#7').pcs, [8, 0, 3, 6]);
+  assert.deepEqual(chord('Amaj7').pcs, [9, 1, 4, 8]);
+  assert.deepEqual(chord('C#m9').pcs, [1, 4, 8, 11, 3]);
+  assert.deepEqual(chord('Badd9').pcs, [11, 3, 6, 1]);
+  assert.equal(chord('C#m9').bassRoot, 37);
+  assert.equal(chord('Emaj7').bassRoot, 28);
+  assert.throws(() => chord('Hm'), /unknown chord/);
+  for (const sym of ['Amaj7', 'Badd9', 'G#m7', 'C#m9', 'Emaj7', 'F#m7', 'G#7', 'B']) {
+    const v = voicing(sym);
+    const triad = v.slice(0, 3);
+    assert.ok(triad.every((m) => m >= 56 && m < 68), `${sym} triad ${triad}`);
+    assert.ok(v.slice(3).every((m) => m > triad[2]), `${sym} extensions above the triad`);
+    assert.deepEqual(new Set(v.map((m) => m % 12)), new Set(chord(sym).pcs));
   }
 });
 
@@ -48,8 +53,9 @@ test('arrangement covers the whole song with events on the grid', () => {
     assert.ok(evs.length > 0, `${name} has events`);
     for (const e of evs) assert.ok(e.beat >= 0 && e.beat < totalBeats, `${name} beat ${e.beat}`);
   }
-  assert.ok(tracks.kick.every((e) => Number.isInteger(e.beat))); // four-on-the-floor on the beat
+  assert.ok(tracks.kick.every((e) => Number.isInteger(e.beat * 4))); // on the 16th grid (drop kicks are syncopated)
   assert.equal(vocals.length, sections.filter((s) => s.vocal).length);
+  assert.ok(tracks.snare.length > 0 && tracks.future.length > 0 && tracks.bell.length > 0 && tracks.toy.length > 0);
   assert.equal(meta.bpm, 164);
   assert.equal(meta.voice.style, 3008);
 });
@@ -57,6 +63,12 @@ test('arrangement covers the whole song with events on the grid', () => {
 test('section levels ramp within sections', () => {
   const g = sectionLevels([{ bars: 1, level: [0.5, 1] }, { bars: 1 }], 1000, { sr: 1000 * (164 / 60) / 8, bpm: 164 });
   assert.ok(g[0] === 0.5 && g[499] > 0.99 && g[500] === 1 && g[999] === 1);
+  // stopLastBeat silences the final beat of its section
+  const sr = 1000 * (164 / 60) / 8; // 1000 samples = 2 bars
+  const h = sectionLevels([{ bars: 1, stopLastBeat: true }, { bars: 1 }], 1000, { sr, bpm: 164 });
+  assert.equal(h[300], 1);
+  assert.equal(h[450], 0);
+  assert.equal(h[600], 1);
 });
 
 test('instruments render finite, non-silent audio', () => {

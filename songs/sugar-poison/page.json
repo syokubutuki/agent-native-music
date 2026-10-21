@@ -1,5 +1,23 @@
 [
   {
+    "id": "sugar-poison-v3",
+    "group": "シュガシュガポイズン",
+    "label": "v3",
+    "title": "シュガシュガポイズン（完成版 v3）",
+    "desc": "164 BPM · C# minor · VOICEVOX:春日部つむぎ（ノーマル）",
+    "wav": "out/full-v3.wav",
+    "durationSec": 184.3902494331066
+  },
+  {
+    "id": "sugar-poison-v3-inst",
+    "group": "シュガシュガポイズン",
+    "label": "v3",
+    "title": "インスト（歌なし）",
+    "desc": "164 BPM · C# minor",
+    "wav": "out/inst-v3.wav",
+    "durationSec": 184.3902494331066
+  },
+  {
     "id": "sugar-poison-v2",
     "group": "シュガシュガポイズン",
     "label": "v2",
