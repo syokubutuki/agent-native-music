@@ -73,3 +73,28 @@ A2:
 npm test
 node bin/song.mjs voices songs/zenbu-choudai   # VOICEVOX engine が 127.0.0.1:50021 で動いていること
 ```
+
+## イヤーワーム設計メモ（サビ v3）
+v2（16 分に全音節を詰めたサビ）は「キレではなく早送り。耳に残らない」と不採用。研究と経験則を確認して作り直した。
+
+| 原則 | 根拠 | v3 での使い方 |
+|---|---|---|
+| 頭に残る曲はテンポが速め | Jakubowski et al. 2016/17（83 の旋律特徴で 100 曲 vs 100 曲） | 拍は 180 BPM のまま。音節は 8 分中心（約 5.6 音/秒、v2 は約 12） |
+| 全体の旋律の形はありふれた山型、局所に珍しい勾配 | 同上 | 各フレーズは上がって下がる。驚きは「あまあま（F5）→ どくどく（A4）」の短 6 度下降 1 か所だけ |
+| 単純で反復的な歌詞 + サビの強い旋律フック | Burgoyne et al.（Hooked） | 「ちょうだい」を 1 周で 7 回。意味より響き |
+| ありふれた音程・リズムの方が長期記憶に残る | Burgoyne の見解 | 同音反復と順次進行が中心、リズムは 8 分 + 休符の型を反復 |
+| 10 秒程度の断片が回り、未解決で終わると繰り返したくなる | 経験則（ツァイガルニク効果は実験結果がまちまち） | 1 ループ 8 小節 = 180 BPM で 10.7 秒。終わりは B♭（フリジアの短 2 度）で解決させず頭に戻る |
+
+構造（2 小節 × 4 行 = AABA'）:
+1. ちょうだい ちょうだい ぜんぶちょうだい（A: 同じ型を 2 回 + 山型で上がって B♭ で宙づり）
+2. あまあま どくどく とろけて ちょうだい（B: 甘い高音 → 毒の低音へ急降下。「どくどく」= 毒 / 鼓動）
+3. ちょうだい ちょうだい ぜんぶちょうだい（A の完全反復）
+4. きみのさいごまで わたしのもの（A': 最大の山、最後の「の」が B♭ で浮いたまま 1 行目へ）
+
+聴き比べ: 180 BPM と 150 BPM × 4 声（四国めたん セクシー / 春日部つむぎ / 琴詠ニア / 櫻歌ミコ）、2 周ループ。
+
+参考:
+- Jakubowski, Finkel, Stewart & Müllensiefen, "Dissecting an Earworm" (Psychology of Aesthetics, Creativity, and the Arts, doi:10.1037/aca0000090) https://research.gold.ac.uk/19405
+- APA press release (2016) https://www.apa.org/news/press/releases/2016/11/earworms
+- Van Balen, Burgoyne et al., "Hooked: A Game for Discovering What Makes Music Catchy" (ISMIR 2013) https://archives.ismir.net/ismir2013/paper/000101.pdf
+- Catchiness (overview) https://en.wikipedia.org/wiki/Catchiness

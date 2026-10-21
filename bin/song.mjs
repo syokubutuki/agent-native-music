@@ -76,41 +76,32 @@ const CHORUS_POINTS = [
 async function cmdChorus(songDir) {
   const song = loadSong(songDir);
   const { chorus } = song;
-  const notes = parseNotes(chorus.notes);
+  const once = parseNotes(chorus.notes);
+  const notes = Array.from({ length: chorus.repeat ?? 1 }, () => once).flat(); // hear it loop
+  const bars = chorus.bars * (chorus.repeat ?? 1);
   const leadBeats = 1; // one beat of bed before the voice comes in
-  const score = toScore(notes, song.bpm, { leadBeats });
-  const durationSec = ((leadBeats + chorus.bars * 4) * 60) / song.bpm;
   const outDir = path.join(songDir, 'chorus');
   fs.mkdirSync(outDir, { recursive: true });
-
-  const bedGenome = songGenome(seedGenome(songDir, song), {
-    bpm: song.bpm,
-    durationSec,
-    points: CHORUS_POINTS,
-    tuning12: { baseHz: F2 },
-  });
-  const bed = render(bedGenome, { sampleRate: SR });
-  const bedWav = path.join(outDir, 'bed.wav');
-  fs.writeFileSync(bedWav, encodeWav(finish({ ...bed, left: bed.left.slice(), right: bed.right.slice() }, { targetDb: -16 })));
-  const items = [{
-    id: 'c-bed', group: chorus.group, label: '00', title: '伴奏のみ（g0003-01 を 180 BPM・12 平均律に固定）',
-    desc: 'サビのエネルギー 0.9 で一定', wav: path.relative(songDir, bedWav), durationSec,
-  }];
-
-  const query = hardTune(await singQuery(score), score, (i) => midiHz(score.notes[i].key), { glide: 1 });
-  for (const [i, v] of song.audition.voices.entries()) {
-    const dry = path.join(outDir, `${v.id}-dry.wav`);
-    fs.writeFileSync(dry, await frameSynthesis(query, v.style));
-    const vocal = loadWav(dry, SR).channels[0];
-    const mix = finish(mixVocal({ left: bed.left, right: bed.right }, vocal, { sampleRate: SR }));
-    const wav = path.join(outDir, `c-${v.id.slice(2)}.wav`);
-    fs.writeFileSync(wav, encodeWav(mix));
-    items.push({
-      id: `c-${v.id.slice(2)}`, group: chorus.group, label: String(i + 1).padStart(2, '0'),
-      title: `${v.name}（${v.styleName}）`, desc: `VOICEVOX:${v.name} · ${chorus.note}`,
-      wav: path.relative(songDir, wav), durationSec,
-    });
-    console.log(`[song] c-${v.id.slice(2)}  ${v.name}（${v.styleName}）`);
+  const voices = chorus.voices.map((id) => song.audition.voices.find((v) => v.id === id));
+  const items = [];
+  for (const bpm of chorus.tempos ?? [song.bpm]) {
+    const score = toScore(notes, bpm, { leadBeats });
+    const durationSec = ((leadBeats + bars * 4 + 2) * 60) / bpm; // two beats of tail
+    const bed = render(songGenome(seedGenome(songDir, song), { bpm, durationSec, points: CHORUS_POINTS, tuning12: { baseHz: F2 } }), { sampleRate: SR });
+    const bedWav = path.join(outDir, `bed-${bpm}.wav`);
+    fs.writeFileSync(bedWav, encodeWav(finish({ left: bed.left.slice(), right: bed.right.slice(), sampleRate: SR }, { targetDb: -16 })));
+    items.push({ id: `c${bpm}-bed`, group: chorus.group, label: `${bpm}`, title: `伴奏のみ · ${bpm} BPM`, desc: 'g0003-01 を拍に固定・12 平均律 A フリジア', wav: path.relative(songDir, bedWav), durationSec });
+    const query = hardTune(await singQuery(score), score, (i) => midiHz(score.notes[i].key), { glide: 2 });
+    for (const v of voices) {
+      const dry = path.join(outDir, `${bpm}-${v.id}-dry.wav`);
+      fs.writeFileSync(dry, await frameSynthesis(query, v.style));
+      const mix = finish(mixVocal({ left: bed.left, right: bed.right }, loadWav(dry, SR).channels[0], { sampleRate: SR }));
+      const id = `c${bpm}-${v.id.slice(2)}`;
+      const wav = path.join(outDir, `${id}.wav`);
+      fs.writeFileSync(wav, encodeWav(mix));
+      items.push({ id, group: chorus.group, label: `${bpm}`, title: `${v.name}（${v.styleName}） · ${bpm} BPM`, desc: `VOICEVOX:${v.name} · ${chorus.note}`, wav: path.relative(songDir, wav), durationSec });
+      console.log(`[song] ${id}`);
+    }
   }
   updatePageManifest(songDir, chorus.group, items);
 }

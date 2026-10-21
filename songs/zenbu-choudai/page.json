@@ -1,5 +1,95 @@
 [
   {
+    "id": "c180-bed",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "180",
+    "title": "伴奏のみ · 180 BPM",
+    "desc": "g0003-01 を拍に固定・12 平均律 A フリジア",
+    "wav": "chorus/bed-180.wav",
+    "durationSec": 22.333333333333332
+  },
+  {
+    "id": "c180-metan-sexy",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "180",
+    "title": "四国めたん（セクシー） · 180 BPM",
+    "desc": "VOICEVOX:四国めたん · 8 分中心・繰り返し・山型の旋律・解決しない終わり。2 周ループ",
+    "wav": "chorus/c180-metan-sexy.wav",
+    "durationSec": 22.333333333333332
+  },
+  {
+    "id": "c180-tsumugi",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "180",
+    "title": "春日部つむぎ（ノーマル） · 180 BPM",
+    "desc": "VOICEVOX:春日部つむぎ · 8 分中心・繰り返し・山型の旋律・解決しない終わり。2 周ループ",
+    "wav": "chorus/c180-tsumugi.wav",
+    "durationSec": 22.333333333333332
+  },
+  {
+    "id": "c180-nia",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "180",
+    "title": "琴詠ニア（ノーマル） · 180 BPM",
+    "desc": "VOICEVOX:琴詠ニア · 8 分中心・繰り返し・山型の旋律・解決しない終わり。2 周ループ",
+    "wav": "chorus/c180-nia.wav",
+    "durationSec": 22.333333333333332
+  },
+  {
+    "id": "c180-miko",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "180",
+    "title": "櫻歌ミコ（ノーマル） · 180 BPM",
+    "desc": "VOICEVOX:櫻歌ミコ · 8 分中心・繰り返し・山型の旋律・解決しない終わり。2 周ループ",
+    "wav": "chorus/c180-miko.wav",
+    "durationSec": 22.333333333333332
+  },
+  {
+    "id": "c150-bed",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "150",
+    "title": "伴奏のみ · 150 BPM",
+    "desc": "g0003-01 を拍に固定・12 平均律 A フリジア",
+    "wav": "chorus/bed-150.wav",
+    "durationSec": 26.8
+  },
+  {
+    "id": "c150-metan-sexy",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "150",
+    "title": "四国めたん（セクシー） · 150 BPM",
+    "desc": "VOICEVOX:四国めたん · 8 分中心・繰り返し・山型の旋律・解決しない終わり。2 周ループ",
+    "wav": "chorus/c150-metan-sexy.wav",
+    "durationSec": 26.8
+  },
+  {
+    "id": "c150-tsumugi",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "150",
+    "title": "春日部つむぎ（ノーマル） · 150 BPM",
+    "desc": "VOICEVOX:春日部つむぎ · 8 分中心・繰り返し・山型の旋律・解決しない終わり。2 周ループ",
+    "wav": "chorus/c150-tsumugi.wav",
+    "durationSec": 26.8
+  },
+  {
+    "id": "c150-nia",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "150",
+    "title": "琴詠ニア（ノーマル） · 150 BPM",
+    "desc": "VOICEVOX:琴詠ニア · 8 分中心・繰り返し・山型の旋律・解決しない終わり。2 周ループ",
+    "wav": "chorus/c150-nia.wav",
+    "durationSec": 26.8
+  },
+  {
+    "id": "c150-miko",
+    "group": "サビ v3（イヤーワーム設計）",
+    "label": "150",
+    "title": "櫻歌ミコ（ノーマル） · 150 BPM",
+    "desc": "VOICEVOX:櫻歌ミコ · 8 分中心・繰り返し・山型の旋律・解決しない終わり。2 周ループ",
+    "wav": "chorus/c150-miko.wav",
+    "durationSec": 26.8
+  },
+  {
     "id": "c-bed",
     "group": "歌声の候補 2（速く・切れ）",
     "label": "00",
