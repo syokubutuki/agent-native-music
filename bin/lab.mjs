@@ -35,7 +35,7 @@ commands:
   rate    <id> <1-5> [note...]                                      record a rating (latest wins)
   list    [--gen N] [--rated] [--top N]                             show clips and ratings
   render  <id | genome.json> [--duration s] [--out path]            re-render (e.g. longer)
-  page    [--out dir] [--format mp3|wav] [--songs dir]              build the listening page (default <labDir>/site, songs ./songs)
+  page    [--out dir] [--format mp3|wav] [--songs dir]              build the listening page (default <labDir>/site, songs <labDir>/../songs)
   import  <ratings.json>                                            merge ratings saved on the page into ratings.jsonl
 
 common: --dir <labDir>  (default ./lab, or $LAB_DIR)`;
@@ -183,7 +183,7 @@ function cmdPage(dir, opts) {
   const { index, clips } = buildPage(dir, {
     outDir: opts.out ? path.resolve(opts.out) : undefined,
     format,
-    songsDir: path.resolve(opts.songs ?? 'songs'),
+    songsDir: path.resolve(opts.songs ?? path.join(dir, '..', 'songs')), // songs/ sits beside lab/
   });
   console.log(`[lab] ${rel(index)}  (${clips.length} clips, ${format})`);
 }

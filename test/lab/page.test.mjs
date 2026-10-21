@@ -23,7 +23,7 @@ function withLab(fn) {
 test('page embeds every clip with audio, envelope and form, and stays script-safe', () => {
   withLab((dir, run) => {
     run('rate', 'g0001-02', '4', '</script><b>x');
-    run('page', '--format', 'wav');
+    run('page', '--format', 'wav', '--songs', path.join(dir, 'no-songs'));
     const html = fs.readFileSync(path.join(dir, 'site', 'index.html'), 'utf8');
     assert.ok(html.startsWith('<title>'));
     assert.ok(!html.includes('__LAB_DATA__'));

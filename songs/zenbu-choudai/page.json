@@ -1,5 +1,122 @@
 [
   {
+    "id": "c-bed",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "00",
+    "title": "伴奏のみ（g0003-01 を 180 BPM・12 平均律に固定）",
+    "desc": "サビのエネルギー 0.9 で一定",
+    "wav": "chorus/bed.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-metan-amaama",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "01",
+    "title": "四国めたん（あまあま）",
+    "desc": "VOICEVOX:四国めたん · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-metan-amaama.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-metan-sexy",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "02",
+    "title": "四国めたん（セクシー）",
+    "desc": "VOICEVOX:四国めたん · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-metan-sexy.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-metan-hisohiso",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "03",
+    "title": "四国めたん（ヒソヒソ）",
+    "desc": "VOICEVOX:四国めたん · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-metan-hisohiso.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-sora-sexy",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "04",
+    "title": "九州そら（セクシー）",
+    "desc": "VOICEVOX:九州そら · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-sora-sexy.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-himari",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "05",
+    "title": "冥鳴ひまり（ノーマル）",
+    "desc": "VOICEVOX:冥鳴ひまり · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-himari.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-tsumugi",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "06",
+    "title": "春日部つむぎ（ノーマル）",
+    "desc": "VOICEVOX:春日部つむぎ · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-tsumugi.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-ritsu-queen",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "07",
+    "title": "波音リツ（クイーン）",
+    "desc": "VOICEVOX:波音リツ · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-ritsu-queen.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-sayo",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "08",
+    "title": "小夜/SAYO（ノーマル）",
+    "desc": "VOICEVOX:小夜/SAYO · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-sayo.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-nana",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "09",
+    "title": "春歌ナナ（ノーマル）",
+    "desc": "VOICEVOX:春歌ナナ · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-nana.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-nia",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "10",
+    "title": "琴詠ニア（ノーマル）",
+    "desc": "VOICEVOX:琴詠ニア · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-nia.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-mochiko-sexy",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "11",
+    "title": "もち子さん（セクシー／あん子）",
+    "desc": "VOICEVOX:もち子さん · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-mochiko-sexy.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
+    "id": "c-miko",
+    "group": "歌声の候補 2（速く・切れ）",
+    "label": "12",
+    "title": "櫻歌ミコ（ノーマル）",
+    "desc": "VOICEVOX:櫻歌ミコ · 180 BPM の 16 分で詰めたサビ 6 小節 + ハードチューン、伴奏つき",
+    "wav": "chorus/c-miko.wav",
+    "durationSec": 8.333333333333334
+  },
+  {
     "id": "v-metan-amaama",
     "group": "歌声の候補",
     "label": "01",

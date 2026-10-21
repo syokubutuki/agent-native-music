@@ -66,3 +66,22 @@ export function retuneF0(query, score, ratio) {
   const idx = frameNoteIndex(query, score);
   return { ...query, f0: query.f0.map((f, i) => (f > 0 ? f * ratio(idx[i]) : f)) };
 }
+
+// Machine-tight pitch: every voiced frame sits exactly on its note's target (no vibrato, no scoops),
+// with a `glide`-frame ramp between notes. hz(noteIndex) gives the target frequency.
+export function hardTune(query, score, hz, { glide = 1 } = {}) {
+  const idx = frameNoteIndex(query, score);
+  const f0 = query.f0.map((f, i) => (f > 0 && score.notes[idx[i]].key != null ? hz(idx[i]) : f));
+  if (glide > 0) {
+    for (let i = 1; i < f0.length; i++) {
+      if (idx[i] !== idx[i - 1] && f0[i] > 0 && f0[i - 1] > 0) {
+        const from = f0[i - 1];
+        const to = f0[i];
+        for (let k = 0; k < glide && i + k < f0.length && f0[i + k] > 0; k++) f0[i + k] = from + ((to - from) * (k + 1)) / (glide + 1);
+      }
+    }
+  }
+  return { ...query, f0 };
+}
+
+export const midiHz = (key) => 440 * 2 ** ((key - 69) / 12);
