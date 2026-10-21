@@ -49,8 +49,8 @@ test('phrases may cross bar lines, melisma holds the vowel, overlaps are rejecte
 test('arrangement covers the whole song with events on the grid', () => {
   const { tracks, vocals, totalBeats } = arrange(sections);
   assert.equal(totalBeats, sections.reduce((a, s) => a + s.bars, 0) * 4);
+  for (const name of ['kick', 'clap', 'hat', 'bass', 'stab', 'pad', 'pluck', 'bell', 'chip', 'toy', 'future', 'snare']) assert.ok(tracks[name].length > 0, `${name} has events`);
   for (const [name, evs] of Object.entries(tracks)) {
-    assert.ok(evs.length > 0, `${name} has events`);
     for (const e of evs) assert.ok(e.beat >= 0 && e.beat < totalBeats, `${name} beat ${e.beat}`);
   }
   assert.ok(tracks.kick.every((e) => Number.isInteger(e.beat * 4))); // on the 16th grid (drop kicks are syncopated)

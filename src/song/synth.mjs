@@ -406,3 +406,98 @@ export function futureChords(ctx, events, bus, seed = 47) {
     }
   }
 }
+
+// --- yuru-kawaii pop layer ----------------------------------------------------------------------
+
+// Marimba: modal partials of a struck bar (1, 3.99, 10.7) with a soft mallet; short and woody.
+export function marimba(ctx, events, bus) {
+  const sr = ctx.sr;
+  const partials = [[1, 1, 0.5], [3.99, 0.35, 0.12], [10.7, 0.12, 0.04]]; // ratio, amp, decay s
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const len = Math.round(0.6 * sr);
+    const f = mtof(ev.midi);
+    const phases = partials.map(() => 0);
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      let y = 0;
+      partials.forEach(([r, a, d], k) => {
+        if (f * r > sr * 0.45) return;
+        phases[k] += (TAU * f * r) / sr;
+        y += Math.sin(phases[k]) * a * Math.exp(-t / d);
+      });
+      add(bus, s0 + n, y * Math.min(1, t / 0.0015) * (ev.vel ?? 1), ev.pan ?? 0);
+    }
+  }
+}
+
+// Round bouncy bass: sine + a little triangle, short pluck — a "boing" rather than a growl.
+export function roundBass(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const gate = lengthOf(ctx, ev.beats);
+    const len = gate + Math.round(0.04 * sr);
+    const f = mtof(ev.midi);
+    let p = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      const bend = 2 ** ((0.7 * Math.exp(-t / 0.015)) / 12); // tiny downward "boing" into the note
+      p = (p + (f * bend) / sr) % 1;
+      const tri = 1 - 4 * Math.abs(p - 0.5);
+      const y = Math.sin(TAU * p) * 0.85 + tri * 0.25;
+      const env = (n < gate ? Math.exp(-t / 0.35) : Math.exp(-gate / sr / 0.35) * Math.exp(-(n - gate) / (0.01 * sr))) * Math.min(1, t / 0.002);
+      add(bus, s0 + n, Math.tanh(1.2 * y) * env * (ev.vel ?? 1));
+    }
+  }
+}
+
+// Shaker: band-passed noise with a soft swell, alternating sides.
+export function shaker(ctx, events, bus, seed = 61) {
+  const rng = createRng(seed);
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const len = Math.round(0.07 * sr);
+    const bp = createSvf('bp', 6500, 0.9, sr);
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      const env = Math.min(1, t / 0.012) * Math.exp(-t / 0.025);
+      add(bus, s0 + n, bp(rng.uniform(-1, 1)) * env * (ev.vel ?? 1), ev.pan ?? 0);
+    }
+  }
+}
+
+// Light kick: higher, shorter, rounder than the dance kick.
+export function lightKick(ctx, events, bus) {
+  const len = Math.round(0.22 * ctx.sr);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    let ph = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / ctx.sr;
+      ph += (TAU * (62 + 90 * Math.exp(-t / 0.02))) / ctx.sr;
+      add(bus, s0 + n, Math.sin(ph) * Math.min(1, t / 0.001) * Math.exp(-t / 0.09) * (ev.vel ?? 1));
+    }
+  }
+}
+
+// Slide whistle: a breathy sine gliding up (or down) over the event length — the cartoon transition.
+export function slideWhistle(ctx, events, bus, seed = 67) {
+  const rng = createRng(seed);
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const len = lengthOf(ctx, ev.beats);
+    const [from, to] = ev.down ? [1400, 500] : [500, 1500];
+    const lp = createSvf('lp', 3000, 0.7, sr);
+    let ph = 0;
+    for (let n = 0; n < len; n++) {
+      const u = n / len;
+      const f = from * (to / from) ** (u * u) * (1 + 0.01 * Math.sin(TAU * 7 * (n / sr)));
+      ph += (TAU * f) / sr;
+      const env = Math.min(1, n / (0.02 * sr)) * Math.min(1, (len - n) / (0.03 * sr));
+      add(bus, s0 + n, (Math.sin(ph) + lp(rng.uniform(-1, 1)) * 0.15) * env * (ev.vel ?? 1), 0.2);
+    }
+  }
+}
