@@ -1,0 +1,92 @@
+# Patterns are 12 steps per bar (16ths in 3/4). X accent, x hit, o ghost, u octave-up (bass), - hold, . rest
+arrangement:
+  tracks:
+    tsumugi:
+      instrument: keys/music_box
+      role: lead
+      content: {type: melody, part: tsumugi}
+      humanize: {timing_ms: 5, vel: 0.05}
+    zunda:
+      instrument: lead/zunda_reed
+      role: lead
+      content: {type: melody, part: zunda}
+      humanize: {timing_ms: 8, vel: 0.04}
+    ep:              # waltz "pah-pah" on beats 2 and 3, under both voices
+      instrument: keys/soft_ep
+      role: harmony
+      content:
+        type: chords
+        range: [F3, F4]
+        voices: 3
+        patterns:
+          intro: {"3": "x-----x-----", default: ""}
+          a: "....x-..x-.."
+          b: "....x.x.x.x."          # bouncier staccato 8ths while they chatter
+          rinse: "x-----------"
+          a2: {"6": "x-----x-----", "7": "x-----------", default: "....x-..x-.."}
+          end: {"0-1": "x-----------", "2": "x-----------", default: ""}
+      humanize: {timing_ms: 6, vel: 0.06}
+    pad:
+      instrument: pad/steam_pad
+      role: harmony
+      content:
+        type: chords
+        range: [F3, A4]
+        voices: 4
+        patterns:
+          intro: "x-----------"
+          a: "x-----------"
+          b: "x-----------"
+          rinse: "x-----------"
+          a2: "x-----------"
+          end: {"3": "------------", default: "x-----------"}
+    bass:
+      instrument: bass/pizz_bass
+      role: bass
+      content:
+        type: bass
+        range: [E2, D#3]
+        patterns:
+          intro: {"3": "x-----x-----", default: ""}
+          a: {"3,7": "x-----..o...", default: "x-----......"}
+          b: "x-----..o..."
+          rinse: {"3": "x-----x-----", default: "x-----------"}
+          a2: {"6": "x-----x-----", default: "x-----......"}
+          end: {"0-2": "x-----------", default: ""}
+      humanize: {vel: 0.05}          # no timing jitter: keeps the "oom" on the barline
+    shaker:          # only while the hair is being scrubbed
+      instrument: drums/shaker
+      content:
+        type: drums
+        voice: shaker
+        patterns:
+          a: "Xoxoxoxoxoxo"
+          b: "x.o.x.o.x.o."
+      humanize: {timing_ms: 6, vel: 0.08}
+    bubbles:
+      instrument: fx/bubble
+      role: texture
+      content: {type: melody, part: bubbles}
+      humanize: {timing_ms: 10, vel: 0.1}
+    droplets:        # rinse: the music box breaks into water running down
+      instrument: keys/music_box
+      role: texture
+      content:
+        type: arp
+        range: [F5, D7]
+        voices: 4
+        order: "3 2 1 0"
+        patterns: {rinse: {"3": "Xoooxooo....", default: "Xoooxoooxooo"}}
+      humanize: {timing_ms: 7, vel: 0.08}
+    shower:
+      instrument: fx/shower
+      content: {type: melody, part: shower}
+    splash:
+      instrument: fx/splash
+      content: {type: fx, events: [{at: "rinse:0", beats: 4, vel: 0.9}]}
+
+  automation:
+    # steam is thickest when nothing else happens (intro / rinse / end); absolute gain_db (v002: +5 dB)
+    - {target: pad.gain_db, points: [["intro:0", -5], ["a:0", -5], ["a:1", -10], ["b:end", -10], ["rinse:1", -5],
+                                     ["a2:0", -6], ["a2:1", -9], ["end:0", -9], ["end:2", -4]]}
+    - {target: tsumugi.send.reverb, points: [["intro:0", -6], ["a:0", -9], ["a2:end", -9], ["end:1", -5]]}

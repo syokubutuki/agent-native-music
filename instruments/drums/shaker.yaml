@@ -1,0 +1,11 @@
+# Soft shaker — the "しゃかしゃか" of shampoo scrubbing. Pure noise (no metal), short.
+type: drum
+model: hat
+decay: 0.06
+length: 0.12
+hp: 4500
+metal: 0.0
+width: 0.4
+gain_db: 0
+fx:
+  - {type: lowpass, freq: 10000}

@@ -1,0 +1,21 @@
+# Music-box / celesta tine (track_002: Tsumugi's voice). Pure sine body with a long
+# exponential decay, plus a short-lived layer of slightly inharmonic upper partials
+# (comb-tine "ting") that die quickly — so the attack sparkles and the tail is round.
+type: layered
+layers:
+  - oscillators:
+      - {wave: sine, level: 1.0}
+      - {wave: sine, octave: 1, level: 0.18}
+    amp_env: {a: 0.002, d: 2.2, s: 0.0, r: 0.9}
+    velocity_sens: 0.55
+    gain_db: -4
+  - oscillators:
+      - {wave: sine, semi: 19.02, level: 0.5}      # ~3x, a hair sharp
+      - {wave: sine, semi: 28.4, level: 0.35}      # ~5.2x, inharmonic tine partial
+      - {wave: sine, semi: 33.1, level: 0.15}
+    amp_env: {a: 0.001, d: 0.28, s: 0.0, r: 0.12}
+    velocity_sens: 0.8
+    gain_db: -10
+fx:
+  - {type: highpass, freq: 220}
+  - {type: chorus, rate_hz: 0.5, depth: 0.12, delay_ms: 7, mix: 0.18}   # the slight waver of a real music box

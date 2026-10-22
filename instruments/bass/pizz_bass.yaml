@@ -1,0 +1,12 @@
+# Plucked, round bass (pizzicato-ish) for a light waltz "oom". Mono.
+type: subtractive
+oscillators:
+  - {wave: triangle, level: 1.0}
+  - {wave: sine, level: 0.7}
+  - {wave: saw, level: 0.12}
+filter: {mode: lowpass, cutoff: 500, q: 0.8, slope: 12, env_amount: 1.6, keytrack: 0.4}
+filter_env: {a: 0.001, d: 0.12, s: 0.1, r: 0.1}
+amp_env: {a: 0.003, d: 0.55, s: 0.0, r: 0.15}
+velocity_sens: 0.5
+mono: true
+gain_db: -3

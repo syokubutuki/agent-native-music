@@ -1,0 +1,109 @@
+# Degrees relative to each part's `base` (degree 1). F major, base F4:
+# 0=E4 1=F4 2=G4 3=A4 4=Bb4 5=C5 6=D5 7=E5 8=F5 9=G5 10=A5 11=Bb5 12=C6 13=D6 14=E6
+# "6b" = Db5, "8#" = F#5. grid 12 = 16th notes in 3/4 (4 = quarter, 6 = dotted quarter).
+melody:
+  motifs:
+    # Tsumugi's theme: a lilting dotted turn (A-G-F, the circular scrub) that floats up to C6.
+    awa: {notes: "10:3 9:1 8:2 10:2 12:4", grid: 12}
+    # Zundamon: a hop and a little fall that lands on the beat — "…なのだ".
+    nanoda: {notes: "r:2 5:2 6:1 5:1 3:2 1:4", grid: 12}
+  parts:
+    tsumugi:         # music box, the older-sister voice on top
+      base: F4
+      grid: 12
+      sections:
+        intro:
+          - {bar: 0, motif: awa, ops: [{take: [0, 3]}, {vel: 0.7}]}    # humming the head only
+          - {bar: 1, notes: "11:6? 10:2? 8:4?"}
+          - {bar: 2, motif: awa, ops: [{take: [0, 4]}, {vel: 0.75}]}
+          - {bar: 3, notes: "r:4 8:2 9:2 7:4"}                         # F (sus4) -> G -> E: leans into the theme
+        a:
+          - {bar: 0, motif: awa}
+          - {bar: 1, motif: awa, ops: [{transpose: -1, keep: [4]}]}   # C6 anchor kept over Am7
+          - {bar: 2, notes: "13:3 12:1 11:2 10:2 8:4"}                 # falls back down over Bbmaj7
+          - {bar: 3, notes: "12:4 11:2 10:1 11:1 9:4"}                 # a little turn, open on G (V)
+          - {bar: 4, motif: awa}
+          - {bar: 5, motif: awa, ops: [{transpose: -2, keep: [4]}]}   # F E D F C over Dm7
+          - {bar: 6, notes: "11:3 10:1 9:2 11:2 13:4"}                 # rises to D6, the A-section peak
+          - {bar: 7, notes: "12:6 10:2 9:4"}                           # hands over to Zundamon
+        b:
+          - {bar: 2, notes: "12:3 10:1 9:2 10:2 12:4"}                 # answers in her theme's rhythm
+          - {bar: 3, notes: "12:2 13:2 12:2 10:2 8#:4"}                # F# leads to Gm7
+          - {bar: 6, notes: "12:6 10:2 8:4"}                           # "よしよし" after the pout
+          - {bar: 7, notes: "9:4 7:2 9:2 12:4"}
+        a2:
+          - {bar: 0, motif: awa}
+          - {bar: 1, motif: awa, ops: [{transpose: -1, keep: [4]}]}
+          - {bar: 2, notes: "13:3 12:1 11:2 10:2 8:4"}
+          - {bar: 3, notes: "12:4 11:2 10:1 11:1 9:4"}
+          - {bar: 4, motif: awa}
+          - {bar: 5, motif: awa, ops: [{transpose: -2, keep: [4]}]}
+          - {bar: 6, notes: "13:4 11:2 14:4! 12:2"}                    # E6: the one highest note of the piece
+          - {bar: 7, notes: "10:6 9:2 8:4"}                            # home
+        end:
+          - {bar: 1, notes: "r:8 9:4?"}
+          - {bar: 2, motif: awa, ops: [{take: [0, 3]}, {rhythm: "3 1 8"}, {vel: 0.7}]}   # A G F, held
+          - {bar: 3, notes: "r:8 15:4?"}                               # one last drop, high F6
+    zunda:           # little reed, Zundamon
+      base: F4
+      grid: 12
+      sections:
+        b:
+          - {bar: 0, motif: nanoda}                                    # C D C A F
+          - {bar: 1, motif: nanoda, ops: [{transpose: 1}, {accent: [4]}]}   # "…のだ!"
+          - {bar: 4, notes: "r:2 4:2 6:2 4:2 2:4"}                      # hop over Gm7
+          - {bar: 5, notes: "6b:6 5:2 4:4"}                            # Db -> C -> Bb: "しみるのだ…"
+        rinse:
+          - {bar: 3, notes: "r:4 1:2 3:2 5:4!"}                        # surfaces: "ぷはっ"
+        a2:          # counter-line below the theme: together in the tub
+          - {bar: 0, notes: "3:8 2:2 1:2"}
+          - {bar: 1, notes: "0:8 3:4"}
+          - {bar: 2, notes: "1:8 3:4"}
+          - {bar: 3, notes: "4:6 3:2 2:4"}
+          - {bar: 4, notes: "3:8 5:4"}
+          - {bar: 5, notes: "6:8 5:2 6:2"}
+          - {bar: 6, notes: "2:6 3:2 0:4"}
+          - {bar: 7, notes: "3:12"}                                    # A4 under Tsumugi's F5
+        end:
+          - {bar: 0, notes: "r:4 5:4 6:4"}                             # "ふぅ〜"
+          - {bar: 1, notes: "6b:8 5:4"}                                # the pout's Db -> C, now contented
+          - {bar: 2, notes: "3:20"}
+    bubbles:         # bubbles and drops: F-major pentatonic only (F G A C D), in the gaps
+      base: F4
+      grid: 12
+      sections:
+        intro:
+          - {bar: 0, notes: "r:5 17:1?"}
+          - {bar: 1, notes: "r:9 15:1?"}
+          - {bar: 2, notes: "r:2 19:1? r:5 16:1?"}
+          - {bar: 3, notes: "r:7 17:1?"}
+        a:
+          - {bar: 1, notes: "r:10 19:1? 20:1?"}
+          - {bar: 3, notes: "r:9 17:1? r:1 19:1?"}
+          - {bar: 5, notes: "r:10 16:1? 17:1?"}
+          - {bar: 7, notes: "r:7 19:1? 20:1? r:1 17:1?"}
+        b:           # Zundamon plays with the foam: more pops
+          - {bar: 0, notes: "r:1 19:1? r:9 20:1"}
+          - {bar: 1, notes: "r:5 17:1? 19:1? r:4 20:1?"}
+          - {bar: 2, notes: "r:7 16:1? r:2 17:1?"}
+          - {bar: 3, notes: "r:6 19:1? 20:1?"}
+          - {bar: 4, notes: "r:1 17:1? r:9 19:1"}
+          - {bar: 6, notes: "r:7 15:1? 17:1? 19:1?"}
+          - {bar: 7, notes: "r:9 19:1? r:1 20:1?"}
+        rinse:
+          - {bar: 2, notes: "r:3 17:1? r:6 15:1?"}
+        a2:          # low "ちゃぷ" of bath water instead of foam
+          - {bar: 0, notes: "r:8 -2:2?"}
+          - {bar: 2, notes: "r:6 1:2?"}
+          - {bar: 4, notes: "r:10 -1:2?"}
+          - {bar: 6, notes: "r:8 1:2?"}
+        end:
+          - {bar: 0, notes: "r:9 17:1?"}
+          - {bar: 2, notes: "r:5 -2:2?"}
+          - {bar: 3, notes: "r:10 19:1"}                                # the last bubble
+    shower:          # pitch is irrelevant (noise patch)
+      base: F4
+      grid: 12
+      sections:
+        rinse:
+          - {bar: 0, notes: "1:40"}

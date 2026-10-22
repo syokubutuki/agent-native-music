@@ -1,0 +1,8 @@
+[
+ {
+  "id": "motif.ok",
+  "level": "info",
+  "message": "Motifs repeated+transformed: ['awa', 'nanoda'] (uses: {'awa': 11, 'nanoda': 2})",
+  "where": "melody"
+ }
+]

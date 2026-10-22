@@ -1,0 +1,8 @@
+# Water poured from above (ざばー): falling band-passed noise.
+type: fx
+model: downlifter
+f_hi: 6000
+f_lo: 400
+q: 0.8
+width: 0.9
+gain_db: -8

@@ -1,0 +1,14 @@
+# Steam (湯気): soft triangle/sine bloom with a breath of filtered noise, slow swell,
+# very slow chorus drift. Sits under everything; never bright.
+type: subtractive
+oscillators:
+  - {wave: triangle, unison: 3, detune: 0.08, spread: 0.9, level: 1.0}
+  - {wave: sine, octave: -1, level: 0.3}
+  - {wave: noise, level: 0.05}
+filter: {mode: lowpass, cutoff: 1300, q: 0.5, slope: 12, keytrack: 0.2}
+amp_env: {a: 1.2, d: 2.0, s: 0.85, r: 1.6}
+velocity_sens: 0.2
+gain_db: -8
+fx:
+  - {type: highpass, freq: 140}
+  - {type: chorus, rate_hz: 0.18, depth: 0.4, delay_ms: 15, mix: 0.45}

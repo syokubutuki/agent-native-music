@@ -1,0 +1,33 @@
+# track_002 — "あわあわシャンプー" (working title).
+# Scene (human direction): two of them in the bath; Tsumugi washes little Zundamon's hair.
+# ほんわか: warm, playful, steamy, safe. A small story in six scenes:
+#   intro  湯気       steam, water drops, Tsumugi hums the head of her theme
+#   a      わしゃわしゃ  shampoo scrub: Tsumugi's waltz theme (music box), shaker = scrubbing
+#   b      おしゃべり    Zundamon (little reed) and Tsumugi answer each other; bubbles pop;
+#                     a pout over Bbm6 ("目にしみるのだ…") soothed by Tsumugi
+#   rinse  ざばー      shower: water pours, music-box droplets cascade, Zundamon surfaces ("ぷはっ")
+#   a2     湯ぶね      into the tub together: the theme as a duet (Zundamon's counter-line below)
+#   end    ふぅ〜      soak: the pout's Db->C sigh comes back as a contented sigh; last bubble
+# 3/4 (a lilting sway, like water), F major, 96 BPM. No drums: rhythm = pizz bass "oom" + EP "pah-pah".
+id: track_002
+title: あわあわシャンプー (working title)
+tempo: 96
+time_signature: [3, 4]
+key: F major
+seed: 2002
+sample_rate: 44100
+tail_sec: 3.5
+target:
+  duration_sec: [60, 80]
+include:
+  harmony: harmony.yaml
+  melody: melody.yaml
+  arrangement: arrangement.yaml
+  mix: mix.yaml
+sections:
+  - {name: intro, bars: 4, energy: 0.25}
+  - {name: a,     bars: 8, energy: 0.5}
+  - {name: b,     bars: 8, energy: 0.55}
+  - {name: rinse, bars: 4, energy: 0.4}
+  - {name: a2,    bars: 8, energy: 0.6}
+  - {name: end,   bars: 4, energy: 0.3}

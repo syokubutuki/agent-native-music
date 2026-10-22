@@ -1,0 +1,12 @@
+# One entry per bar (3/4). "A B" splits a bar evenly (1.5 beats each).
+# Warm diatonic F major; colour from maj7 and one borrowed chord, Bbm6 (minor iv):
+# it is the "目にしみる…" pout in b, and the contented "ふぅ〜" sigh in the end (same chord,
+# new meaning). b -> rinse is deceptive (C7 -> Dm7): the shower interrupts.
+harmony:
+  sections:
+    intro: [Fmaj7, Bb/F, Fmaj7, "C7sus4 C7"]
+    a:     [F, Am7, Bbmaj7, C7, F, Dm7, Gm7, C7]
+    b:     [Bbmaj7, C, Am7, D7, Gm7, Bbm6, F, C7]
+    rinse: [Dm7, Bbmaj7, Gm7, "C7sus4 C7"]
+    a2:    [F, Am7, Bbmaj7, C7, F, Dm7, "Gm7 C7", F]
+    end:   [Bbmaj7, Bbm6, Fadd9, Fadd9]

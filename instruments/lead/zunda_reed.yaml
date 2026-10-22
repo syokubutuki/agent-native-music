@@ -1,0 +1,19 @@
+# Soft little reed (clarinet-ish) for Zundamon's voice in track_002.
+# Square = odd harmonics (hollow, woody), dark low-pass, breath noise into the filter,
+# and a tiny upward scoop into every note (childlike, a bit "ぷに").
+type: subtractive
+oscillators:
+  - {wave: square, level: 1.0, pw: 0.5}
+  - {wave: triangle, level: 0.4}
+  - {wave: noise, level: 0.025}
+filter: {mode: lowpass, cutoff: 1300, q: 0.9, slope: 12, env_amount: 0.9, keytrack: 0.6, vel_amount: 0.7}
+filter_env: {a: 0.03, d: 0.25, s: 0.4, r: 0.15}
+amp_env: {a: 0.025, d: 0.3, s: 0.8, r: 0.12}
+pitch_env: {amount: -0.7, decay: 0.045}     # scoop up into the note
+vibrato: {rate: 5.4, depth: 0.12, delay: 0.32}
+gate: 0.9
+velocity_sens: 0.5
+gain_db: -9
+fx:
+  - {type: highpass, freq: 180}
+  - {type: peak, freq: 1400, gain_db: 2.0, q: 1.2}

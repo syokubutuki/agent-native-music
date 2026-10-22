@@ -11,7 +11,8 @@ Effect chain entries are dicts with a `type`:
     {type: width, amount: 1.3}                      (M/S width, 0 = mono)
     {type: gain, db: -3}
     {type: delay, time: "3/16", feedback: 0.35, mix: 0.25, pingpong: true, hp: 300, lp: 6000}
-    {type: reverb, decay: 2.8, predelay_ms: 20, damping: 0.5, mix: 0.3, hp: 250, lp: 9000, width: 1.0}
+    {type: reverb, decay: 2.8, predelay_ms: 20, damping: 0.5, mix: 0.3, hp: 250, lp: 9000, width: 1.0,
+     early: 0.3}                                    (early = level of the sparse early reflections)
 
 Static EQ / compressor / chorus / phaser use Spotify Pedalboard's built-in
 processors (deterministic, cross-platform). Reverb and delay are custom so
@@ -87,7 +88,8 @@ def reverb(x: np.ndarray, sr: int, p: dict, seed: int) -> np.ndarray:
     if p.get("lp"):
         inp = svf_stereo(inp, float(p["lp"]), sr, "lowpass")
     ir = make_reverb_ir(sr, float(p.get("decay", 2.5)), float(p.get("damping", 0.5)),
-                        float(p.get("predelay_ms", 15)), float(p.get("width", 1.0)), seed)
+                        float(p.get("predelay_ms", 15)), float(p.get("width", 1.0)), seed,
+                        float(p.get("early", 0.3)))
     mono_in = 0.5 * (inp[0] + inp[1])
     side_in = 0.5 * (inp[0] - inp[1])
     wl = fftconvolve(mono_in + side_in, ir[0])[: x.shape[1]]

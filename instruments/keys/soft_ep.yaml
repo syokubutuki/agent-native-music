@@ -1,0 +1,20 @@
+# Soft electric piano (Rhodes-like) for the waltz "pah-pah" comping in track_002.
+# Round sine body + a quick bell "tine" partial on the attack; dark, gently chorused.
+type: layered
+layers:
+  - oscillators:
+      - {wave: sine, level: 1.0}
+      - {wave: triangle, level: 0.22}
+    filter: {mode: lowpass, cutoff: 1800, q: 0.6, slope: 12, keytrack: 0.4, vel_amount: 0.8}
+    amp_env: {a: 0.004, d: 1.4, s: 0.25, r: 0.35}
+    velocity_sens: 0.6
+    gain_db: -6
+  - oscillators:
+      - {wave: sine, semi: 24.0, level: 0.6}
+      - {wave: sine, semi: 31.2, level: 0.25}
+    amp_env: {a: 0.001, d: 0.12, s: 0.0, r: 0.08}
+    velocity_sens: 0.9
+    gain_db: -20
+fx:
+  - {type: highpass, freq: 120}
+  - {type: chorus, rate_hz: 0.7, depth: 0.22, delay_ms: 10, mix: 0.3}

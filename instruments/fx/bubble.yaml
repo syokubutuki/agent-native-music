@@ -1,0 +1,12 @@
+# Bubble / water drop "ぽこっ": a tiny sine whose pitch chirps upward into the note
+# (a real bubble's resonance rises as it pops), very short. Pitched, so it can follow
+# the key (use pentatonic notes). Slight unison detune only to give it some width.
+type: subtractive
+oscillators:
+  - {wave: sine, unison: 2, detune: 0.25, spread: 0.7, level: 1.0}
+pitch_env: {amount: -9.0, decay: 0.022}
+amp_env: {a: 0.001, d: 0.07, s: 0.0, r: 0.04}
+velocity_sens: 0.6
+gain_db: 0
+fx:
+  - {type: highpass, freq: 250}
