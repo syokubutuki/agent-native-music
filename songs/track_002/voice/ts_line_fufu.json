@@ -1,0 +1,23 @@
+{
+ "name": "ts_line_fufu",
+ "kind": "talk",
+ "speaker": 8,
+ "request_hash": "7566926f5f4fc118",
+ "engine": "VOICEVOX",
+ "engine_version": "0.25.2",
+ "credit": "VOICEVOX:春日部つむぎ",
+ "lead_sec": 0.1,
+ "request": {
+  "kind": "talk",
+  "speaker": 8,
+  "text": "ふふっ",
+  "query": {
+   "speedScale": 1.0,
+   "pitchScale": 0.0,
+   "intonationScale": 1.0,
+   "volumeScale": 0.8,
+   "prePhonemeLength": 0.1,
+   "postPhonemeLength": 0.1
+  }
+ }
+}

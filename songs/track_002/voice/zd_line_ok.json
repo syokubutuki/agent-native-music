@@ -1,0 +1,23 @@
+{
+ "name": "zd_line_ok",
+ "kind": "talk",
+ "speaker": 3,
+ "request_hash": "bc8690eeb345598a",
+ "engine": "VOICEVOX",
+ "engine_version": "0.25.2",
+ "credit": "VOICEVOX:ずんだもん",
+ "lead_sec": 0.1,
+ "request": {
+  "kind": "talk",
+  "speaker": 3,
+  "text": "はいなのだ！",
+  "query": {
+   "speedScale": 1.0,
+   "pitchScale": 0.0,
+   "intonationScale": 1.4,
+   "volumeScale": 1.0,
+   "prePhonemeLength": 0.1,
+   "postPhonemeLength": 0.1
+  }
+ }
+}

@@ -1,0 +1,114 @@
+{
+ "name": "ts_d2",
+ "kind": "sing",
+ "speaker": 3008,
+ "request_hash": "b90bb3198630dc61",
+ "engine": "VOICEVOX",
+ "engine_version": "0.25.2",
+ "credit": "VOICEVOX:春日部つむぎ",
+ "start_beat": 84.0,
+ "lead_sec": 0.5,
+ "request": {
+  "kind": "sing",
+  "teacher": 6000,
+  "speaker": 3008,
+  "notes": [
+   {
+    "key": null,
+    "frame_length": 47,
+    "lyric": ""
+   },
+   {
+    "key": 69,
+    "frame_length": 44,
+    "lyric": "の"
+   },
+   {
+    "key": 67,
+    "frame_length": 14,
+    "lyric": "ん"
+   },
+   {
+    "key": 65,
+    "frame_length": 30,
+    "lyric": "び"
+   },
+   {
+    "key": 69,
+    "frame_length": 29,
+    "lyric": "り"
+   },
+   {
+    "key": 72,
+    "frame_length": 59,
+    "lyric": "ね"
+   },
+   {
+    "key": 65,
+    "frame_length": 44,
+    "lyric": "い"
+   },
+   {
+    "key": 64,
+    "frame_length": 14,
+    "lyric": "い"
+   },
+   {
+    "key": 62,
+    "frame_length": 30,
+    "lyric": "お"
+   },
+   {
+    "key": 65,
+    "frame_length": 29,
+    "lyric": "ゆ"
+   },
+   {
+    "key": 72,
+    "frame_length": 58,
+    "lyric": "ね"
+   },
+   {
+    "key": 74,
+    "frame_length": 59,
+    "lyric": "だ"
+   },
+   {
+    "key": 70,
+    "frame_length": 29,
+    "lyric": "い"
+   },
+   {
+    "key": 76,
+    "frame_length": 59,
+    "lyric": "す"
+   },
+   {
+    "key": 72,
+    "frame_length": 29,
+    "lyric": "き"
+   },
+   {
+    "key": 69,
+    "frame_length": 44,
+    "lyric": "だ"
+   },
+   {
+    "key": 67,
+    "frame_length": 15,
+    "lyric": "よ"
+   },
+   {
+    "key": 65,
+    "frame_length": 117,
+    "lyric": "ね"
+   },
+   {
+    "key": null,
+    "frame_length": 47,
+    "lyric": ""
+   }
+  ],
+  "query": {}
+ }
+}

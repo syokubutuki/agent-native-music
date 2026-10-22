@@ -1,0 +1,23 @@
+{
+ "name": "zd_line_tickle",
+ "kind": "talk",
+ "speaker": 3,
+ "request_hash": "6762903273537446",
+ "engine": "VOICEVOX",
+ "engine_version": "0.25.2",
+ "credit": "VOICEVOX:ずんだもん",
+ "lead_sec": 0.08695652173913045,
+ "request": {
+  "kind": "talk",
+  "speaker": 3,
+  "text": "くすぐったいのだ",
+  "query": {
+   "speedScale": 1.15,
+   "pitchScale": 0.0,
+   "intonationScale": 1.3,
+   "volumeScale": 0.85,
+   "prePhonemeLength": 0.1,
+   "postPhonemeLength": 0.1
+  }
+ }
+}

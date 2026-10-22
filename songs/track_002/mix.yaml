@@ -1,7 +1,8 @@
 mix:
   sidechain_source: none        # no kick: nothing pumps
   tracks:
-    tsumugi:  {gain_db: -2.0, pan: 0.12, sends: {reverb: -9, delay: -17}}
+    # v009: the voices lead now; the music box steps back and doubles Tsumugi an octave above
+    tsumugi:  {gain_db: -6.0, pan: 0.12, sends: {reverb: -9, delay: -17}}
     zunda:    {gain_db: -3.0, pan: -0.15, sends: {reverb: -11}}     # side by side
     ep:       {gain_db: -3.0, width: 1.1, sends: {reverb: -12}, chain: [{type: lowpass, freq: 4000}]}
     pad:      {gain_db: -12.0, width: 1.3, sends: {reverb: -8}}
@@ -9,8 +10,8 @@ mix:
     shaker:   {gain_db: -9.0, pan: 0.3, sends: {reverb: -12}}
     bubbles:  {gain_db: -3.0, width: 1.2, sends: {reverb: -4, delay: -12}}   # wet: tiled walls
     droplets: {gain_db: -8.0, width: 1.3, sends: {reverb: -5, delay: -10}}
-    tsumugi_vox: {gain_db: -2.0, pan: 0.12, sends: {reverb: -11, delay: -20}, chain: [{type: highpass, freq: 120}]}
-    zunda_vox:   {gain_db: -2.0, pan: -0.15, sends: {reverb: -12}, chain: [{type: highpass, freq: 120}]}
+    tsumugi_vox: {gain_db: 6.0, pan: 0.12, sends: {reverb: -11, delay: -20}, chain: [{type: highpass, freq: 120}]}
+    zunda_vox:   {gain_db: 6.0, pan: -0.15, sends: {reverb: -12}, chain: [{type: highpass, freq: 120}]}
     scrub:       {gain_db: 6.0, pan: 0.2, sends: {reverb: -16}, chain: [{type: highpass, freq: 200}]}
     rinse_water: {gain_db: 8.0, width: 1.2, sends: {reverb: -14}, chain: [{type: highpass, freq: 120}, {type: lowpass, freq: 9000}]}
     tub:         {gain_db: 5.0, sends: {reverb: -12}, chain: [{type: highpass, freq: 90}]}

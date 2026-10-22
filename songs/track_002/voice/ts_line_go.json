@@ -1,0 +1,23 @@
+{
+ "name": "ts_line_go",
+ "kind": "talk",
+ "speaker": 8,
+ "request_hash": "2eae4f4042f7a8b6",
+ "engine": "VOICEVOX",
+ "engine_version": "0.25.2",
+ "credit": "VOICEVOX:春日部つむぎ",
+ "lead_sec": 0.1,
+ "request": {
+  "kind": "talk",
+  "speaker": 8,
+  "text": "はーい、あたま洗うよー",
+  "query": {
+   "speedScale": 1.0,
+   "pitchScale": 0.0,
+   "intonationScale": 1.3,
+   "volumeScale": 1.0,
+   "prePhonemeLength": 0.1,
+   "postPhonemeLength": 0.1
+  }
+ }
+}

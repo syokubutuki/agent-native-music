@@ -1,0 +1,64 @@
+{
+ "name": "ts_b2",
+ "kind": "sing",
+ "speaker": 3008,
+ "request_hash": "9c4e27045a6d05cb",
+ "engine": "VOICEVOX",
+ "engine_version": "0.25.2",
+ "credit": "VOICEVOX:春日部つむぎ",
+ "start_beat": 54.0,
+ "lead_sec": 0.5,
+ "request": {
+  "kind": "sing",
+  "teacher": 6000,
+  "speaker": 3008,
+  "notes": [
+   {
+    "key": null,
+    "frame_length": 47,
+    "lyric": ""
+   },
+   {
+    "key": 72,
+    "frame_length": 88,
+    "lyric": "よ"
+   },
+   {
+    "key": 69,
+    "frame_length": 29,
+    "lyric": "し"
+   },
+   {
+    "key": 65,
+    "frame_length": 59,
+    "lyric": "よ"
+   },
+   {
+    "key": 67,
+    "frame_length": 58,
+    "lyric": "し"
+   },
+   {
+    "key": 64,
+    "frame_length": 30,
+    "lyric": "い"
+   },
+   {
+    "key": 67,
+    "frame_length": 29,
+    "lyric": "く"
+   },
+   {
+    "key": 72,
+    "frame_length": 58,
+    "lyric": "よ"
+   },
+   {
+    "key": null,
+    "frame_length": 47,
+    "lyric": ""
+   }
+  ],
+  "query": {}
+ }
+}

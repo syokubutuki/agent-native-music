@@ -128,7 +128,8 @@ def stem_diagnostics(score: Score, post_fader: dict[str, np.ndarray], sr: int) -
             "low_overlap_ratio": overlap,  # share of bass low-band energy colliding with kick hits
             "kick_to_bass_low_db": float(20 * np.log10((ke.mean() + 1e-12) / (be.mean() + 1e-12))),
         }
-    lead_names = [t.name for t in score.tracks if t.role == "lead" and t.name in post_fader]
+    # "vocal" = audio-clip voices (voice content): the melody carriers, but without pitched notes
+    lead_names = [t.name for t in score.tracks if t.role in ("lead", "vocal") and t.name in post_fader]
     if lead_names:
         lead = sum(post_fader[n] for n in lead_names)
         rest = sum(v for k, v in post_fader.items() if k not in lead_names)

@@ -1,0 +1,64 @@
+{
+ "name": "zd_b2",
+ "kind": "sing",
+ "speaker": 3076,
+ "request_hash": "426e049f1315ed67",
+ "engine": "VOICEVOX",
+ "engine_version": "0.25.2",
+ "credit": "VOICEVOX:ずんだもん",
+ "start_beat": 48.5,
+ "lead_sec": 0.5,
+ "request": {
+  "kind": "sing",
+  "teacher": 6000,
+  "speaker": 3076,
+  "notes": [
+   {
+    "key": null,
+    "frame_length": 47,
+    "lyric": ""
+   },
+   {
+    "key": 70,
+    "frame_length": 29,
+    "lyric": "め"
+   },
+   {
+    "key": 74,
+    "frame_length": 29,
+    "lyric": "に"
+   },
+   {
+    "key": 70,
+    "frame_length": 30,
+    "lyric": "し"
+   },
+   {
+    "key": 67,
+    "frame_length": 58,
+    "lyric": "み"
+   },
+   {
+    "key": 73,
+    "frame_length": 88,
+    "lyric": "る"
+   },
+   {
+    "key": 72,
+    "frame_length": 30,
+    "lyric": "の"
+   },
+   {
+    "key": 70,
+    "frame_length": 58,
+    "lyric": "だ"
+   },
+   {
+    "key": null,
+    "frame_length": 47,
+    "lyric": ""
+   }
+  ],
+  "query": {}
+ }
+}

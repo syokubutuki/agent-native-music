@@ -1,0 +1,23 @@
+{
+ "name": "zd_line_puha",
+ "kind": "talk",
+ "speaker": 3,
+ "request_hash": "696464d807ea5d41",
+ "engine": "VOICEVOX",
+ "engine_version": "0.25.2",
+ "credit": "VOICEVOX:ずんだもん",
+ "lead_sec": 0.1,
+ "request": {
+  "kind": "talk",
+  "speaker": 3,
+  "text": "ぷはーっ！",
+  "query": {
+   "speedScale": 1.0,
+   "pitchScale": 0.0,
+   "intonationScale": 1.5,
+   "volumeScale": 1.0,
+   "prePhonemeLength": 0.1,
+   "postPhonemeLength": 0.1
+  }
+ }
+}

@@ -14,11 +14,11 @@ voice:
     ts_hum:     {kind: sing, speaker: 3008, part: tsumugi, section: intro, bars: [0, 2], transpose: -12,
                  lyrics: "ふ ん ふ ふ ん ふ"}
     ts_line_go: {kind: talk, speaker: 8, text: "はーい、あたま洗うよー", at: "intro:2", intonation: 1.3}
-    zd_line_ok: {kind: talk, speaker: 3, text: "はいなのだ！", at: "intro:3|1", intonation: 1.4}
+    zd_line_ok: {kind: talk, speaker: 3, gain_db: 6, text: "はいなのだ！", at: "intro:3|1", intonation: 1.4}
     # ---- a: わしゃわしゃ
     ts_a1:      {kind: sing, speaker: 3008, part: tsumugi, section: a, bars: [0, 4], transpose: -12,
                  lyrics: "わ しゃ わ しゃ ね あ わ あ わ よ お め め と じ て"}        # わしゃわしゃね あわあわよ おめめとじて
-    zd_line_tickle: {kind: talk, speaker: 3, text: "くすぐったいのだ", at: "a:3|1.5", intonation: 1.3, volume: 0.85}
+    zd_line_tickle: {kind: talk, speaker: 3, text: "くすぐったいのだ", at: "a:3|1.25", speed: 1.15, intonation: 1.3, volume: 0.85}   # ends before her next phrase
     ts_a2:      {kind: sing, speaker: 3008, part: tsumugi, section: a, bars: [4, 8], transpose: -12,
                  lyrics: "く る く る り い い こ ず ん だ も ん ね"}                  # くるくるり いいこ ずんだもんね
     # ---- b: おしゃべり (2-bar call and response)
@@ -31,9 +31,9 @@ voice:
     ts_b2:      {kind: sing, speaker: 3008, part: tsumugi, section: b, bars: [6, 8], transpose: -12,
                  lyrics: "よ し よ し い く よ"}                                       # よしよし いくよ
     # ---- rinse
-    zd_line_puha: {kind: talk, speaker: 3, text: "ぷはーっ！", at: "rinse:3|1", intonation: 1.5}
+    zd_line_puha: {kind: talk, speaker: 3, gain_db: 8, text: "ぷはーっ！", at: "rinse:3|1", intonation: 1.5}
     # ---- a2: 湯ぶね (duet)
-    ts_d1:      {kind: sing, speaker: 3008, part: tsumugi, section: a2, bars: [0, 4], transpose: -12,
+    ts_d1:      {kind: sing, speaker: 3008, gain_db: 2, part: tsumugi, section: a2, bars: [0, 4], transpose: -12,
                  lyrics: "ぽ か ぽ か ね ゆ げ の な か じゅ う か ぞ え て"}            # ぽかぽかね ゆげのなか じゅうかぞえて
     zd_d1:      {kind: sing, speaker: 3003, part: zunda, section: a2, bars: [3, 4],
                  lyrics: "い ち に さ ん"}                                           # いち に さん (counting with her)
@@ -42,7 +42,7 @@ voice:
     zd_d2:      {kind: sing, speaker: 3003, part: zunda, section: a2, bars: [7, 8],
                  lyrics: "ぼ く も な の だ"}                                          # ぼくもなのだ
     # ---- end: ふぅ〜
-    zd_end:     {kind: sing, speaker: 3001, part: zunda, section: end, bars: [0, 3],  # あまあま
+    zd_end:     {kind: sing, speaker: 3001, gain_db: -5, part: zunda, section: end, bars: [0, 3],  # あまあま
                  lyrics: "ご く ら く な の だ"}                                       # ごくらくなのだ〜
     ts_end:     {kind: sing, speaker: 3008, part: tsumugi, section: end, bars: [1, 3], transpose: -12,
                  lyrics: "ほ ん と ね"}

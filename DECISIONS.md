@@ -102,3 +102,4 @@
 - Attempt 2（環境音）: Wikimedia Commons は共有 IP のレート制限（429）、freesound.org は robots.txt が ClaudeBot を全面拒否（スクレイピングしない）・API はキーが必要。
 - Decision: Hugging Face 上の FSD50K ミラー（Freesound 由来、クリップ単位のライセンス付き）から **CC0 のクリップのみ**を使う。
   `assets/sfx/fsd50k/sources.yaml` に出典、`CREDITS.md` にまとめて記載。将来もっと素材が要るときは人間の Freesound API キーで API 経由にする。
+- 追記（2026-10-22）: 人間がこのクラウド環境での VOICEVOX 実行を許可。Engine 0.25.2 で全クリップを生成し `songs/track_002/voice/` にコミット（EXP-013）。

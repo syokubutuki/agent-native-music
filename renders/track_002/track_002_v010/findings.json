@@ -1,0 +1,14 @@
+[
+ {
+  "id": "motif.ok",
+  "level": "info",
+  "message": "Motifs repeated+transformed: ['awa', 'nanoda'] (uses: {'awa': 10, 'nanoda': 3})",
+  "where": "melody"
+ },
+ {
+  "id": "mix.lead_buried",
+  "level": "warn",
+  "message": "Lead is -7.2 dB vs rest in 1-5 kHz",
+  "where": "lead"
+ }
+]

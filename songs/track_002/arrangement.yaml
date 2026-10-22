@@ -81,9 +81,11 @@ arrangement:
     # ---- voices (VOICEVOX, pre-generated into songs/track_002/voice/; see voice.yaml) — v006
     tsumugi_vox:
       instrument: fx/sample_player
+      role: vocal
       content: {type: voice, clips: [ts_hum, ts_line_go, ts_a1, ts_a2, ts_b1, ts_b2, ts_d1, ts_d2, ts_end, ts_line_fufu]}
     zunda_vox:
       instrument: fx/sample_player
+      role: vocal
       content: {type: voice, clips: [zd_line_ok, zd_line_tickle, zd_b1, zd_b2, zd_line_puha, zd_d1, zd_d2, zd_end]}
     # ---- field recordings (assets/sfx/fsd50k, CC0; sources.yaml) — v006 (human: 実際の環境音を加える)
     scrub:           # soap lather on hands = shampoo scrubbing, in bursts with the shaker gestures
@@ -129,4 +131,9 @@ arrangement:
     - {target: pad.gain_db, points: [["intro:0", -5], ["a:0", -5], ["a:1", -10], ["b:4|2", -10], ["b:5|1", -6], ["b:6|1", -10],
                                      ["b:end", -10], ["rinse:1", -5], ["a2:0", -6], ["a2:1", -9],
                                      ["end:0", -7], ["end:1", -8], ["end:end", -16]]}
+    # v009: the reed steps back (-12 dB) wherever Zundamon sings the same line himself (unison doubling)
+    - {target: zunda.gain_db, points: [["intro:0", -3], ["b:0", -3], ["b:0", -15], ["b:2", -15], ["b:2", -3],
+                                       ["b:4", -3], ["b:4", -15], ["b:6", -15], ["b:6", -3],
+                                       ["a2:3", -3], ["a2:3", -15], ["a2:4", -15], ["a2:4", -3],
+                                       ["a2:7", -3], ["a2:7", -15], ["end:end", -15]]}
     - {target: tsumugi.send.reverb, points: [["intro:0", -6], ["a:0", -9], ["a2:end", -9], ["end:1", -5]]}
