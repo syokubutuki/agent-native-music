@@ -501,3 +501,22 @@ export function slideWhistle(ctx, events, bus, seed = 67) {
     }
   }
 }
+
+// Vibraphone: metal bar partials (1 and 4) with a long, soft ring; the tremolo is added at the mix.
+export function vibes(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const len = Math.round(2.2 * sr);
+    const f = mtof(ev.midi);
+    let p1 = 0;
+    let p2 = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      p1 += (TAU * f) / sr;
+      p2 += (TAU * f * 4) / sr;
+      const y = Math.sin(p1) * Math.exp(-t / 1.1) + 0.18 * Math.sin(p2) * Math.exp(-t / 0.18);
+      add(bus, s0 + n, y * Math.min(1, t / 0.004) * (ev.vel ?? 1), ev.pan ?? 0);
+    }
+  }
+}

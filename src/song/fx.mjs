@@ -196,3 +196,51 @@ export function master(bus, { sr, targetDb = -11 }) {
   }
   return { ...bus, peak: peak(bus.left, bus.right) };
 }
+
+// Stereo chorus: two short delays (left/right) swept by slow, opposite-phase LFOs, mixed under the dry
+// signal — widens and gently detunes, the "ほわん" shimmer on pads and voices.
+export function chorus(bus, { sr, delayMs = 14, depthMs = 4, rateHz = 0.6, mix = 0.35 }) {
+  const n = bus.left.length;
+  const maxD = Math.ceil(((delayMs + depthMs) / 1000) * sr) + 2;
+  const out = { left: new Float32Array(n), right: new Float32Array(n) };
+  const read = (buf, i, d) => {
+    const p = i - d;
+    const i0 = Math.floor(p);
+    const f = p - i0;
+    const a = i0 >= 0 ? buf[i0] : 0;
+    const b = i0 + 1 >= 0 && i0 + 1 < n ? buf[i0 + 1] : 0;
+    return a + (b - a) * f;
+  };
+  for (let i = 0; i < n; i++) {
+    const ph = (2 * Math.PI * rateHz * i) / sr;
+    const dl = ((delayMs + depthMs * Math.sin(ph)) / 1000) * sr;
+    const dr = ((delayMs + depthMs * Math.sin(ph + Math.PI)) / 1000) * sr;
+    out.left[i] = bus.left[i] + mix * (i > maxD ? read(bus.right, i, dl) : 0);
+    out.right[i] = bus.right[i] + mix * (i > maxD ? read(bus.left, i, dr) : 0);
+  }
+  bus.left.set(out.left);
+  bus.right.set(out.right);
+  return bus;
+}
+
+// Vibraphone-style tremolo: a slow amplitude wobble (the motor of a vibraphone) — "ほわんほわん".
+export function tremolo(bus, { sr, rateHz = 4.5, depth = 0.35 }) {
+  for (let i = 0; i < bus.left.length; i++) {
+    const g = 1 - depth * (0.5 + 0.5 * Math.sin((2 * Math.PI * rateHz * i) / sr));
+    bus.left[i] *= g;
+    bus.right[i] *= g;
+  }
+  return bus;
+}
+
+// Delay the whole bus by ms (reverb pre-delay keeps the voice's consonants clear of its own tail).
+export function predelay(bus, { sr, ms }) {
+  const d = Math.round((ms / 1000) * sr);
+  const n = bus.left.length;
+  const out = { left: new Float32Array(n), right: new Float32Array(n) };
+  for (let i = d; i < n; i++) {
+    out.left[i] = bus.left[i - d];
+    out.right[i] = bus.right[i - d];
+  }
+  return out;
+}

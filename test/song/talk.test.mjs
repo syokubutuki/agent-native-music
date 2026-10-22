@@ -56,15 +56,23 @@ test('duet stays inside each talk voice\'s measured range', () => {
   assert.equal(meta.vocalMode, 'talk');
 });
 
-test('duet sections carry spoken asides, a deliberately wild phrase and a guide melody', async () => {
-  const { tracks, vocals, says } = arrange(sections);
-  assert.ok(says.some((x) => x.singer === 'z' && x.text === 'いくのだ'));
-  assert.ok(says.some((x) => x.singer === 'a' && x.text === 'おしい'));
-  const wild = vocals.flatMap((v) => v.notes.filter((n) => n.wild));
-  assert.ok(wild.length > 0 && Math.max(...wild.map((n) => n.key)) > 75, 'the challenge goes above ずんだもん\'s range on purpose');
-  const sungNotes = vocals.flatMap((v) => v.notes.filter((n) => n.key != null && !n.wild));
-  assert.equal(tracks.guide.length, sungNotes.length, 'one guide note per sung note');
-  assert.ok(tracks.guide.every((g) => g.vel < 0.5), 'guide stays quiet');
+test('duet phrases support spoken asides (say:), wild phrases (!) and a quiet guide melody', async () => {
+  const sec = {
+    name: 't', bars: 2, chords: ['A'], drums: 'none', phrases: true, duet: true, guide: true,
+    vocal: { z: [[0, 'say:いくのだ'], [8, '!あ:A4:2 め:B5:2']], a: [[0, 'あ:E4:2 め:F#4:2']] },
+  };
+  const { tracks, vocals, says } = arrange([sec]);
+  assert.deepEqual(says.map((x) => [x.singer, x.text, x.beat]), [['z', 'いくのだ', 0]]);
+  assert.ok(vocals.find((v) => v.singer === 'z').notes.filter((n) => n.key != null).every((n) => n.wild));
+  assert.equal(tracks.guide.length, 2, 'guide follows only the non-wild sung notes');
+  assert.ok(tracks.guide.every((g) => g.vel < 0.5));
   const { HETA } = await import('../../src/song/produce.mjs');
   assert.ok(HETA.weak.limit < HETA.mid.limit && HETA.mid.limit < HETA.strong.limit);
+});
+
+test('v5 keeps the song free of staged asides', () => {
+  const { says, vocals } = arrange(sections);
+  assert.equal(says.length, 0);
+  assert.ok(vocals.every((v) => v.notes.every((n) => !n.wild)));
+  assert.ok(meta.mix?.tremolo && meta.mix?.vocalPredelayMs > 0);
 });

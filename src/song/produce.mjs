@@ -1,10 +1,10 @@
 // Score (sections of chords, patterns and vocal bars) -> stems -> mixed song.
 
-import { createBus, kick, clap, hat, riser, impact, bass, supersaw, pluck, bell, chip, toy, snare, futureChords, marimba, roundBass, shaker, lightKick, slideWhistle } from './synth.mjs';
+import { createBus, kick, clap, hat, riser, impact, bass, supersaw, pluck, bell, chip, toy, snare, futureChords, marimba, roundBass, shaker, lightKick, slideWhistle, vibes } from './synth.mjs';
 import { talkQuery, talkSynthesis, speakQuery, splitForTalk } from './talksing.mjs';
 import { correctPitch, noteOffsets } from './psola.mjs';
 import { decodeWav } from '../lab/wav.mjs';
-import { reverb, pingPong, sidechainCurve, applyGain, eq, compress, levelTo, mixInto, master } from './fx.mjs';
+import { reverb, pingPong, sidechainCurve, applyGain, eq, compress, levelTo, mixInto, master, chorus, tremolo, predelay } from './fx.mjs';
 import { toScore, singQuery, frameSynthesis, hardTune, softTune, midiHz, vowelOf } from './voicevox.mjs';
 import { pitchToMidi } from './notes.mjs';
 import { createSvf } from '../lab/dsp.mjs';
@@ -185,7 +185,7 @@ export function parsePhrases(phrases, bars) {
 
 // Everything except the vocal, as note events in beats.
 export function arrange(sections) {
-  const t = { kick: [], clap: [], hat: [], snare: [], bass: [], stab: [], pad: [], pluck: [], riser: [], impact: [], bell: [], chip: [], toy: [], future: [], lightKick: [], shaker: [], marimba: [], roundBass: [], whistle: [], guide: [] };
+  const t = { kick: [], clap: [], hat: [], snare: [], bass: [], stab: [], pad: [], pluck: [], riser: [], impact: [], bell: [], chip: [], toy: [], future: [], lightKick: [], shaker: [], marimba: [], roundBass: [], whistle: [], guide: [], vibes: [] };
   const vocals = [];
   const chops = [];
   const says = [];
@@ -234,6 +234,10 @@ export function arrange(sections) {
         for (const s of hits) for (const midi of [...v, v[0] + 12]) t.stab.push({ beat: at + s / 4, beats: 0.2, midi, vel: 0.9 });
       }
       if (sec.pad) for (const midi of [...v, v[0] - 12]) t.pad.push({ beat: at, beats: 3.9, midi, vel: 0.7 });
+      if (sec.comp === 'vibes') {
+        // soft vibraphone chords on beats 1 and 3: let them ring and wobble
+        for (const beatInBar of [0, 2]) for (const midi of v) t.vibes.push({ beat: at + beatInBar, midi, vel: beatInBar ? 0.42 : 0.55 });
+      }
       if (sec.comp === 'marimba') {
         // chord on the downbeat, then light offbeat "chk" on the top notes, like a strummed uke
         for (const midi of v) t.marimba.push({ beat: at, midi, vel: 0.7 });
@@ -384,7 +388,7 @@ export function sectionLevels(sections, total, { sr, bpm }) {
   return g;
 }
 
-const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26, guide: -33 };
+const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26, guide: -33, vibes: -21 };
 
 // vocalMode: 'talk' (talk voices made to sing), 'talkhard' (talk voices, then PSOLA pitch correction
 // pinning every note: talk timbre, machine pitch), 'sing' (singing voices, smooth tuning) or 'hard'
@@ -432,6 +436,7 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   render('roundBass', (b) => roundBass(ctx, tracks.roundBass, b));
   render('whistle', (b) => slideWhistle(ctx, tracks.whistle, b));
   render('guide', (b) => bell(ctx, tracks.guide, b));
+  render('vibes', (b) => vibes(ctx, tracks.vibes, b));
 
   const kickBeats = [...tracks.kick, ...tracks.lightKick].map((e) => e.beat);
   const pump = (depth) => sidechainCurve(total, kickBeats, { sr, bpm, depth });
@@ -441,7 +446,11 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   eq(stems.pad, [['peak', 2500, { q: 0.8, gainDb: -3 }]], sr);
   eq(stems.stab, [['highpass', 160, {}], ['peak', 2500, { q: 0.8, gainDb: -3 }], ['highshelf', 8000, { gainDb: -3 }]], sr);
   eq(stems.pluck, [['highpass', 200, {}]], sr);
-  for (const [name, db] of Object.entries(STEM_DB)) if (stems[name]) levelTo(stems[name], db);
+  // per-song mix (meta.mix): stem level overrides, tremolo/chorus on chosen stems, reverb shape
+  const mixCfg = score.meta.mix ?? {};
+  for (const [name, db] of Object.entries(STEM_DB)) if (stems[name]) levelTo(stems[name], mixCfg.stemDb?.[name] ?? db);
+  if (mixCfg.tremolo) for (const name of mixCfg.tremolo.stems) tremolo(stems[name], { sr, ...mixCfg.tremolo });
+  if (mixCfg.chorus) for (const name of mixCfg.chorus.stems) chorus(stems[name], { sr, ...mixCfg.chorus });
   applyGain(stems.bass, pump(0.45));
   applyGain(stems.stab, pump(0.6));
   applyGain(stems.pad, pump(0.75));
@@ -674,12 +683,18 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   mixInto(instSend, stems.stab, 0.6);
   mixInto(instSend, stems.pluck, 0.6);
   mixInto(instSend, stems.clap, 0.5);
-  const instVerb = reverb(instSend, { sr, room: 0.8, damp: 0.4 });
+  for (const name of mixCfg.reverbStems ?? []) mixInto(instSend, stems[name], 0.7);
+  const instVerb = reverb(instSend, { sr, room: mixCfg.instRoom ?? 0.8, damp: mixCfg.instDamp ?? 0.4 });
   const voxSend = createBus(total);
   mixInto(voxSend, vocal);
   mixInto(voxSend, chopBus, 0.8);
   mixInto(voxSend, stems.bell, 0.7);
-  const voxVerb = reverb(voxSend, { sr, room: 0.82, damp: 0.45 });
+  if (mixCfg.vocalChorus) chorus(vocal, { sr, ...mixCfg.vocalChorus });
+  const voxVerb = reverb(mixCfg.vocalPredelayMs ? predelay(voxSend, { sr, ms: mixCfg.vocalPredelayMs }) : voxSend, {
+    sr,
+    room: mixCfg.vocalRoom ?? 0.82,
+    damp: mixCfg.vocalDamp ?? 0.45,
+  });
   const dlySend = createBus(total);
   mixInto(dlySend, vocal, 1);
   mixInto(dlySend, stems.pluck, 0.8);
@@ -688,14 +703,15 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
 
   const instrumental = createBus(total);
   for (const name of Object.keys(STEM_DB)) mixInto(instrumental, stems[name]);
-  mixInto(instrumental, instVerb, 0.3);
+  mixInto(instrumental, instVerb, mixCfg.instReverb ?? 0.3);
   applyGain(instrumental, sectionLevels(score.sections, total, { sr, bpm }));
   const full = createBus(total);
   mixInto(full, instrumental);
   mixInto(full, vocal);
   mixInto(full, double);
   mixInto(full, chopBus);
-  mixInto(full, voxVerb, 0.3);
+  mixInto(full, voxVerb, mixCfg.vocalReverb ?? 0.3);
+  if (mixCfg.airDb) eq(full, [['highshelf', 6000, { gainDb: mixCfg.airDb }]], sr);
   mixInto(full, dly, 0.16);
   const inst = createBus(total);
   mixInto(inst, instrumental);

@@ -51,3 +51,7 @@
 
 Codex は `danger-full-access` + `approvalPolicy: never` で動き、来た承認要求はすべて自動承認する。
 ツールのテスト: `npm run test:tools`
+
+## 曲づくり（つむぎ × ずんだもん の掛け合いソング）
+読み上げ音声で歌う二人の曲は `.claude/skills/talk-duet-song/SKILL.md` に、ユーザーの好み・没案・測定済みの制約・
+新曲の作り方をまとめてある。曲の作業の前に読むこと。VOICEVOX は `scripts/voicevox-install.sh` → `scripts/voicevox-up.sh`。
