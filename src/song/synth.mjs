@@ -656,3 +656,68 @@ export function rain(ctx, events, bus, seed = 101) {
     }
   }
 }
+
+// --- bath sounds (「ゆげ ゆげ ゆげ。」): things in a tiled bathroom that slowly become the band ----------
+
+// Drip ("ぴちょん"): a drop hitting water — a sine that rises into its (tuned) pitch over ~20 ms and dies
+// fast, with a small second blip; the room reverb makes the rest.
+export function drip(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const f = mtof(ev.midi ?? 88);
+    for (const [o, ratio, amp] of [[0, 1, 1], [0.045, 1.5, 0.25]]) {
+      const start = s0 + Math.round(o * sr);
+      const len = Math.round(0.12 * sr);
+      let ph = 0;
+      for (let n = 0; n < len; n++) {
+        const t = n / sr;
+        const glide = 0.62 + 0.38 * Math.min(1, t / 0.02) ** 0.6;
+        ph += (TAU * f * ratio * glide) / sr;
+        add(bus, start + n, Math.sin(ph) * Math.min(1, t / 0.0008) * Math.exp(-t / 0.035) * amp * (ev.vel ?? 1), ev.pan ?? 0);
+      }
+    }
+  }
+}
+
+// Bath bucket on tile ("カコン"): a plastic knock — click plus two short body modes. midi tunes the body
+// (default 72 ~ 523 Hz); the long "コーン" comes from the room reverb.
+export function bucket(ctx, events, bus, seed = 103) {
+  const sr = ctx.sr;
+  const rng = createRng(seed);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const f = mtof(ev.midi ?? 72);
+    const len = Math.round(0.35 * sr);
+    const bp = createSvf('bp', 2400, 1.2, sr);
+    let p1 = 0;
+    let p2 = 0;
+    let p3 = 0;
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      p1 += (TAU * f) / sr;
+      p2 += (TAU * f * 2.63) / sr;
+      p3 += (TAU * f * 4.1) / sr;
+      const body = Math.sin(p1) * Math.exp(-t / 0.09) + 0.45 * Math.sin(p2) * Math.exp(-t / 0.05) + 0.2 * Math.sin(p3) * Math.exp(-t / 0.025);
+      const click = t < 0.012 ? bp(rng.uniform(-1, 1)) * 1.6 * Math.exp(-t / 0.003) : 0;
+      add(bus, s0 + n, (body * Math.min(1, t / 0.0005) + click) * (ev.vel ?? 1), ev.pan ?? 0.15);
+    }
+  }
+}
+
+// Control-panel beep ("ピッ"): a clean sine with a hint of square, 90 ms (beats sets a longer "ピー").
+export function beep(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const f = mtof(ev.midi ?? 95);
+    const gate = Math.round((ev.beats ? (ev.beats * 60) / ctx.bpm : 0.09) * sr);
+    const len = gate + Math.round(0.01 * sr);
+    let p = 0;
+    for (let n = 0; n < len; n++) {
+      p = (p + f / sr) % 1;
+      const env = Math.min(1, n / (0.002 * sr), n < gate ? 1 : 1 - (n - gate) / (0.01 * sr));
+      add(bus, s0 + n, (Math.sin(TAU * p) * 0.85 + (p < 0.5 ? 0.15 : -0.15)) * env * (ev.vel ?? 1), ev.pan ?? -0.1);
+    }
+  }
+}

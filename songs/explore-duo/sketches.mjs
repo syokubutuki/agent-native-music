@@ -12,24 +12,9 @@
 const BPM = 128;
 const PROG = ['Aadd9', 'Dmaj7', 'Aadd9', 'Dmaj7', 'F#m7', 'Dmaj7', 'E', 'E'];
 
-// ---- token helpers (data transforms only; the music is the token strings below) ----------------
-const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-const toMidi = (p) => {
-  const m = /^([A-G]#?)(\d)$/.exec(p);
-  return NAMES.indexOf(m[1]) + 12 * (Number(m[2]) + 1);
-};
-const toName = (k) => `${NAMES[k % 12]}${Math.floor(k / 12) - 1}`;
-const mapNotes = (text, fn) => text.replace(/(\S+?):([A-G]#?\d):(\d+)/g, (_, l, p, n) => `${l}:${toName(fn(toMidi(p)))}:${n}`);
-export const transpose = (text, semis) => mapNotes(text, (k) => k + semis);
-// A major scale degrees, for diatonic harmony
-const SCALE = [9, 11, 1, 2, 4, 6, 8];
-const stepDown = (k, steps) => {
-  let x = k;
-  for (let s = 0; s < steps; s++) do x--; while (!SCALE.includes(x % 12));
-  return x;
-};
-// A diatonic third below; a sixth below where the third would leave the low voice's range.
-export const harmonyBelow = (text, maxKey = toMidi('A4')) => mapNotes(text, (k) => (stepDown(k, 2) <= maxKey ? stepDown(k, 2) : stepDown(k, 5)));
+import { transpose, harmonyBelow } from '../../src/song/tokens.mjs';
+
+export { transpose, harmonyBelow };
 const shift = (phrases, by) => phrases.map(([at, text, flag]) => (flag ? [at + by, text, flag] : [at + by, text]));
 
 // ---- the base call-and-response (交互): つむぎ asks in one bar, ずんだもん answers in the next ------

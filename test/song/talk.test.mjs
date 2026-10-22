@@ -38,7 +38,10 @@ test('talkQa passes steady voiced notes and flags a collapsed one', () => {
     }
     return encodeWav({ left: x, right: x, sampleRate: sr });
   };
-  assert.deepEqual(talkQa(make(false), notes, bpm, 0.1), { ok: true });
+  const good = talkQa(make(false), notes, bpm, 0.1);
+  assert.equal(good.ok, true);
+  assert.deepEqual(good.rows.map((r) => r.lyric), ['あ', 'い', 'う']);
+  assert.ok(good.rows.every((r) => Math.abs(r.under) < 3)); // steady level: nothing sits under the phrase
   // the third note is the phrase end: judged on its first half, where it has collapsed
   const bad = talkQa(make(true), notes, bpm, 0.1);
   assert.equal(bad.ok, false);
