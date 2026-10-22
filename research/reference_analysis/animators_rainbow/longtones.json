@@ -1,0 +1,18 @@
+[
+ {
+  "t0": 230.68,
+  "t1": 231.61,
+  "len": 0.93,
+  "note": "G4",
+  "midi": 67.0,
+  "sd_cents": 5.0,
+  "prev_note": "C5",
+  "leap_semitones": -5.0,
+  "gap_before": 33.84,
+  "width": 0.68,
+  "rms_end": -45.6,
+  "tail_0p5": -180.0,
+  "tail_1p0": -180.0,
+  "tail_2p0": -180.0
+ }
+]

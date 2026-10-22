@@ -21,3 +21,6 @@ Format: see `AGENTS.md`. One file per task. Status line at the bottom of each fi
 
 Codex was not available in the initial cloud session (DECISIONS.md D-007); T-001–T-007 were specified
 here first and then implemented by Claude under the same acceptance criteria.
+| T-017 | Reference-track analysis CLI (`python -m music_agent reference <wav> [--segment t0 t1]`) integrating `tools/ref_analysis/` | **open**（spec 未作成） |
+| T-018 | "Collapse" automation primitives: seeded gate holes, width flicker, filter scatter (research P-05/P-06/P-07) | **open**（spec 未作成） |
+| T-019 | Topline `chop` / `sung` modes (grid-locked +12 vs timing-jittered) (research P-12) | **open**（spec 未作成） |

@@ -64,6 +64,10 @@ melody:
 
 WAV は git 管理外（manifest.json の commit・hash・seed から `render` で再生成できる）。
 
+## 研究（嗜好分析）
+
+参照作品からユーザーの嗜好を抽出した設計原則: `research/preference_principles_v1.md`（計測ツール `tools/ref_analysis/`、図と数値 `research/reference_analysis/`）。
+
 ## Codex 委譲環境
 
 Claude Code が設計・レビューし、実装を Codex App Server に委譲する構成。運用ルールは `CLAUDE.md`「Codex への委譲」を参照。

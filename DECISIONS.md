@@ -79,3 +79,17 @@
 - Decision: このクラウドセッションでは実装を Claude が代行し、仕様は `specs/` に書いて `executed by: claude` を記録する。
   人間の Windows 環境、または (a) 環境のネットワーク許可に `api.openai.com` を追加し (b) 認証情報を環境変数で渡したクラウド環境で Codex に委譲する。
 - Reason: 委譲の仕組みは整ったが、このコンテナの外向き通信と認証の 2 点が不足。
+
+## D-011 参照曲の嗜好分析（research/）と解析ツールの置き場
+
+- 目的: ユーザーが挙げた参照作品 16 件から「何に反応しているか」を抽出し、`research/preference_principles_v1.md` に設計原則（P-01〜P-12）として固定。
+- Attempt: yt-dlp で音源取得 → librosa ベースの計測（`tools/ref_analysis/`）→ 図と JSON を `research/reference_analysis/` に保存。
+- Result: niconico 7/8 本は取得可（1 本は非公開）。**YouTube はこのクラウド環境からは bot 判定で取得不可**（cookie が要る）。
+  → gloomy / 花火 / Snowing / ルカ 3 曲 / シュガーバインは記述と知識ベースの仮説のみ（要 Windows 側での取得・再計測）。
+- Decision:
+  - 参照曲の音源はリポジトリに入れない（著作物・サイズ）。解析結果（縮小 PNG と要約 JSON、合計 ≈ 4 MB）のみ保存。
+  - 計測ツールは本体パッケージに入れず `tools/ref_analysis/` に置く。本体の解析（`analysis/features.py`）は D-005 どおり librosa 非依存を維持。
+    統合は `python -m music_agent reference` として Codex 委譲候補（T-017）。
+  - 嗜好原則は既存 `MUSIC_SPEC.md` の P1–P13（メロディック EDM の原理）と **別系統** として管理する。両者はジャンル的にかなり異なるため、
+    track_001 路線の継続か新曲開始かは人間の判断待ち（preference_principles_v1.md §4）。
+- Reason: 作曲判断の根拠を再現可能な計測に紐づける。聴けない Claude の推定であることを全箇所に明記し、人間の時刻指定で検証する前提。
