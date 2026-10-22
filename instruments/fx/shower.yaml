@@ -2,7 +2,7 @@
 type: subtractive
 oscillators:
   - {wave: noise, level: 1.0}
-filter: {mode: lowpass, cutoff: 4500, q: 0.5, slope: 12}
+filter: {mode: lowpass, cutoff: 3000, q: 0.5, slope: 12}
 amp_env: {a: 0.35, d: 0.5, s: 0.9, r: 1.0}
 velocity_sens: 0.3
 gain_db: 0

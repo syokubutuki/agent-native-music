@@ -8,4 +8,4 @@ metal: 0.0
 width: 0.4
 gain_db: 0
 fx:
-  - {type: lowpass, freq: 10000}
+  - {type: lowpass, freq: 8000}

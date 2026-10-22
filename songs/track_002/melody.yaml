@@ -20,12 +20,12 @@ melody:
         a:
           - {bar: 0, motif: awa}
           - {bar: 1, motif: awa, ops: [{transpose: -1, keep: [4]}]}   # C6 anchor kept over Am7
-          - {bar: 2, notes: "13:3 12:1 11:2 10:2 8:4"}                 # falls back down over Bbmaj7
-          - {bar: 3, notes: "12:4 11:2 10:1 11:1 9:4"}                 # a little turn, open on G (V)
+          - {bar: 2, notes: "11:3 10:1 9:2 8:2 6:4"}                  # falls back down over Bbmaj7 (v004 C9: D6 saved for bar 6)
+          - {bar: 3, notes: "9:8 r:4"}                                 # G held over C7, then a breath (v004 C1)
           - {bar: 4, motif: awa}
-          - {bar: 5, motif: awa, ops: [{transpose: -2, keep: [4]}]}   # F E D F C over Dm7
+          - {bar: 5, notes: "10:6 8:2 6:4"}                            # dips over Dm7 before bar 6 climbs (v004 C1)
           - {bar: 6, notes: "11:3 10:1 9:2 11:2 13:4"}                 # rises to D6, the A-section peak
-          - {bar: 7, notes: "12:6 10:2 9:4"}                           # hands over to Zundamon
+          - {bar: 7, notes: "9:6 r:6"}                                 # hands over to Zundamon, with space
         b:
           - {bar: 2, notes: "12:3 10:1 9:2 10:2 12:4"}                 # answers in her theme's rhythm
           - {bar: 3, notes: "12:2 13:2 12:2 10:2 8#:4"}                # F# leads to Gm7
@@ -34,12 +34,12 @@ melody:
         a2:
           - {bar: 0, motif: awa}
           - {bar: 1, motif: awa, ops: [{transpose: -1, keep: [4]}]}
-          - {bar: 2, notes: "13:3 12:1 11:2 10:2 8:4"}
-          - {bar: 3, notes: "12:4 11:2 10:1 11:1 9:4"}
+          - {bar: 2, notes: "11:3 10:1 9:2 8:2 6:4"}
+          - {bar: 3, notes: "9:8 r:4"}                                 # breath: Zundamon chimes in underneath
           - {bar: 4, motif: awa}
           - {bar: 5, motif: awa, ops: [{transpose: -2, keep: [4]}]}
           - {bar: 6, notes: "13:4 11:2 14:4! 12:2"}                    # E6: the one highest note of the piece
-          - {bar: 7, notes: "10:6 9:2 8:4"}                            # home
+          - {bar: 7, notes: "10:3 9:1 8:8"}                            # home: A G F, F held (same gesture as end bar 2)
         end:
           - {bar: 1, notes: "r:8 9:4?"}
           - {bar: 2, motif: awa, ops: [{take: [0, 3]}, {rhythm: "3 1 8"}, {vel: 0.7}]}   # A G F, held
@@ -56,18 +56,18 @@ melody:
         rinse:
           - {bar: 3, notes: "r:4 1:2 3:2 5:4!"}                        # surfaces: "ぷはっ"
         a2:          # counter-line below the theme: together in the tub
-          - {bar: 0, notes: "3:8 2:2 1:2"}
+          - {bar: 0, notes: "5:8 3:2 1:2"}                             # C5 under A5: a sixth, not an octave (v004 C2)
           - {bar: 1, notes: "0:8 3:4"}
           - {bar: 2, notes: "1:8 3:4"}
-          - {bar: 3, notes: "4:6 3:2 2:4"}
-          - {bar: 4, notes: "3:8 5:4"}
+          - {bar: 3, motif: nanoda, ops: [{transpose: 1}]}            # "…のだ!" under her held G5
+          - {bar: 4, notes: "5:8 3:4"}
           - {bar: 5, notes: "6:8 5:2 6:2"}
           - {bar: 6, notes: "2:6 3:2 0:4"}
-          - {bar: 7, notes: "3:12"}                                    # A4 under Tsumugi's F5
+          - {bar: 7, motif: nanoda}                                    # the duet's cadence is his "なのだ" on tonic F4
         end:
-          - {bar: 0, notes: "r:4 5:4 6:4"}                             # "ふぅ〜"
+          - {bar: 0, notes: "r:2 5:2 6:1 5:1 3:4"}                     # a sleepy nanoda: "ふぅ〜"
           - {bar: 1, notes: "6b:8 5:4"}                                # the pout's Db -> C, now contented
-          - {bar: 2, notes: "3:20"}
+          - {bar: 2, notes: "3:20?"}                                   # exhale (v004 C5)
     bubbles:         # bubbles and drops: F-major pentatonic only (F G A C D), in the gaps
       base: F4
       grid: 12
@@ -92,14 +92,14 @@ melody:
           - {bar: 7, notes: "r:9 19:1? r:1 20:1?"}
         rinse:
           - {bar: 2, notes: "r:3 17:1? r:6 15:1?"}
-        a2:          # low "ちゃぷ" of bath water instead of foam
-          - {bar: 0, notes: "r:8 -2:2?"}
-          - {bar: 2, notes: "r:6 1:2?"}
-          - {bar: 4, notes: "r:10 -1:2?"}
-          - {bar: 6, notes: "r:8 1:2?"}
+        a2:          # v004 (C8): the low "ちゃぷ" was inaudible / clashed — sparse high drops in the gaps instead
+          - {bar: 0, notes: "r:9 15:2?"}
+          - {bar: 3, notes: "r:9 17:1? 19:1?"}
+          - {bar: 4, notes: "r:10 13:2?"}
+          - {bar: 7, notes: "r:9 15:1? r:1 17:1?"}
         end:
           - {bar: 0, notes: "r:9 17:1?"}
-          - {bar: 2, notes: "r:5 -2:2?"}
+          - {bar: 2, notes: "r:5 12:2?"}
           - {bar: 3, notes: "r:10 19:1"}                                # the last bubble
     shower:          # pitch is irrelevant (noise patch)
       base: F4

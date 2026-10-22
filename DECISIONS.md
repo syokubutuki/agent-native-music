@@ -79,3 +79,11 @@
 - Decision: このクラウドセッションでは実装を Claude が代行し、仕様は `specs/` に書いて `executed by: claude` を記録する。
   人間の Windows 環境、または (a) 環境のネットワーク許可に `api.openai.com` を追加し (b) 認証情報を環境変数で渡したクラウド環境で Codex に委譲する。
 - Reason: 委譲の仕組みは整ったが、このコンテナの外向き通信と認証の 2 点が不足。
+
+## D-011 リバーブの初期反射量を YAML で指定可能に
+
+- Attempt: track_002 の「タイル張りの浴室」の響き。既存リバーブは `make_reverb_ir(early=0.3)` が固定で、YAML から変えられなかった。
+- Decision: `{type: reverb, early: <float>}` を追加（`mixing/effects.py` の 1 行、既定値 0.3 のまま → track_001 は不変）。
+  数行の変更のため Codex に委譲せず Claude が直接実施（CLAUDE.md の基準）。
+- 既知の課題（未対応）: Layer 1 の強拍非和声音チェックとベース根音チェックは humanize 後の時刻で判定するため、timing humanize 付きトラックでは
+  前者が実質スキップ、後者が誤検出になる。humanize 前のグリッド時刻で判定するよう直すべき（委譲候補）。
