@@ -126,7 +126,7 @@ async function cmdProduce(songDir, vocalMode, heta) {
   const res = await produce(score, { voiceStyle: score.meta.voice.style, workDir: work, vocalMode, heta: heta && heta !== 'none' ? heta : null, log: (m) => console.log(`[song] ${m}`) });
   const version = `${score.meta.version ?? 1}${vocalMode ? `-${vocalMode}` : ''}${heta ? `-${heta}` : ''}`;
   const modeNote = `${vocalMode ? `・${MODE_LABEL[vocalMode]}` : ''}${heta ? `・${HETA_LABEL[heta]}` : ''}`;
-  const group = `${score.meta.title}`;
+  const group = `${score.meta.group ?? score.meta.title}`; // lyric variants of one song share a group
   const files = { full: path.join(outDir, `full-v${version}.wav`), instrumental: path.join(outDir, `inst-v${version}.wav`) };
   fs.writeFileSync(files.full, encodeWav(res.full));
   fs.writeFileSync(files.instrumental, encodeWav(res.instrumental));

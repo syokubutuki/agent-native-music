@@ -113,12 +113,13 @@ export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3'
   });
   // `<` escaped so clip data can never close the script tag it lives in.
   // Groups in first-appearance order: song work first, then lab generations newest first.
-  // With reuse, groups keep the published page's order and groups new since then go on top.
+  // With reuse, groups keep the published page's order and groups new since then go on top; inside a
+  // group, clips that were not on the published page come first.
   let groups = [...new Set(clips.map((c) => c.group))];
   if (reuse) {
     const before = readPageData(reuse).groups ?? [];
     groups = [...groups.filter((g) => !before.includes(g)), ...before.filter((g) => groups.includes(g))];
-    clips.sort((a, b) => groups.indexOf(a.group) - groups.indexOf(b.group));
+    clips.sort((a, b) => groups.indexOf(a.group) - groups.indexOf(b.group) || previous.has(a.id) - previous.has(b.id));
   }
   const json = JSON.stringify({ builtAt: new Date().toISOString(), groups, clips }).replace(/</g, '\\u003c');
   const html = fs.readFileSync(TEMPLATE, 'utf8').replace('__LAB_DATA__', () => json);

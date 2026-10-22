@@ -1,0 +1,20 @@
+[
+  {
+    "id": "fuwa-kenka-v1-talk",
+    "group": "ふわ ふわ ふわ。",
+    "label": "v1-talk",
+    "title": "ふわ ふわ ふわ。〈けんか〉（v1・読み上げ方式）",
+    "desc": "132 BPM · D major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v1-talk.wav",
+    "durationSec": 185.45453514739228
+  },
+  {
+    "id": "fuwa-kenka-v1-talk-inst",
+    "group": "ふわ ふわ ふわ。",
+    "label": "v1-talk",
+    "title": "インスト（歌なし）",
+    "desc": "132 BPM · D major",
+    "wav": "out/inst-v1-talk.wav",
+    "durationSec": 185.45453514739228
+  }
+]

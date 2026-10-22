@@ -7,9 +7,22 @@ export const DEFAULT_ENGINE = process.env.VOICEVOX_URL ?? 'http://127.0.0.1:5002
 export const TEACHER_STYLE = 6000; // 波音リツ (sing)
 export const FRAME_RATE = 24000 / 256;
 
+// The engine (uvicorn) drops idle keep-alive connections after ~5 s; a request that lands on one of those
+// fails with "fetch failed" before it reaches the engine. Such requests are safe to send again.
+export async function fetchRetry(url, init, tries = 3) {
+  for (let i = 1; ; i++) {
+    try {
+      return await fetch(url, init);
+    } catch (err) {
+      if (i >= tries || err?.message !== 'fetch failed') throw err;
+      await new Promise((r) => setTimeout(r, 200 * i));
+    }
+  }
+}
+
 async function post(engine, path, params, body) {
   const url = `${engine}${path}?${new URLSearchParams(params)}`;
-  const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const res = await fetchRetry(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(`VOICEVOX ${path} ${res.status}: ${await res.text()}`);
   return res;
 }

@@ -1,6 +1,6 @@
 // Score (sections of chords, patterns and vocal bars) -> stems -> mixed song.
 
-import { createBus, kick, clap, hat, riser, impact, bass, supersaw, pluck, bell, chip, toy, snare, futureChords, marimba, roundBass, shaker, lightKick, slideWhistle, vibes } from './synth.mjs';
+import { createBus, kick, clap, hat, riser, impact, bass, supersaw, pluck, bell, chip, toy, snare, futureChords, marimba, roundBass, shaker, lightKick, slideWhistle, vibes, poyon, poyonBass } from './synth.mjs';
 import { talkQuery, talkSynthesis, speakQuery, splitForTalk } from './talksing.mjs';
 import { correctPitch, noteOffsets } from './psola.mjs';
 import { decodeWav } from '../lab/wav.mjs';
@@ -43,6 +43,8 @@ function riffTones(symbol) {
 
 // Toy accents per bar: [step, kind, vel]. Placed in gaps so they read as playful asides, not a beat.
 const TOYS = {
+  // a jelly boing in the gaps every other bar
+  poyon: (b) => (b % 2 === 1 ? [[14, 'ball', 0.45]] : []),
   snow: (b) => (b % 4 === 2 ? [[8, 'sparkle', 0.5]] : []), // a rare far-off twinkle for quiet songs
   verse: (b) => (b % 2 === 1 ? [[14, 'pop', 0.6]] : []),
   chorus: (b) => (b % 4 === 3 ? [[14, 'squeak', 0.8]] : b % 4 === 1 ? [[15, 'pop', 0.7]] : []),
@@ -58,6 +60,7 @@ const BASS = {
   pre: 'R.R.R.R.R.R.R.R.',
   long: 'R---------------',
   sway: 'R-------O-------', // root, then up an octave: a slow cradle rock
+  hop: 'R.O.R.O.R.O.R.O.', // root and octave on the 8ths: a ball bouncing
 };
 
 // Drum hits for one bar: returns {kick:[step], clap:[[step,vel]], hat:[[step,vel,open]]}.
@@ -192,7 +195,7 @@ export function parsePhrases(phrases, bars) {
 
 // Everything except the vocal, as note events in beats.
 export function arrange(sections) {
-  const t = { kick: [], clap: [], hat: [], snare: [], bass: [], stab: [], pad: [], pluck: [], riser: [], impact: [], bell: [], chip: [], toy: [], future: [], lightKick: [], shaker: [], marimba: [], roundBass: [], whistle: [], guide: [], vibes: [] };
+  const t = { kick: [], clap: [], hat: [], snare: [], bass: [], stab: [], pad: [], pluck: [], riser: [], impact: [], bell: [], chip: [], toy: [], future: [], lightKick: [], shaker: [], marimba: [], roundBass: [], whistle: [], guide: [], vibes: [], poyon: [], poyonBass: [] };
   const vocals = [];
   const chops = [];
   const says = [];
@@ -231,8 +234,8 @@ export function arrange(sections) {
           if (c !== 'R' && c !== 'O') continue;
           let len = 1;
           while (s + len < 16 && pat[s + len] === '-') len++;
-          const bassTrack = sec.bassSynth === 'round' ? t.roundBass : t.bass;
-          bassTrack.push({ beat: at + s / 4, beats: len / 4 - 0.02, midi: bassRoot + 12 * (sec.bassSynth === 'round' ? 1 : 0) + (c === 'O' ? 12 : 0), vel: c === 'O' ? 0.8 : 0.95 });
+          const bassTrack = sec.bassSynth === 'round' ? t.roundBass : sec.bassSynth === 'poyon' ? t.poyonBass : t.bass;
+          bassTrack.push({ beat: at + s / 4, beats: len / 4 - 0.02, midi: bassRoot + 12 * (sec.bassSynth === 'round' || sec.bassSynth === 'poyon' ? 1 : 0) + (c === 'O' ? 12 : 0), vel: c === 'O' ? 0.8 : 0.95 });
         }
       }
       const v = voicing(sym);
@@ -244,6 +247,12 @@ export function arrange(sections) {
       if (sec.comp === 'vibes') {
         // soft vibraphone chords on beats 1 and 3: let them ring and wobble
         for (const beatInBar of [0, 2]) for (const midi of v) t.vibes.push({ beat: at + beatInBar, midi, vel: beatInBar ? 0.42 : 0.55 });
+      }
+      if (sec.comp === 'poyon') {
+        // jelly hops through the chord in a 3+3+2 bounce: low, up, up, down …
+        const up = [...v, v[0] + 12];
+        [[0, 0, 0.8], [3, 2, 0.55], [6, 3, 0.6], [8, 1, 0.7], [11, 3, 0.5], [14, 2, 0.55]].forEach(([s, k, vel], j) =>
+          t.poyon.push({ beat: at + s / 4, midi: up[k % up.length], vel, pan: j % 2 ? 0.3 : -0.3 }));
       }
       if (sec.comp === 'marimba') {
         // chord on the downbeat, then light offbeat "chk" on the top notes, like a strummed uke
@@ -258,6 +267,12 @@ export function arrange(sections) {
           voice.push({ beat: at + Number(s) / 4, beats: len / 4 - 0.03, midi: tones[idx] + shift, vel: sec.riffLow ? 0.55 : 0.9, pan: Number(s) % 2 ? 0.25 : -0.25 });
         }
       }
+    }
+    if (sec.ball) {
+      // a rubber ball dropped at the end of the section: the bounces come faster and smaller
+      const end = start + sec.bars * 4;
+      [[-4, 1], [-2.75, 0.85], [-1.75, 0.7], [-1, 0.55], [-0.5, 0.42], [-0.25, 0.3]].forEach(([d, vel], j) =>
+        t.toy.push({ beat: end + d, kind: 'ball', vel, tune: 1 + 0.05 * j, pan: 0.25 }));
     }
     if (sec.whistle) t.whistle.push({ beat: start + sec.bars * 4 - 1, beats: 1, down: sec.whistle === 'down', vel: 0.8 });
     if (sec.vocal && sec.duet) {
@@ -397,7 +412,7 @@ export function sectionLevels(sections, total, { sr, bpm }) {
   return g;
 }
 
-const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26, guide: -33, vibes: -21 };
+const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26, guide: -33, vibes: -21, poyon: -22, poyonBass: -15 };
 
 // vocalMode: 'talk' (talk voices made to sing), 'talkhard' (talk voices, then PSOLA pitch correction
 // pinning every note: talk timbre, machine pitch), 'sing' (singing voices, smooth tuning) or 'hard'
@@ -446,6 +461,8 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   render('whistle', (b) => slideWhistle(ctx, tracks.whistle, b));
   render('guide', (b) => bell(ctx, tracks.guide, b));
   render('vibes', (b) => vibes(ctx, tracks.vibes, b));
+  render('poyon', (b) => poyon(ctx, tracks.poyon, b));
+  render('poyonBass', (b) => poyonBass(ctx, tracks.poyonBass, b));
 
   const kickBeats = [...tracks.kick, ...tracks.lightKick].map((e) => e.beat);
   const pump = (depth) => sidechainCurve(total, kickBeats, { sr, bpm, depth });
@@ -466,8 +483,11 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   applyGain(stems.pluck, pump(0.25));
   applyGain(stems.future, pump(0.5));
   applyGain(stems.roundBass, pump(0.2));
+  applyGain(stems.poyonBass, pump(0.2));
   eq(stems.marimba, [['highpass', 150, {}], ['peak', 2500, { q: 0.8, gainDb: -2 }]], sr);
   eq(stems.guide, [['highpass', 400, {}], ['lowpass', 5000, {}]], sr);
+  eq(stems.poyon, [['highpass', 160, {}], ['peak', 2500, { q: 0.8, gainDb: -2 }]], sr);
+  eq(stems.poyonBass, [['highpass', 30, {}]], sr);
   eq(stems.future, [['highpass', 170, {}], ['peak', 2500, { q: 0.8, gainDb: -3 }]], sr);
 
   // VOICEVOX calls are cached on disk by request, so re-mixing never re-sings.

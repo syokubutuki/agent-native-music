@@ -10,7 +10,10 @@ description: 春日部つむぎ × ずんだもん の「読み上げ音声で�
 「とにかく二人のやり取りを聞き続けていたい」。この空気感を守ることが最優先。
 
 代表曲: `songs/ame-ame-ame/`（「あめ あめ あめ。」v5）。経緯と測定はすべて `specs/song-ame-ame-ame.md`。
-第 2 曲: `songs/fuwa-fuwa-fuwa/`（「ふわ ふわ ふわ。」冬の夜の子守唄・86 BPM・D メジャー）。遅いテンポでの注意は `specs/song-fuwa-fuwa-fuwa.md`。
+第 2 曲: 「ふわ ふわ ふわ。」（`specs/song-fuwa-fuwa-fuwa.md`）。v1 は子守唄 86 BPM だったが、ユーザー判断で
+「テンポよくの方が二人の声が自然に聞こえる」→ v2 は 132 BPM の「ぽよん ぽよん」した音で、同じ旋律に歌詞違いの 4 曲
+（`songs/fuwa-fuwa-fuwa/` 〈ゆき〉、`songs/fuwa-yami/` 〈やみ〉、`songs/fuwa-kenka/` 〈けんか〉、`songs/fuwa-sanpo/` 〈さんぽ〉）。
+共通の旋律と編曲は `songs/fuwa-fuwa-fuwa/frame.mjs`（スロットごとに音高、歌詞はかな文字列。モーラ数が合わないとエラー）。
 
 ## まず環境（新しいセッションで）
 ```
@@ -34,6 +37,7 @@ node bin/lab.mjs page --reuse <公開中の index.html>   # lab/site/ に試聴�
 好き:
 - 二人の掛け合い（コール＆レスポンス、ハモり、「せーの」でそろう）。ずんだもんの「〜なのだ」。場面が目に浮かぶ言葉。
 - 読み上げ方式（`--mode talk`）の声。音から音へ滑らかに移る・少し外れる・語尾が消える・短く弾む＝「頑張って歌う」かわいさ。
+- テンポよく（128〜132 BPM）。遅いテンポ（86 BPM）は二人の声が不自然に聞こえる（ユーザー評）。
 - ふわふわした柔らかい言葉、明るいメロディ（A メジャー 128 BPM）、柔らかく残響が多い「ほわんほわん」した音響、中毒的なゆらぎ。
 - 伴奏は柔らかく: ビブラフォン（テンポに合わせたトレモロ）、パッドとコーラス、深いリバーブ、丸いベース、控えめな打楽器、オルゴール。
 - フックは同じ語の繰り返し＋間（「あめ あめ あめ。」）。
@@ -50,6 +54,7 @@ node bin/lab.mjs page --reuse <公開中の index.html>   # lab/site/ に試聴�
 - 読み上げ声は 0.25 秒を超えて伸ばすと息っぽく消える → `capForTalk` が 0.3 秒で切る。旋律は 8 分中心で書く（128 BPM の 8 分 = 0.23 秒）。
 - 無声化の罠: 語頭や子音にはさまれた「む」「う」「ひ」「つ」、16 分の短い音、1 音だけのフレーズは弱くなる → 8 分に延ばす／言葉を替える。
 - 助詞「は」は歌唱用に「わ」と書く。「ん」は小さい（検査は音量を見ない）。モーラ数と音符数は一致させる（不一致はエラー）。
+- 2 音だけのフレーズで下がる音形（「ふ:D5 わ:B4」）は、ずんだもんの「ふ」が 22 dB 小さくなって検査に落ちる。上がる音形（B4→D5）なら通る。
 - 遅いテンポ（〜100 BPM 以下）では 8 分でも 0.3 s を超え、語中の母音が崩れやすい（同じフレーズが 128 BPM で合格・86 BPM で不合格）。
   旋律は 8 分だけ・フレーズ途中に長い音や休符を置かない（休符でフレーズが切れる）。落ちた語は言葉か音程を替える。
   落ちやすかった例: 「きこえる」の「え」、「もぐろう」の語尾「う」、「ゆきの うえ」の「う」、「ずんだもん」の頭の「ず」（「ね ずんだもん」なら立つ）。
@@ -61,8 +66,8 @@ node bin/lab.mjs page --reuse <公開中の index.html>   # lab/site/ に試聴�
 ## 新しい曲を作る
 1. `songs/ame-ame-ame/score.mjs` をコピーして `songs/<新曲>/score.mjs` に。`meta`（title, version, bpm, key, singers, mix）と `sections` を書き換える。
 2. 譜面はフレーズ単位: `[開始位置(16分), 'かな:音名:長さ …']`、休符 `-n`、メリスマ `~:音名:長さ`。歌手ごとに `vocal: { a: [...], z: [...] }`。
-   セクションの主なフラグ: `chords`, `drums`（yuruVerse / yuruChorus / yuruBreak / nenne=子守唄 / none）, `comp: 'vibes'|'marimba'`, `bass: 'bounce'|'long'|'sway'` + `bassSynth: 'round'`,
-   `pad`, `bells: 'arp'`, `bellPhrases`（オルゴールの旋律）, `riff` + `riffSynth: 'chip'`, `toys`（verse / chorus / drop / outro / snow）, `whistle`, `guide`（歌メロを小さくなぞる）, `level: [始, 終]`。
+   セクションの主なフラグ: `chords`, `drums`（yuruVerse / yuruChorus / yuruBreak / nenne=子守唄 / none）, `comp: 'vibes'|'marimba'|'poyon'`, `bass: 'bounce'|'long'|'sway'|'hop'` + `bassSynth: 'round'|'poyon'`, `ball`（区間の終わりにゴムまりが弾む）,
+   `pad`, `bells: 'arp'`, `bellPhrases`（オルゴールの旋律）, `riff` + `riffSynth: 'chip'`, `toys`（verse / chorus / drop / outro / snow / poyon）, `whistle`, `guide`（歌メロを小さくなぞる）, `level: [始, 終]`。
 3. `specs/song-<新曲>.md` に狙い・歌詞・判断を書く（CLAUDE.md の手順）。テスト（音域、構造）を `test/song/` に足す。
 4. 書き出し → ページ → ユーザーの感想 → 直す。版は残して並べる（`meta.version` を上げる）。
 

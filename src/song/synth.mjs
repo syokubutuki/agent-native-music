@@ -317,7 +317,7 @@ export function chip(ctx, events, bus) {
   }
 }
 
-// Toy noises: 'squeak' (rubber toy), 'pop' (bubble), 'sparkle' (two coin blips).
+// Toy noises: 'squeak' (rubber toy), 'ball' (rubber ball bounce), 'pop' (bubble), 'sparkle' (two coin blips).
 export function toy(ctx, events, bus) {
   const sr = ctx.sr;
   for (const ev of events) {
@@ -331,6 +331,14 @@ export function toy(ctx, events, bus) {
         ph += (TAU * f) / sr;
         const env = Math.min(1, t / 0.004) * Math.exp(-t / 0.07);
         add(bus, s0 + n, (Math.sin(ph) + 0.25 * Math.sin(2 * ph)) * env * (ev.vel ?? 1), ev.pan ?? 0.3);
+      }
+    } else if (ev.kind === 'ball') {
+      // a rubber ball touching the floor: a short "ぽん" falling 900 -> 520 Hz
+      const len = Math.round(0.12 * sr);
+      for (let n = 0; n < len; n++) {
+        const t = n / sr;
+        ph += (TAU * (520 + 380 * Math.exp(-t / 0.012)) * (ev.tune ?? 1)) / sr;
+        add(bus, s0 + n, (Math.sin(ph) + 0.2 * Math.sin(2 * ph)) * Math.min(1, t / 0.002) * Math.exp(-t / 0.035) * (ev.vel ?? 1), ev.pan ?? 0.2);
       }
     } else if (ev.kind === 'pop') {
       const len = Math.round(0.07 * sr);
@@ -518,5 +526,47 @@ export function vibes(ctx, events, bus) {
       const y = Math.sin(p1) * Math.exp(-t / 1.1) + 0.18 * Math.sin(p2) * Math.exp(-t / 0.18);
       add(bus, s0 + n, y * Math.min(1, t / 0.004) * (ev.vel ?? 1), ev.pan ?? 0);
     }
+  }
+}
+
+// "ぽよん": a rubber-ball / jelly tone. The pitch falls in from a fifth above ("ぽ"), then wobbles and
+// settles ("よん") while the level jiggles with it. depth scales the fall (semitones); used for the
+// bouncing comp (depth 7) and, an octave lower with depth 4, for the bass.
+export function poyonVoice(sr, f, { len, depth = 7, gate = Infinity } = {}) {
+  const y = new Float32Array(len);
+  const lp = createSvf('lp', 3200, 0.7, sr);
+  let p = 0;
+  for (let n = 0; n < len; n++) {
+    const t = n / sr;
+    const wob = Math.exp(-t / 0.11) * Math.sin(TAU * 7.5 * t);
+    const semi = depth * Math.exp(-t / 0.02) + 0.55 * wob;
+    p = (p + (f * 2 ** (semi / 12)) / sr) % 1;
+    const x = Math.sin(TAU * p) + 0.28 * Math.sin(2 * TAU * p) + 0.08 * Math.sin(3 * TAU * p);
+    const release = n < gate ? 1 : Math.exp(-(n - gate) / (0.02 * sr));
+    const env = Math.min(1, t / 0.003) * Math.exp(-t / 0.22) * (1 + 0.3 * wob) * release;
+    y[n] = lp(x) * env;
+  }
+  return y;
+}
+
+export function poyon(ctx, events, bus) {
+  const sr = ctx.sr;
+  const len = Math.round(0.6 * sr);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const y = poyonVoice(sr, mtof(ev.midi), { len, depth: ev.depth ?? 7 });
+    for (let n = 0; n < len; n++) add(bus, s0 + n, y[n] * (ev.vel ?? 1), ev.pan ?? 0);
+  }
+}
+
+// Bouncy bass: the same jelly tone, low, gated to the note, with a smaller fall ("ぼよん").
+export function poyonBass(ctx, events, bus) {
+  const sr = ctx.sr;
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const gate = lengthOf(ctx, ev.beats);
+    const len = gate + Math.round(0.08 * sr);
+    const y = poyonVoice(sr, mtof(ev.midi), { len, depth: 4, gate });
+    for (let n = 0; n < len; n++) add(bus, s0 + n, Math.tanh(1.3 * y[n]) * (ev.vel ?? 1), 0);
   }
 }

@@ -2,10 +2,10 @@
 // (/audio_query) and overwriting every mora's pitch and length with the score. This keeps the speech
 // timbre and its slightly stiff, cute charm — the sound of talk-software songs (歌うソフトウェアトーク).
 
-import { DEFAULT_ENGINE } from './voicevox.mjs';
+import { DEFAULT_ENGINE, fetchRetry } from './voicevox.mjs';
 
 async function call(engine, path, params, body) {
-  const res = await fetch(`${engine}${path}?${new URLSearchParams(params)}`, {
+  const res = await fetchRetry(`${engine}${path}?${new URLSearchParams(params)}`, {
     method: 'POST',
     headers: body ? { 'content-type': 'application/json' } : {},
     body: body ? JSON.stringify(body) : undefined,

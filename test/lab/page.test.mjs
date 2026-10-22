@@ -6,6 +6,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadRatings } from '../../src/lab/store.mjs';
+import { encodeWav } from '../../src/lab/wav.mjs';
 
 const CLI = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'bin', 'lab.mjs');
 
@@ -71,6 +72,13 @@ test('page --reuse keeps published entries for song renders that are not on disk
     fs.writeFileSync(path.join(songs, 'old', 'page.json'), JSON.stringify([
       { id: 'old-v1', group: '古い曲', label: 'v1', title: '古い曲 v1', desc: 'x', wav: 'out/full-v1.wav', durationSec: 3 },
     ]));
+    // a newer render of the same song, listed after the old one on disk
+    fs.mkdirSync(path.join(songs, 'zz-new', 'out'), { recursive: true });
+    const tone = Float32Array.from({ length: 4410 }, (_, i) => 0.3 * Math.sin(i / 10));
+    fs.writeFileSync(path.join(songs, 'zz-new', 'out', 'full.wav'), encodeWav({ left: tone, right: tone, sampleRate: 44100 }));
+    fs.writeFileSync(path.join(songs, 'zz-new', 'page.json'), JSON.stringify([
+      { id: 'new-v2', group: '古い曲', label: 'v2', title: '古い曲 v2', desc: 'x', wav: 'out/full.wav', durationSec: 0.5 },
+    ]));
     assert.throws(() => run('page', '--format', 'wav', '--songs', songs), /missing audio for old-v1/);
     const published = path.join(dir, 'published.html');
     const prev = { id: 'old-v1', group: '古い曲', audio: 'audio/old-v1.mp3', env: [0.5, 1], rating: null, form: null };
@@ -85,6 +93,6 @@ test('page --reuse keeps published entries for song renders that are not on disk
     assert.ok(!fs.existsSync(path.join(dir, 'site', 'audio', 'old-v1.wav')));
     // the published group order is kept; groups new since then (the lab generation) go first
     assert.deepEqual(data.groups, ['第1世代', '古い曲']);
-    assert.deepEqual(data.clips.map((c) => c.group), ['第1世代', '第1世代', '古い曲']);
+    assert.deepEqual(data.clips.map((c) => c.id), ['g0001-01', 'g0001-02', 'new-v2', 'old-v1'], 'new clips first inside a group');
   });
 });
