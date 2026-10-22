@@ -20,7 +20,8 @@ commands:
   chorus <songDir>   fast hard-tuned chorus over a grid-locked bed, once per candidate voice
   produce <songDir> [--mode talk|talkhard|sing|hard] [--heta none|weak|mid|strong]
                      render a produced song from <songDir>/score.mjs: full mix + instrumental (needs VOICEVOX).
-                     --mode overrides how the voices sing (talk voices / talk voices pitch-pinned / singing voices / singing pinned)`;
+                     --mode overrides how the voices sing (talk voices / talk voices pitch-pinned / singing voices / singing pinned)
+  analyze <songDir> [--hook かな]   memorability report: hook count, accent-melody agreement per phrase, range, leaps, word speed`;
 
 function fail(msg) {
   console.error(`[song] ${msg}`);
@@ -149,6 +150,24 @@ async function cmdProduce(songDir, vocalMode, heta) {
   console.log(`[song] ${path.relative(process.cwd(), files.full)}  (${res.durationSec.toFixed(1)}s, peak ${res.full.peak.toFixed(2)}, ${((Date.now() - t0) / 1000).toFixed(0)}s)`);
 }
 
+async function cmdAnalyze(songDir, hook) {
+  const { pathToFileURL } = await import('node:url');
+  const { analyzeScore } = await import('../src/song/analyze.mjs');
+  const score = await import(pathToFileURL(path.join(songDir, 'score.mjs')).href);
+  const r = await analyzeScore(score, { hook: hook ?? score.meta.hook });
+  const nm = (k) => ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][k % 12] + (Math.floor(k / 12) - 1);
+  console.log(`accent-melody agreement: ${Math.round(100 * r.accent.rate)}% (${r.accent.agree}/${r.accent.total} accent moves; ~33% = chance)`);
+  for (const [s, [lo, hi]] of Object.entries(r.range)) console.log(`range ${s}: ${nm(lo)}–${nm(hi)}`);
+  console.log(`intervals: steps ${r.leaps.steps}, skips ${r.leaps.skips}, leaps >4 semitones ${r.leaps.leaps}`);
+  console.log(`syllables/s: ${Object.entries(r.syllablesPerSec).map(([k, v]) => `${k} ${v.toFixed(1)}`).join(', ')}`);
+  if (r.hookSung != null) console.log(`hook sung ${r.hookSung} times; music-box notes ${r.musicBoxNotes}`);
+  const seen = new Set();
+  const rows = r.phrases.filter((p) => p.accent && p.accent.total && !seen.has(p.singer + p.text) && seen.add(p.singer + p.text));
+  rows.sort((a, b) => a.accent.agree / a.accent.total - b.accent.agree / b.accent.total);
+  console.log('phrases (worst first): singer text  accent(H/L)  agreement-marks (○ follows, × against)');
+  for (const p of rows) console.log(`  ${p.singer} ${p.text.padEnd(12, '　')} ${p.hl.padEnd(12)} ${p.accent.marks.padEnd(12)} ${p.accent.agree}/${p.accent.total}  [${p.notes.map((n) => nm(n.key)).join(' ')}]`);
+}
+
 const [command, songDir] = process.argv.slice(2);
 if (!command || !songDir) {
   console.log(USAGE);
@@ -157,7 +176,10 @@ if (!command || !songDir) {
 try {
   if (command === 'voices') await cmdVoices(path.resolve(songDir));
   else if (command === 'chorus') await cmdChorus(path.resolve(songDir));
-  else if (command === 'produce') {
+  else if (command === 'analyze') {
+    const i = process.argv.indexOf('--hook');
+    await cmdAnalyze(path.resolve(songDir), i > 0 ? process.argv[i + 1] : undefined);
+  } else if (command === 'produce') {
     const opt = (name) => {
       const i = process.argv.indexOf(name);
       return i > 0 ? process.argv[i + 1] : undefined;

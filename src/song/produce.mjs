@@ -513,6 +513,7 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   const talkLog = [];
   const shapeLog = [];
   const landed = []; // final per-note offsets (cents) of the talk takes, for the heta summary
+  const hetaReport = []; // per note: where it sits in the song, plain vs final offset (cents), timing shift
   const talkLike = mode === 'talk' || mode === 'talkhard';
   // Target pitch over a rendered phrase: each note's pitch from its onset, moving to the next note
   // over 12 ms — the "pinned" contour the talk voice is corrected to in talkhard mode.
@@ -577,7 +578,23 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
           });
           const shaped = await renderTalk(nudge);
           const qa2 = talkQa(shaped.buf, ph.notes, bpm, shaped.tq.leadSec);
-          if (qa2.ok) take = shaped;
+          if (qa2.ok) {
+            take = shaped;
+            const { channels: [xs], sampleRate: srs } = decodeWav(shaped.buf);
+            const on2 = [];
+            let t2 = shaped.tq.leadSec;
+            for (const n of ph.notes) {
+              on2.push(t2);
+              t2 += (n.beats * 60) / bpm;
+            }
+            on2.push(t2);
+            const fin = noteOffsets(xs, srs, on2, ph.notes.map((n) => midiHz(n.key)));
+            let b = sec.startBeat + ph.beat;
+            ph.notes.forEach((n, i) => {
+              hetaReport.push({ sec: sec.name, singer: sec.singer, sec_time: Math.round(((b * 60) / bpm) * 100) / 100, lyric: n.lyric, key: n.key, plain: got[i] == null ? null : Math.round(got[i]), final: fin[i] == null ? null : Math.round(fin[i]), timingMs: habit.timingMs ?? 0 });
+              b += n.beats;
+            });
+          }
           else shapeLog.push(`${sec.name}@${ph.beat}: shaped take failed QA, kept the plain one (${qa2.reason})`);
         }
         if (qa.ok) {
@@ -623,6 +640,7 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   }
   if (talkLog.length) log(`talk fallbacks to singing voice: ${talkLog.length}\n  ${talkLog.join('\n  ')}`);
   if (shapeLog.length) log(`heta: ${shapeLog.length} phrase(s) kept unshaped\n  ${shapeLog.join('\n  ')}`);
+  if (hetaReport.length) fs.writeFileSync(`${workDir}/heta-report-${heta}.json`, JSON.stringify(hetaReport, null, 1));
   if (landed.length) {
     const abs = landed.map(Math.abs).sort((a, b) => a - b);
     const pct = (lim) => Math.round((100 * abs.filter((v) => v > lim).length) / abs.length);

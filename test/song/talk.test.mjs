@@ -76,3 +76,14 @@ test('v5 keeps the song free of staged asides', () => {
   assert.ok(vocals.every((v) => v.notes.every((n) => !n.wild)));
   assert.ok(meta.mix?.tremolo && meta.mix?.vocalPredelayMs > 0);
 });
+
+test('the reference preset carries the v5 sound and syncs the tremolo to the tempo', async () => {
+  const { yuruDuetMeta, DUET_SECTION, floatingMix } = await import('../../src/song/presets.mjs');
+  const m = yuruDuetMeta({ title: 'x', bpm: 96 });
+  assert.equal(m.vocalMode, 'talk');
+  assert.equal(m.singers.a.talkStyle, 8);
+  assert.equal(m.singers.z.talkStyle, 3);
+  assert.equal(m.mix.tremolo.rateHz, 96 / 60);
+  assert.deepEqual(meta.mix, floatingMix(128)); // あめ あめ あめ。 v5 uses the preset unchanged
+  assert.equal(DUET_SECTION.comp, 'vibes');
+});
