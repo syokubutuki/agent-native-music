@@ -1,0 +1,236 @@
+[
+  {
+    "id": "duo-form-alt",
+    "group": "ふたりの音 · 掛け合いの型",
+    "label": "交互",
+    "title": "交互（基準）",
+    "desc": "つむぎが 1 小節で問い、ずんだもんが次の小節で返す",
+    "wav": "out/form-alt.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-form-round",
+    "group": "ふたりの音 · 掛け合いの型",
+    "label": "輪唱",
+    "title": "輪唱（カノン）",
+    "desc": "ずんだもんがつむぎの旋律を 4 度上・1 小節遅れで追いかける。同じ言葉が重なる",
+    "wav": "out/form-round.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-form-echo",
+    "group": "ふたりの音 · 掛け合いの型",
+    "label": "こだま",
+    "title": "こだま返し",
+    "desc": "つむぎの言葉の終わりを、ずんだもんが 4 度上で 2 回、小さくなりながら返す（-3 dB → -8 dB）",
+    "wav": "out/form-echo.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-form-third",
+    "group": "ふたりの音 · 掛け合いの型",
+    "label": "3度",
+    "title": "3 度のハモり",
+    "desc": "ずんだもんの返事に、つむぎが 3 度下で重なる（音域を外れる D5 の下だけ 6 度）",
+    "wav": "out/form-third.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-form-hocket",
+    "group": "ふたりの音 · 掛け合いの型",
+    "label": "1語ずつ",
+    "title": "1 語ずつ交互",
+    "desc": "半小節ごとに言葉を渡しあう（あめが / ふるね / かさ / ないのだ …）",
+    "wav": "out/form-hocket.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-form-unison",
+    "group": "ふたりの音 · 掛け合いの型",
+    "label": "ユニゾン",
+    "title": "最後だけユニゾン",
+    "desc": "交互のまま、最後の「ふたりで あまやどり」だけ二人が同じ音で歌う（A4 のまわり。ずんだもんの G#4 は測定音域の 1 半音下）",
+    "wav": "out/form-unison.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-timbre-vibes",
+    "group": "ふたりの音 · 音色",
+    "label": "ビブラフォン",
+    "title": "ビブラフォン（基準）",
+    "desc": "交互（1 小節ずつ問いと返事）· ビブラフォン · v5 の音響 · 音痴そのまま",
+    "wav": "out/timbre-vibes.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-timbre-toypiano",
+    "group": "ふたりの音 · 音色",
+    "label": "トイピアノ",
+    "title": "トイピアノ",
+    "desc": "金属棒の音（倍音 1 : 6.27 : 17.55）と木のコツン、1 音ごとに少し調子はずれ。1・3 拍目の和音を 1 オクターブ上で",
+    "wav": "out/timbre-toypiano.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-timbre-kalimba",
+    "group": "ふたりの音 · 音色",
+    "label": "カリンバ",
+    "title": "カリンバ",
+    "desc": "親指ではじく金属の舌（倍音 5.93 の「チン」）。3+3+2 の分散和音",
+    "wav": "out/timbre-kalimba.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-timbre-celesta",
+    "group": "ふたりの音 · 音色",
+    "label": "チェレスタ",
+    "title": "チェレスタ",
+    "desc": "ほぼ正弦波に 2・4 倍音を少し。1・3 拍目の和音を 1 オクターブ上で",
+    "wav": "out/timbre-celesta.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-timbre-harp",
+    "group": "ふたりの音 · 音色",
+    "label": "ハープ",
+    "title": "ハープ",
+    "desc": "Karplus–Strong の弦。1 拍目に下からのアルペジオ、3 拍目に軽く",
+    "wav": "out/timbre-harp.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-timbre-uke",
+    "group": "ふたりの音 · 音色",
+    "label": "ウクレレ",
+    "title": "ウクレレ風プラック",
+    "desc": "短く明るい弦。ダウン・ダウンアップ・アップダウンアップのストローク",
+    "wav": "out/timbre-uke.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-timbre-rain",
+    "group": "ふたりの音 · 音色",
+    "label": "雨音",
+    "title": "雨音を足す",
+    "desc": "ビブラフォンのまま、軒先の雨（さーっという音と、ぽつ・ぴちゃの粒、毎秒約 9 粒）を全体に敷く（ビブラフォンより 5 dB 小さく）",
+    "wav": "out/timbre-rain.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-timbre-tape",
+    "group": "ふたりの音 · 音色",
+    "label": "テープ",
+    "title": "テープの揺れ",
+    "desc": "ビブラフォンのまま、伴奏だけに wow（0.55 Hz ±9 セント）と flutter（6.5 Hz ±2.5 セント）。声は揺らさない",
+    "wav": "out/timbre-tape.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-fluffy-0",
+    "group": "ふたりの音 · ほわんほわん",
+    "label": "さっぱり",
+    "title": "さっぱり",
+    "desc": "トレモロ・コーラスなし、リバーブ少なめ（声 0.2 / 伴奏 0.2、room 0.75）",
+    "wav": "out/fluffy-0.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-fluffy-1",
+    "group": "ふたりの音 · ほわんほわん",
+    "label": "v5",
+    "title": "v5 と同じ（基準）",
+    "desc": "トレモロ 2.13 Hz 深さ 0.5、コーラス 0.4、声のリバーブ 0.5（room 0.88）",
+    "wav": "out/fluffy-1.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-fluffy-2",
+    "group": "ふたりの音 · ほわんほわん",
+    "label": "ふかめ",
+    "title": "ふかめ",
+    "desc": "トレモロ深さ 0.7（パッドにも）、コーラス 0.55、声のコーラス 0.3、リバーブ 声 0.8 / 伴奏 0.7（room 0.92）",
+    "wav": "out/fluffy-2.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-fluffy-3",
+    "group": "ふたりの音 · ほわんほわん",
+    "label": "ゆめごこち",
+    "title": "ゆめごこち",
+    "desc": "トレモロを 2 分音符（1.07 Hz）で深さ 0.8、コーラス 0.7、声のコーラス 0.4、リバーブ 声 1.1 / 伴奏 1.0（room 0.95）、高域 -5 dB",
+    "wav": "out/fluffy-3.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-heta-none",
+    "group": "ふたりの音 · 音痴の量",
+    "label": "そのまま",
+    "title": "外れ方そのまま（基準）",
+    "desc": "読み上げ声の外れ方を整えない",
+    "wav": "out/heta-none.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-heta-mid",
+    "group": "ふたりの音 · 音痴の量",
+    "label": "中",
+    "title": "音痴 中（全体）",
+    "desc": "--heta mid と同じ（ずれ ×0.75、±60 セントまで + キャラの癖）",
+    "wav": "out/heta-mid.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-heta-warmup",
+    "group": "ふたりの音 · 音痴の量",
+    "label": "だんだん",
+    "title": "だんだん慣れてくる",
+    "desc": "前半 強 → 後半 弱 → 最後の「ふたりで あまやどり」はそのまま",
+    "wav": "out/heta-warmup.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-heta-zunda",
+    "group": "ふたりの音 · 音痴の量",
+    "label": "ずんだ強",
+    "title": "ずんだもんだけ強め",
+    "desc": "つむぎ 弱・ずんだもん 強（自信家ほど外れる）",
+    "wav": "out/heta-zunda.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-voices-tz",
+    "group": "ふたりの音 · 声の組み合わせ",
+    "label": "つむぎ×ずんだ",
+    "title": "つむぎ × ずんだもん（基準）",
+    "desc": "交互（1 小節ずつ問いと返事）· ビブラフォン · v5 の音響 · 音痴そのまま",
+    "wav": "out/voices-tz.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-voices-nz",
+    "group": "ふたりの音 · 声の組み合わせ",
+    "label": "ニア×ずんだ",
+    "title": "琴詠ニア × ずんだもん",
+    "desc": "つむぎの代わりにニア（測定音域 C#4–C#5）",
+    "wav": "out/voices-nz.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-voices-th",
+    "group": "ふたりの音 · 声の組み合わせ",
+    "label": "つむぎ×はう",
+    "title": "つむぎ × 雨晴はう",
+    "desc": "ずんだもんの代わりにはう（F4–D#5）。「〜のだ」は「〜のね」に",
+    "wav": "out/voices-th.wav",
+    "durationSec": 41.25
+  },
+  {
+    "id": "duo-voices-nh",
+    "group": "ふたりの音 · 声の組み合わせ",
+    "label": "ニア×はう",
+    "title": "琴詠ニア × 雨晴はう",
+    "desc": "二人とも入れ替え。「〜のだ」は「〜のね」に",
+    "wav": "out/voices-nh.wav",
+    "durationSec": 41.25
+  }
+]

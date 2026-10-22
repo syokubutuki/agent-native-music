@@ -49,15 +49,18 @@ function encodeAudio(wav, outFile, format) {
 // [{id, group, label, title, desc, wav (relative to the song dir), durationSec, form?}].
 function songItems(songsDir) {
   if (!songsDir || !fs.existsSync(songsDir)) return [];
-  const items = [];
+  // newest work first: songs ordered by their most recently written audio (audio missing here counts as
+  // oldest), then by folder name
+  const songs = [];
   for (const name of fs.readdirSync(songsDir).sort()) {
     const manifest = path.join(songsDir, name, 'page.json');
     if (!fs.existsSync(manifest)) continue;
-    for (const item of JSON.parse(fs.readFileSync(manifest, 'utf8'))) {
-      items.push({ ...item, wav: path.join(songsDir, name, item.wav) });
-    }
+    const list = JSON.parse(fs.readFileSync(manifest, 'utf8')).map((item) => ({ ...item, wav: path.join(songsDir, name, item.wav) }));
+    const newest = Math.max(0, ...list.map((i) => (fs.existsSync(i.wav) ? fs.statSync(i.wav).mtimeMs : 0)));
+    songs.push({ name, list, newest });
   }
-  return items;
+  songs.sort((a, b) => b.newest - a.newest || a.name.localeCompare(b.name));
+  return songs.flatMap((s) => s.list);
 }
 
 // The clip list baked into a built page (its lab-data script), or null.
@@ -67,8 +70,9 @@ export function readPageData(html) {
 }
 
 // previous: the HTML of an already published page. A clip whose audio is not on this machine (song renders
-// are not in git) is carried over from it as published — same audio path and envelope — so a fresh session
-// can rebuild the page and upload only its new audio.
+// are not in git) is carried over from it as published — same audio path and envelope — and clips this
+// machine does not know at all are kept as they are, so a fresh session can rebuild the page and upload
+// only its new audio.
 export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3', songsDir, previous } = {}) {
   if (format === 'mp3' && !hasFfmpeg()) throw new Error('ffmpeg not found: install it, or use --format wav');
   const audioDir = path.join(outDir, 'audio');
@@ -112,6 +116,15 @@ export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3'
       rating: r ? { score: r.score, note: r.note ?? '' } : null,
     };
   });
+  // Clips only the previous page has (published from another branch or session) are kept too, placed just
+  // before the first carried-over clip, so republishing from here never drops someone else's work.
+  const here = new Set(clips.map((c) => c.id));
+  const foreign = [...before.values()].filter((c) => !here.has(c.id));
+  if (foreign.length) {
+    const at = clips.findIndex((c) => carried.includes(c.id));
+    clips.splice(at < 0 ? clips.length : at, 0, ...foreign);
+    carried.push(...foreign.map((c) => c.id));
+  }
   // `<` escaped so clip data can never close the script tag it lives in.
   // Groups in first-appearance order: song work first, then lab generations newest first.
   const groups = [...new Set(clips.map((c) => c.group))];

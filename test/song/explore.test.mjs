@@ -210,12 +210,14 @@ test('page carries clips whose audio is missing here over from the previously pu
     fs.mkdirSync(lab);
     assert.throws(() => buildPage(lab, { format: 'wav', songsDir: songs }), /missing audio for old-1/);
     const oldClip = { id: 'old-1', group: 'Old', label: 'v1', title: 'old', desc: '', durationSec: 9, audio: 'audio/old-1.wav', env: [0.5, 1], rating: null, form: null };
-    const previous = `<p>x</p><script type="application/json" id="lab-data">${JSON.stringify({ groups: ['Old'], clips: [oldClip] })}</script>`;
-    const { clips, carried } = buildPage(lab, { format: 'wav', songsDir: songs, previous });
-    assert.deepEqual(carried, ['old-1']);
-    assert.deepEqual(clips.map((c) => c.id), ['new-1', 'old-1']);
-    assert.deepEqual(clips[1].env, [0.5, 1]);
-    assert.equal(clips[1].audio, 'audio/old-1.wav');
+    const otherClip = { ...oldClip, id: 'other-1', group: 'Other', audio: 'audio/other-1.wav' }; // published from another branch
+    const previous = `<p>x</p><script type="application/json" id="lab-data">${JSON.stringify({ groups: ['Other', 'Old'], clips: [otherClip, oldClip] })}</script>`;
+    const { clips, carried, index } = buildPage(lab, { format: 'wav', songsDir: songs, previous });
+    assert.deepEqual(carried, ['old-1', 'other-1']);
+    assert.deepEqual(clips.map((c) => c.id), ['new-1', 'other-1', 'old-1']);
+    assert.deepEqual(JSON.parse(fs.readFileSync(index, 'utf8').match(/id="lab-data">([\s\S]*?)<\/script>/)[1]).groups, ['New', 'Other', 'Old']);
+    assert.deepEqual(clips[2].env, [0.5, 1]);
+    assert.equal(clips[2].audio, 'audio/old-1.wav');
     assert.throws(() => buildPage(lab, { format: 'mp3', songsDir: songs, previous }), /missing audio for old-1|ffmpeg/); // wrong format: not carried
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });

@@ -1,0 +1,448 @@
+{
+  "form-alt": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.8,
+      "lowMid": 24.6,
+      "mid": 47.6,
+      "presence": 12.8,
+      "air": 1.2
+    }
+  },
+  "form-round": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 200,
+    "medianCents": 41,
+    "over50": 45,
+    "over100": 12,
+    "bands": {
+      "low": 11.7,
+      "lowMid": 20.3,
+      "mid": 55,
+      "presence": 12,
+      "air": 1.1
+    }
+  },
+  "form-echo": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 106,
+    "medianCents": 40,
+    "over50": 43,
+    "over100": 11,
+    "bands": {
+      "low": 14.4,
+      "lowMid": 27.6,
+      "mid": 44.5,
+      "presence": 12.4,
+      "air": 1.1
+    }
+  },
+  "form-third": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 165,
+    "medianCents": 37,
+    "over50": 38,
+    "over100": 12,
+    "bands": {
+      "low": 13.3,
+      "lowMid": 25,
+      "mid": 50.4,
+      "presence": 10.4,
+      "air": 0.9
+    }
+  },
+  "form-hocket": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 119,
+    "medianCents": 46,
+    "over50": 49,
+    "over100": 13,
+    "bands": {
+      "low": 12.5,
+      "lowMid": 23.8,
+      "mid": 49.8,
+      "presence": 12.7,
+      "air": 1.3
+    }
+  },
+  "form-unison": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 118,
+    "medianCents": 34,
+    "over50": 41,
+    "over100": 14,
+    "bands": {
+      "low": 13.8,
+      "lowMid": 24.2,
+      "mid": 47.8,
+      "presence": 12.9,
+      "air": 1.2
+    }
+  },
+  "timbre-vibes": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.8,
+      "lowMid": 24.6,
+      "mid": 47.6,
+      "presence": 12.8,
+      "air": 1.2
+    },
+    "sameAs": "form-alt"
+  },
+  "timbre-toypiano": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.6,
+      "lowMid": 23.4,
+      "mid": 48.9,
+      "presence": 12.8,
+      "air": 1.2
+    }
+  },
+  "timbre-kalimba": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.5,
+      "lowMid": 23.8,
+      "mid": 48.7,
+      "presence": 12.8,
+      "air": 1.2
+    }
+  },
+  "timbre-celesta": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.6,
+      "lowMid": 23.4,
+      "mid": 49,
+      "presence": 12.8,
+      "air": 1.2
+    }
+  },
+  "timbre-harp": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.6,
+      "lowMid": 22.7,
+      "mid": 49.1,
+      "presence": 13.3,
+      "air": 1.3
+    }
+  },
+  "timbre-uke": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.7,
+      "lowMid": 22.4,
+      "mid": 48.9,
+      "presence": 13.7,
+      "air": 1.3
+    }
+  },
+  "timbre-rain": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.5,
+      "lowMid": 24.6,
+      "mid": 47.7,
+      "presence": 13,
+      "air": 1.3
+    }
+  },
+  "timbre-tape": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.8,
+      "lowMid": 24.4,
+      "mid": 47.7,
+      "presence": 12.9,
+      "air": 1.2
+    }
+  },
+  "fluffy-0": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 14.4,
+      "lowMid": 26.6,
+      "mid": 45.3,
+      "presence": 12.4,
+      "air": 1.2
+    }
+  },
+  "fluffy-1": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.8,
+      "lowMid": 24.6,
+      "mid": 47.6,
+      "presence": 12.8,
+      "air": 1.2
+    },
+    "sameAs": "form-alt"
+  },
+  "fluffy-2": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 12.1,
+      "lowMid": 24.4,
+      "mid": 49.7,
+      "presence": 12.7,
+      "air": 1.2
+    }
+  },
+  "fluffy-3": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 10,
+      "lowMid": 26.1,
+      "mid": 51.6,
+      "presence": 11.4,
+      "air": 0.9
+    }
+  },
+  "heta-none": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.8,
+      "lowMid": 24.6,
+      "mid": 47.6,
+      "presence": 12.8,
+      "air": 1.2
+    },
+    "sameAs": "form-alt"
+  },
+  "heta-mid": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 1,
+    "notes": 109,
+    "medianCents": 31,
+    "over50": 31,
+    "over100": 3,
+    "bands": {
+      "low": 13.7,
+      "lowMid": 25.3,
+      "mid": 47.3,
+      "presence": 12.5,
+      "air": 1.2
+    }
+  },
+  "heta-warmup": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 1,
+    "notes": 109,
+    "medianCents": 27,
+    "over50": 31,
+    "over100": 12,
+    "bands": {
+      "low": 13.6,
+      "lowMid": 25.4,
+      "mid": 47.2,
+      "presence": 12.6,
+      "air": 1.2
+    }
+  },
+  "heta-zunda": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 1,
+    "notes": 109,
+    "medianCents": 26,
+    "over50": 35,
+    "over100": 17,
+    "bands": {
+      "low": 13.7,
+      "lowMid": 25.3,
+      "mid": 47.1,
+      "presence": 12.6,
+      "air": 1.2
+    }
+  },
+  "voices-tz": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 39,
+    "over50": 44,
+    "over100": 16,
+    "bands": {
+      "low": 13.8,
+      "lowMid": 24.6,
+      "mid": 47.6,
+      "presence": 12.8,
+      "air": 1.2
+    },
+    "sameAs": "form-alt"
+  },
+  "voices-nz": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 43,
+    "over50": 45,
+    "over100": 9,
+    "bands": {
+      "low": 13.5,
+      "lowMid": 25,
+      "mid": 43.2,
+      "presence": 16.8,
+      "air": 1.5
+    }
+  },
+  "voices-th": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 36,
+    "over50": 46,
+    "over100": 18,
+    "bands": {
+      "low": 13.3,
+      "lowMid": 31.5,
+      "mid": 46.1,
+      "presence": 8.6,
+      "air": 0.6
+    }
+  },
+  "voices-nh": {
+    "durationSec": 41.25,
+    "peak": 0.89,
+    "talkFallbacks": 0,
+    "hetaUnshaped": 0,
+    "notes": 109,
+    "medianCents": 35,
+    "over50": 47,
+    "over100": 12,
+    "bands": {
+      "low": 13,
+      "lowMid": 31.3,
+      "mid": 42.1,
+      "presence": 12.6,
+      "air": 0.9
+    }
+  }
+}
