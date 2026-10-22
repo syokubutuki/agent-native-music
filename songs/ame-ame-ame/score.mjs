@@ -6,38 +6,10 @@
 // Talk voices sing well only in their measured ranges (steady-note test): つむぎ C#4–A4, ずんだもん A4–D#5,
 // so つむぎ takes the low line and ずんだもん the high one. Notes over ~0.24 s are split into "ー" morae.
 
-export const meta = {
-  title: 'あめ あめ あめ。',
-  version: 5,
-  bpm: 128,
-  key: 'A major',
-  vocalMode: 'talk',
-  singers: {
-    // heta = each singer's own way of being off (used with --heta): bias cents everywhere, highBias on
-    // notes at or above highKey, timingMs (+ = late, - = early)
-    a: { name: '春日部つむぎ', talkStyle: 8, singStyle: 3008, pan: -0.2, heta: { bias: -15, timingMs: 15 } }, // shy: a bit flat, a bit late
-    z: { name: 'ずんだもん', talkStyle: 3, singStyle: 3003, pan: 0.2, heta: { bias: 10, highBias: 25, highKey: 73, timingMs: -15 } }, // bold: sharp up high, rushes
-  },
-  voice: { style: 3008, name: '春日部つむぎ・ずんだもん', styleName: 'トーク歌唱' },
-  // v5: soft and floating ("ほわんほわん"): vibraphone comping with a tempo-locked tremolo (quarter notes
-  // at 128 BPM = 2.13 Hz), chorus on pad and vibes, deep soft reverb with pre-delay on the voices, quieter
-  // percussion, rounded top end.
-  mix: {
-    stemDb: { clap: -25, shaker: -33, lightKick: -16, bell: -27, guide: -34 },
-    tremolo: { stems: ['vibes', 'bell', 'guide'], rateHz: 128 / 60, depth: 0.5 },
-    chorus: { stems: ['pad', 'vibes'], delayMs: 16, depthMs: 5, rateHz: 0.5, mix: 0.4 },
-    vocalChorus: { delayMs: 12, depthMs: 2, rateHz: 0.35, mix: 0.18 },
-    vocalReverb: 0.5,
-    vocalRoom: 0.88,
-    vocalDamp: 0.55,
-    vocalPredelayMs: 35,
-    instReverb: 0.45,
-    instRoom: 0.88,
-    instDamp: 0.5,
-    reverbStems: ['vibes', 'bell', 'pad'],
-    airDb: -2.5,
-  },
-};
+// v5 is the reference sound; its settings live in src/song/presets.mjs so new songs can start from them.
+import { yuruDuetMeta, DUET_SECTION } from '../../src/song/presets.mjs';
+
+export const meta = yuruDuetMeta({ title: 'あめ あめ あめ。', version: 5, bpm: 128, key: 'A major' });
 
 // ---- chorus (8 bars): ずんだもん's deadpan hook, つむぎ answers, both sing the sweet line ----
 const chorus = (o) => ({
@@ -134,7 +106,7 @@ const CH = {
   outro: ['Dmaj7', 'E', 'Aadd9', 'Aadd9'],
 };
 
-const base = { comp: 'vibes', bass: 'bounce', bassSynth: 'round', phrases: true, duet: true, guide: true, pad: true };
+const base = DUET_SECTION;
 export const sections = [
   { ...base, name: 'intro', level: [0.7, 0.85], bars: 8, chords: CH.chorus, drums: 'yuruBreak', toys: 'verse', bellPhrases: INTRO_BOX, whistle: 'up', duet: false },
   { ...base, name: 'verse1', level: [0.75, 0.8], bars: 16, chords: CH.verse, drums: 'yuruVerse', toys: 'verse', vocal: VERSE1 },

@@ -90,3 +90,12 @@ scripts/voicevox-up.sh && node bin/song.mjs produce songs/ame-ame-ame
 - 書き出し: 外れ方そのまま / 音痴 中 の 2 本。
 - ほかのセッション向けに `.claude/skills/talk-duet-song/SKILL.md`（好み・没案・制約・新曲の作り方・広げ方）と
   `scripts/voicevox-install.sh`（空の環境で 45 秒、検証済み）を追加。CLAUDE.md から参照。
+
+## v5 を基準として固定（再現性）
+ユーザー: 「非常に完成度が高い。何回も聞きたくなる単純だがかわいらしさ、中毒性、独自性。他のセッションでも同じ雰囲気を再現したい」。
+- v5 の設定（二人の声と癖、ほわんほわんのミックス、セクションの既定値）を `src/song/presets.mjs`（`yuruDuetMeta`, `DUET_SECTION`,
+  `floatingMix(bpm)`, `DUET_SINGERS`）に切り出し、この曲もそれを使う形に。書き出しのハッシュが切り出し前と一致（de1b0c24…）。
+- none と mid の違いを音ごとに記録（`out/work/heta-report-mid.json`）:
+  つむぎ 中央値 24c → 6c、ずんだもん 18c → 19c。大きな違いは「ぱらり」の「り」（0:56 ほか、-257c → +221c、行きすぎ）、
+  「むしば」の「む」（0:58 ほか、+179c → +36c）、A メロ「なにか ふるのだ」付近（0:34–0:42、ずんだもん +117〜167c → +77〜81c）。
+  エンジンの応答: つむぎ 小 0.98 倍 / 大 1.58 倍、ずんだもん 0.5 倍 → mid の癖づけは均一には効いていない。

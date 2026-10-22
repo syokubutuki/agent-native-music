@@ -9,21 +9,21 @@
     "durationSec": 191.25
   },
   {
-    "id": "ame-ame-ame-v5-talk-mid",
-    "group": "あめ あめ あめ。",
-    "label": "v5-talk-mid",
-    "title": "あめ あめ あめ。（v5・読み上げ方式・音痴 中）",
-    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
-    "wav": "out/full-v5-talk-mid.wav",
-    "durationSec": 191.25
-  },
-  {
     "id": "ame-ame-ame-v5-talk-none-inst",
     "group": "あめ あめ あめ。",
     "label": "v5-talk-none",
     "title": "インスト（歌なし）",
     "desc": "128 BPM · A major",
     "wav": "out/inst-v5-talk-none.wav",
+    "durationSec": 191.25
+  },
+  {
+    "id": "ame-ame-ame-v5-talk-mid",
+    "group": "あめ あめ あめ。",
+    "label": "v5-talk-mid",
+    "title": "あめ あめ あめ。（v5・読み上げ方式・音痴 中）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v5-talk-mid.wav",
     "durationSec": 191.25
   },
   {
