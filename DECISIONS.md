@@ -87,3 +87,18 @@
   数行の変更のため Codex に委譲せず Claude が直接実施（CLAUDE.md の基準）。
 - 既知の課題（未対応）: Layer 1 の強拍非和声音チェックとベース根音チェックは humanize 後の時刻で判定するため、timing humanize 付きトラックでは
   前者が実質スキップ、後者が誤検出になる。humanize 前のグリッド時刻で判定するよう直すべき（委譲候補）。
+
+## D-012 声は VOICEVOX（生成物をキャッシュしてコミット）、環境音は FSD50K の CC0 クリップ
+
+- 背景: 人間のフィードバック（HUMAN-002）「声がない」「実際の環境音を加えた方がよい」。ずんだもん・春日部つむぎは VOICEVOX のキャラクターで、
+  VOICEVOX 0.25 は両者の話し声と歌声（frame_decode スタイル）を持つ。生成音声はクレジット表記で商用・非商用とも利用可。
+- Attempt 1（声）: GitHub のリリースはネットワークポリシーで 403、PyPI に voicevox_core は無い。Docker Hub の公式イメージ
+  `voicevox/voicevox_engine:cpu-latest`（0.25.2）をレジストリ API でダウンロードし、エンジンを 127.0.0.1 で起動 → 話者一覧の取得までは成功。
+- Result: 以降の合成リクエストが Claude Code の自動許可判定で「外部から取得したコードの実行」として拒否された（docker デーモン起動も拒否）。
+  迂回はせず、エンジンを停止。
+- Decision: render 時には VOICEVOX を呼ばない設計にする（T-017）。`python -m music_agent voice <song>` が VOICEVOX（アプリまたはエンジン, 既定ポート 50021）
+  から WAV + メタ JSON を `songs/<id>/voice/` に生成し、それをコミットする。生成は (a) 人間の PC で VOICEVOX を起動して実行、または
+  (b) 人間がこのクラウド環境での実行を許可した場合に Claude が実行、のどちらか。
+- Attempt 2（環境音）: Wikimedia Commons は共有 IP のレート制限（429）、freesound.org は robots.txt が ClaudeBot を全面拒否（スクレイピングしない）・API はキーが必要。
+- Decision: Hugging Face 上の FSD50K ミラー（Freesound 由来、クリップ単位のライセンス付き）から **CC0 のクリップのみ**を使う。
+  `assets/sfx/fsd50k/sources.yaml` に出典、`CREDITS.md` にまとめて記載。将来もっと素材が要るときは人間の Freesound API キーで API 経由にする。

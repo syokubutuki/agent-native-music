@@ -37,6 +37,8 @@ Score は MIDI と音声レンダの **唯一の共通ソース**。したがっ
 | `songs/<id>/arrangement.yaml` | tracks（どの楽器がどの内容をどこで）、パターン、automation |
 | `songs/<id>/mix.yaml` | track strip、groups、returns（reverb/delay）、master |
 | `songs/<id>/overlays/` | 差分 YAML（候補・試聴用）。`--overlay` で deep-merge |
+| `songs/<id>/voice/` | 生成済みの声クリップ（WAV + メタ JSON: 話者、要求 hash、エンジン版、クレジット） |
+| `assets/` | 実録音などの音声素材（`sources.yaml` に出典・ライセンス。クレジットは `CREDITS.md`） |
 | `instruments/<category>/*.yaml` | 音色パッチ（`extends` で継承可）。曲ローカル `songs/<id>/instruments/` が優先 |
 | `src/music_agent/` | エンジン（下表） |
 | `renders/<song>/<render_id>/` | レンダ成果物（WAV は git 管理外・再生成可能、他はコミット） |
@@ -60,6 +62,7 @@ Score は MIDI と音声レンダの **唯一の共通ソース**。したがっ
 | `synthesis/subtractive.py` | ポリフォニック減算シンセ（unison/detune/spread、filter env、vibrato、drive） |
 | `synthesis/drums.py` | 合成ドラム（kick/clap/snare/hat/crash）と遷移 FX（riser/impact/reverse crash/downlifter） |
 | `rendering/instruments.py` | パッチ type → バックエンド振り分け、パッチ内 insert FX |
+| `voice/voicevox.py` | VOICEVOX の歌（旋律パートから楽譜化）とセリフを生成し `songs/<id>/voice/` にキャッシュ（render は呼ばない, D-012） |
 | `rendering/vst3.py` | Pedalboard 経由 VST3（preset / raw_state / parameter ID / MIDI） |
 | `mixing/effects.py` | EQ・comp・chorus・phaser（Pedalboard 内蔵）、reverb（合成 IR 畳み込み）、テンポ同期 ping-pong delay |
 | `mixing/automation.py` | オートメーション曲線（linear/exp/step, 同時刻 2 点でジャンプ）、テンポ同期サイドチェイン |

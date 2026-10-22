@@ -1,0 +1,897 @@
+harmony:
+  sections:
+    intro:
+    - Fmaj7
+    - Bb/F
+    - Fmaj7
+    - C7sus4 C7
+    a:
+    - F
+    - Am7
+    - Bbmaj7
+    - C7
+    - F
+    - Dm7
+    - Gm7
+    - C7
+    b:
+    - Bbmaj7
+    - C
+    - Am7
+    - D7
+    - Gm7
+    - Bbm6
+    - F
+    - C7
+    rinse:
+    - Dm7
+    - Bbmaj7
+    - Gm7
+    - C7sus4 C7
+    a2:
+    - F
+    - Am7
+    - Bbmaj7
+    - C7
+    - F
+    - Dm7
+    - Gm7 C7
+    - F
+    end:
+    - Bbmaj7
+    - Bbm6
+    - Fadd9
+    - Fadd9
+melody:
+  motifs:
+    awa:
+      notes: 10:3 9:1 8:2 10:2 12:4
+      grid: 12
+    nanoda:
+      notes: r:2 5:2 6:1 5:1 3:2 1:4
+      grid: 12
+  parts:
+    tsumugi:
+      base: F4
+      grid: 12
+      sections:
+        intro:
+        - bar: 0
+          motif: awa
+          ops:
+          - take:
+            - 0
+            - 3
+          - vel: 0.7
+        - bar: 1
+          notes: 11:6? 10:2? 8:4?
+        - bar: 2
+          motif: awa
+          ops:
+          - take:
+            - 0
+            - 4
+          - vel: 0.75
+        - bar: 3
+          notes: r:4 8:2 9:2 7:4
+        a:
+        - bar: 0
+          motif: awa
+        - bar: 1
+          motif: awa
+          ops:
+          - transpose: -1
+            keep:
+            - 4
+        - bar: 2
+          notes: 11:3 10:1 9:2 8:2 6:4
+        - bar: 3
+          notes: 9:8 r:4
+        - bar: 4
+          motif: awa
+        - bar: 5
+          notes: 10:6 8:2 6:4
+        - bar: 6
+          notes: 11:3 10:1 9:2 11:2 13:4
+        - bar: 7
+          notes: 9:6 r:6
+        b:
+        - bar: 2
+          notes: 12:3 10:1 9:2 10:2 12:4
+        - bar: 3
+          notes: 12:2 13:2 12:2 10:2 8#:4
+        - bar: 6
+          notes: 12:6 10:2 8:4
+        - bar: 7
+          notes: 9:4 7:2 9:2 12:4
+        a2:
+        - bar: 0
+          motif: awa
+        - bar: 1
+          motif: awa
+          ops:
+          - transpose: -1
+            keep:
+            - 4
+        - bar: 2
+          notes: 11:3 10:1 9:2 8:2 6:4
+        - bar: 3
+          notes: 9:8 r:4
+        - bar: 4
+          motif: awa
+        - bar: 5
+          motif: awa
+          ops:
+          - transpose: -2
+            keep:
+            - 4
+        - bar: 6
+          notes: 13:4 11:2 14:4! 12:2
+        - bar: 7
+          notes: 10:3 9:1 8:8
+        end:
+        - bar: 1
+          notes: r:8 9:4?
+        - bar: 2
+          motif: awa
+          ops:
+          - take:
+            - 0
+            - 3
+          - rhythm: 3 1 8
+          - vel: 0.7
+        - bar: 3
+          notes: r:8 15:4?
+    zunda:
+      base: F4
+      grid: 12
+      sections:
+        b:
+        - bar: 0
+          motif: nanoda
+        - bar: 1
+          motif: nanoda
+          ops:
+          - transpose: 1
+          - accent:
+            - 4
+        - bar: 4
+          notes: r:2 4:2 6:2 4:2 2:4
+        - bar: 5
+          notes: 6b:6 5:2 4:4
+        rinse:
+        - bar: 3
+          notes: r:4 1:2 3:2 5:4!
+        a2:
+        - bar: 0
+          notes: 5:8 3:2 1:2
+        - bar: 1
+          notes: 0:8 3:4
+        - bar: 2
+          notes: 1:8 3:4
+        - bar: 3
+          motif: nanoda
+          ops:
+          - transpose: 1
+        - bar: 4
+          notes: 5:8 3:4
+        - bar: 5
+          notes: 6:8 5:2 6:2
+        - bar: 6
+          notes: 2:6 3:2 0:4
+        - bar: 7
+          notes: r:2 5:2 6:1 5:1 3:1 2:1 1:4
+        end:
+        - bar: 0
+          notes: r:2 5:2 6:1 5:1 3:4
+        - bar: 1
+          notes: 6b:8 5:4
+        - bar: 2
+          notes: 3:20?
+    bubbles:
+      base: F4
+      grid: 12
+      sections:
+        intro:
+        - bar: 0
+          notes: r:5 17:1?
+        - bar: 1
+          notes: r:9 15:1?
+        - bar: 2
+          notes: r:2 19:1? r:5 16:1?
+        - bar: 3
+          notes: r:7 17:1?
+        a:
+        - bar: 1
+          notes: r:10 19:1? 20:1?
+        - bar: 3
+          notes: r:9 17:1? r:1 19:1?
+        - bar: 5
+          notes: r:10 16:1? 17:1?
+        - bar: 7
+          notes: r:7 19:1? 20:1? r:1 17:1?
+        b:
+        - bar: 0
+          notes: r:1 19:1? r:9 20:1
+        - bar: 1
+          notes: r:5 17:1? 19:1? r:4 20:1?
+        - bar: 2
+          notes: r:7 16:1? r:2 17:1?
+        - bar: 3
+          notes: r:6 19:1? 20:1?
+        - bar: 4
+          notes: r:1 17:1? r:9 19:1
+        - bar: 6
+          notes: r:7 15:1? 17:1? 19:1?
+        - bar: 7
+          notes: r:9 19:1? r:1 20:1?
+        rinse:
+        - bar: 2
+          notes: r:3 17:1? r:6 15:1?
+        a2:
+        - bar: 0
+          notes: r:9 15:2?
+        - bar: 3
+          notes: r:9 17:1? 19:1?
+        - bar: 4
+          notes: r:10 13:2?
+        - bar: 7
+          notes: r:9 15:1? r:1 17:1?
+        end:
+        - bar: 0
+          notes: r:9 17:1?
+        - bar: 2
+          notes: r:5 12:2?
+        - bar: 3
+          notes: r:10 19:1
+    shower:
+      base: F4
+      grid: 12
+      sections:
+        rinse:
+        - bar: 0
+          notes: '1:40'
+arrangement:
+  tracks:
+    tsumugi:
+      instrument: keys/music_box
+      role: lead
+      content:
+        type: melody
+        part: tsumugi
+      humanize:
+        timing_ms: 5
+        vel: 0.05
+    zunda:
+      instrument: lead/zunda_reed
+      role: lead
+      content:
+        type: melody
+        part: zunda
+      humanize:
+        timing_ms: 8
+        vel: 0.04
+    ep:
+      instrument: keys/soft_ep
+      role: harmony
+      content:
+        type: chords
+        range:
+        - F3
+        - F4
+        voices: 3
+        patterns:
+          intro:
+            '3': x-----x-----
+            default: ''
+          a: '....x-..x-..'
+          b:
+            '5': x-----------
+            default: '....x.x.x.x.'
+          rinse: x-----------
+          a2:
+            '6': x-----x-----
+            '7': x-----------
+            default: '....x-..x-..'
+          end:
+            0-1: x-----------
+            '2': o-----------
+            default: ''
+      humanize:
+        timing_ms: 6
+        vel: 0.06
+    pad:
+      instrument: pad/steam_pad
+      role: harmony
+      content:
+        type: chords
+        range:
+        - F3
+        - A4
+        voices: 4
+        patterns:
+          intro: x-----------
+          a: x-----------
+          b: x-----------
+          rinse: x-----------
+          a2: x-----------
+          end:
+            '3': '------------'
+            default: x-----------
+    bass:
+      instrument: bass/pizz_bass
+      role: bass
+      content:
+        type: bass
+        range:
+        - E2
+        - D#3
+        patterns:
+          intro:
+            '3': x-----x-----
+            default: ''
+          a:
+            3,7: x-----..o...
+            default: x-----......
+          b:
+            '5': x-----------
+            default: x-----..o...
+          rinse:
+            '3': x-----x-----
+            default: x-----------
+          a2:
+            '6': x-----x-----
+            default: x-----......
+          end:
+            0-1: x-----------
+            '2': o-----------
+            default: ''
+      humanize:
+        vel: 0.05
+    shaker:
+      instrument: drums/shaker
+      content:
+        type: drums
+        voice: shaker
+        patterns:
+          a:
+            1,3,5,7: x.o.x.......
+            default: Xoxoxox.o.o.
+          b:
+            '5': '............'
+            default: x.o.x.o.x.o.
+      humanize:
+        timing_ms: 6
+        vel: 0.08
+    bubbles:
+      instrument: fx/bubble
+      role: texture
+      content:
+        type: melody
+        part: bubbles
+      humanize:
+        timing_ms: 10
+        vel: 0.1
+    droplets:
+      instrument: keys/music_box
+      role: texture
+      content:
+        type: arp
+        range:
+        - F5
+        - D7
+        voices: 4
+        order: 3 1 2 0 2 3 0 1 3 0 2 1
+        patterns:
+          rinse:
+            '0': Xoo.xo.oxo..
+            '1': X.oox.o.xoo.
+            '2': Xo.o.xo..o.o
+            '3': Xoo.x.......
+      humanize:
+        timing_ms: 7
+        vel: 0.08
+    tsumugi_vox:
+      instrument: fx/sample_player
+      content:
+        type: voice
+        clips:
+        - ts_hum
+        - ts_line_go
+        - ts_a1
+        - ts_a2
+        - ts_b1
+        - ts_b2
+        - ts_d1
+        - ts_d2
+        - ts_end
+        - ts_line_fufu
+    zunda_vox:
+      instrument: fx/sample_player
+      content:
+        type: voice
+        clips:
+        - zd_line_ok
+        - zd_line_tickle
+        - zd_b1
+        - zd_b2
+        - zd_line_puha
+        - zd_d1
+        - zd_d2
+        - zd_end
+    scrub:
+      instrument: fx/sample_player
+      content:
+        type: audio
+        events:
+        - at: a:0
+          file: assets/sfx/fsd50k/233513.flac
+          offset: 0.5
+          beats: 4
+          fade_in: 0.15
+          fade_out: 0.5
+        - at: a:2
+          file: assets/sfx/fsd50k/233513.flac
+          offset: 1.6
+          beats: 4
+          fade_in: 0.15
+          fade_out: 0.5
+        - at: a:4
+          file: assets/sfx/fsd50k/233513.flac
+          offset: 2.6
+          beats: 4
+          fade_in: 0.15
+          fade_out: 0.5
+        - at: a:6
+          file: assets/sfx/fsd50k/233513.flac
+          offset: 1.0
+          beats: 4
+          fade_in: 0.15
+          fade_out: 0.5
+        - at: b:0
+          file: assets/sfx/fsd50k/233513.flac
+          offset: 2.0
+          beats: 3
+          fade_in: 0.2
+          fade_out: 0.6
+          gain_db: -3
+        - at: b:2
+          file: assets/sfx/fsd50k/233513.flac
+          offset: 0.8
+          beats: 3
+          fade_in: 0.2
+          fade_out: 0.6
+          gain_db: -3
+        - at: b:6
+          file: assets/sfx/fsd50k/233513.flac
+          offset: 2.4
+          beats: 3
+          fade_in: 0.2
+          fade_out: 0.6
+          gain_db: -3
+    rinse_water:
+      instrument: fx/sample_player
+      content:
+        type: audio
+        events:
+        - at: rinse:0
+          file: assets/sfx/fsd50k/420230.flac
+          offset: 0.9
+          fade_in: 0.05
+          fade_out: 1.2
+        - at: rinse:0|1
+          file: assets/sfx/fsd50k/154695.flac
+          offset: 0.5
+          beats: 8
+          fade_in: 0.6
+          fade_out: 1.2
+          gain_db: 4
+        - at: rinse:3|0.5
+          file: assets/sfx/fsd50k/119923.flac
+          offset: 0.1
+          beats: 3
+          fade_out: 0.4
+          gain_db: 20
+    tub:
+      instrument: fx/sample_player
+      content:
+        type: audio
+        events:
+        - at: a2:0
+          file: assets/sfx/fsd50k/143257.flac
+          fade_out: 0.6
+          gain_db: 4
+        - at: a2:2
+          file: assets/sfx/fsd50k/382649.flac
+          offset: 1.9
+          beats: 3
+          fade_in: 0.05
+          fade_out: 0.6
+          gain_db: -4
+        - at: a2:5
+          file: assets/sfx/fsd50k/382649.flac
+          offset: 4.3
+          beats: 3
+          fade_in: 0.05
+          fade_out: 0.6
+          gain_db: -4
+        - at: end:0|1
+          file: assets/sfx/fsd50k/382649.flac
+          offset: 6.0
+          beats: 3
+          fade_in: 0.05
+          fade_out: 0.8
+          gain_db: -7
+    drips:
+      instrument: fx/sample_player
+      content:
+        type: audio
+        events:
+        - at: intro:0
+          file: assets/sfx/fsd50k/422873.flac
+          fade_out: 0.3
+        - at: intro:2|1
+          file: assets/sfx/fsd50k/422873.flac
+          fade_out: 0.3
+        - at: end:2
+          file: assets/sfx/fsd50k/422873.flac
+          fade_out: 0.3
+  automation:
+  - target: pad.gain_db
+    points:
+    - - intro:0
+      - -5
+    - - a:0
+      - -5
+    - - a:1
+      - -10
+    - - b:4|2
+      - -10
+    - - b:5|1
+      - -6
+    - - b:6|1
+      - -10
+    - - b:end
+      - -10
+    - - rinse:1
+      - -5
+    - - a2:0
+      - -6
+    - - a2:1
+      - -9
+    - - end:0
+      - -7
+    - - end:1
+      - -8
+    - - end:end
+      - -16
+  - target: tsumugi.send.reverb
+    points:
+    - - intro:0
+      - -6
+    - - a:0
+      - -9
+    - - a2:end
+      - -9
+    - - end:1
+      - -5
+mix:
+  sidechain_source: none
+  tracks:
+    tsumugi:
+      gain_db: -2.0
+      pan: 0.12
+      sends:
+        reverb: -9
+        delay: -17
+    zunda:
+      gain_db: -3.0
+      pan: -0.15
+      sends:
+        reverb: -11
+    ep:
+      gain_db: -3.0
+      width: 1.1
+      sends:
+        reverb: -12
+      chain:
+      - type: lowpass
+        freq: 4000
+    pad:
+      gain_db: -12.0
+      width: 1.3
+      sends:
+        reverb: -8
+    bass:
+      gain_db: -1.5
+      sends:
+        reverb: -20
+    shaker:
+      gain_db: -9.0
+      pan: 0.3
+      sends:
+        reverb: -12
+    bubbles:
+      gain_db: -3.0
+      width: 1.2
+      sends:
+        reverb: -4
+        delay: -12
+    droplets:
+      gain_db: -8.0
+      width: 1.3
+      sends:
+        reverb: -5
+        delay: -10
+    tsumugi_vox:
+      gain_db: -2.0
+      pan: 0.12
+      sends:
+        reverb: -11
+        delay: -20
+      chain:
+      - type: highpass
+        freq: 120
+    zunda_vox:
+      gain_db: -2.0
+      pan: -0.15
+      sends:
+        reverb: -12
+      chain:
+      - type: highpass
+        freq: 120
+    scrub:
+      gain_db: 6.0
+      pan: 0.2
+      sends:
+        reverb: -16
+      chain:
+      - type: highpass
+        freq: 200
+    rinse_water:
+      gain_db: 8.0
+      width: 1.2
+      sends:
+        reverb: -14
+      chain:
+      - type: highpass
+        freq: 120
+      - type: lowpass
+        freq: 9000
+    tub:
+      gain_db: 5.0
+      sends:
+        reverb: -12
+      chain:
+      - type: highpass
+        freq: 90
+    drips:
+      gain_db: 18.0
+      pan: -0.3
+      sends:
+        reverb: -6
+  returns:
+    reverb:
+      chain:
+      - type: reverb
+        decay: 1.6
+        predelay_ms: 7
+        damping: 0.15
+        early: 0.7
+        hp: 250
+        lp: 9500
+        width: 1.0
+    delay:
+      chain:
+      - type: delay
+        time: 1/4
+        feedback: 0.3
+        hp: 500
+        lp: 5000
+        pingpong: true
+  master:
+    hpf: 30
+    chain:
+    - type: compressor
+      threshold_db: -12
+      ratio: 1.5
+      attack_ms: 30
+      release_ms: 250
+    target_lufs: -15
+    ceiling_db: -1.0
+    limiter:
+      release_ms: 120
+      lookahead_ms: 5
+voice:
+  url: http://127.0.0.1:50021
+  sing_teacher: 6000
+  clips:
+    ts_hum:
+      kind: sing
+      speaker: 3008
+      part: tsumugi
+      section: intro
+      bars:
+      - 0
+      - 2
+      transpose: -12
+      lyrics: ふ ん ふ ふ ん ふ
+    ts_line_go:
+      kind: talk
+      speaker: 8
+      text: はーい、あたま洗うよー
+      at: intro:2
+      intonation: 1.3
+    zd_line_ok:
+      kind: talk
+      speaker: 3
+      text: はいなのだ！
+      at: intro:3|1
+      intonation: 1.4
+    ts_a1:
+      kind: sing
+      speaker: 3008
+      part: tsumugi
+      section: a
+      bars:
+      - 0
+      - 4
+      transpose: -12
+      lyrics: わ しゃ わ しゃ ね あ わ あ わ よ お め め と じ て
+    zd_line_tickle:
+      kind: talk
+      speaker: 3
+      text: くすぐったいのだ
+      at: a:3|1.5
+      intonation: 1.3
+      volume: 0.85
+    ts_a2:
+      kind: sing
+      speaker: 3008
+      part: tsumugi
+      section: a
+      bars:
+      - 4
+      - 8
+      transpose: -12
+      lyrics: く る く る り い い こ ず ん だ も ん ね
+    zd_b1:
+      kind: sing
+      speaker: 3003
+      part: zunda
+      section: b
+      bars:
+      - 0
+      - 2
+      lyrics: あ わ が ふ わ ふ わ な の だ
+    ts_b1:
+      kind: sing
+      speaker: 3008
+      part: tsumugi
+      section: b
+      bars:
+      - 2
+      - 4
+      transpose: -12
+      lyrics: ほ ん と だ ね し ろ い く も
+    zd_b2:
+      kind: sing
+      speaker: 3076
+      part: zunda
+      section: b
+      bars:
+      - 4
+      - 6
+      lyrics: め に し み る の だ
+    ts_b2:
+      kind: sing
+      speaker: 3008
+      part: tsumugi
+      section: b
+      bars:
+      - 6
+      - 8
+      transpose: -12
+      lyrics: よ し よ し い く よ
+    zd_line_puha:
+      kind: talk
+      speaker: 3
+      text: ぷはーっ！
+      at: rinse:3|1
+      intonation: 1.5
+    ts_d1:
+      kind: sing
+      speaker: 3008
+      part: tsumugi
+      section: a2
+      bars:
+      - 0
+      - 4
+      transpose: -12
+      lyrics: ぽ か ぽ か ね ゆ げ の な か じゅ う か ぞ え て
+    zd_d1:
+      kind: sing
+      speaker: 3003
+      part: zunda
+      section: a2
+      bars:
+      - 3
+      - 4
+      lyrics: い ち に さ ん
+    ts_d2:
+      kind: sing
+      speaker: 3008
+      part: tsumugi
+      section: a2
+      bars:
+      - 4
+      - 8
+      transpose: -12
+      lyrics: の ん び り ね い い お ゆ ね だ い す き だ よ ね
+    zd_d2:
+      kind: sing
+      speaker: 3003
+      part: zunda
+      section: a2
+      bars:
+      - 7
+      - 8
+      lyrics: ぼ く も な の だ
+    zd_end:
+      kind: sing
+      speaker: 3001
+      part: zunda
+      section: end
+      bars:
+      - 0
+      - 3
+      lyrics: ご く ら く な の だ
+    ts_end:
+      kind: sing
+      speaker: 3008
+      part: tsumugi
+      section: end
+      bars:
+      - 1
+      - 3
+      transpose: -12
+      lyrics: ほ ん と ね
+    ts_line_fufu:
+      kind: talk
+      speaker: 8
+      text: ふふっ
+      at: end:3|1
+      volume: 0.8
+id: track_002
+title: あわあわシャンプー (working title)
+tempo: 96
+time_signature:
+- 3
+- 4
+key: F major
+seed: 2002
+sample_rate: 44100
+tail_sec: 3.5
+target:
+  duration_sec:
+  - 60
+  - 80
+sections:
+- name: intro
+  bars: 4
+  energy: 0.25
+- name: a
+  bars: 8
+  energy: 0.5
+- name: b
+  bars: 8
+  energy: 0.55
+- name: rinse
+  bars: 4
+  energy: 0.4
+- name: a2
+  bars: 8
+  energy: 0.6
+- name: end
+  bars: 4
+  energy: 0.3

@@ -127,6 +127,19 @@ def resolve_instrument_path(ref: str, song_dir: Path | None = None) -> Path:
     raise SpecError(f"Instrument patch '{ref}' not found (looked in {[str(c) for c in cands]})")
 
 
+def resolve_asset(ref: str | Path, song_dir: Path | None = None) -> Path:
+    """Audio asset path: relative to the song directory first, then the project root."""
+    p = Path(ref)
+    if p.is_absolute():
+        cands = [p]
+    else:
+        cands = ([song_dir / p] if song_dir is not None else []) + [PROJECT_ROOT / p]
+    for c in cands:
+        if c.exists():
+            return c
+    raise SpecError(f"Audio asset '{ref}' not found (looked in {[str(c) for c in cands]})")
+
+
 def load_instrument(ref: str, song_dir: Path | None = None, overrides: dict | None = None) -> tuple[dict, Path]:
     path = resolve_instrument_path(ref, song_dir)
     patch = _load_yaml(path)

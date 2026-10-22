@@ -21,7 +21,7 @@ def git_info() -> dict:
 
     try:
         return {"commit": run("rev-parse", "HEAD"), "branch": run("rev-parse", "--abbrev-ref", "HEAD"),
-                "dirty": bool(run("status", "--porcelain", "--", "src", "instruments", "songs"))}
+                "dirty": bool(run("status", "--porcelain", "--", "src", "instruments", "songs", "assets"))}
     except (OSError, subprocess.SubprocessError):
         return {"commit": None, "branch": None, "dirty": None}
 

@@ -40,6 +40,8 @@ def write_midi(score: Score, path: str | Path) -> Path:
     meta.append(mido.MetaMessage("end_of_track", time=max(0, _ticks(score.total_beats) - last)))
 
     for tr in score.tracks:
+        if tr.kind in ("audio", "voice"):  # audio-file playback has no MIDI meaning
+            continue
         mt = mido.MidiTrack()
         mid.tracks.append(mt)
         mt.append(mido.MetaMessage("track_name", name=tr.name, time=0))

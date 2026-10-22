@@ -36,7 +36,7 @@ from ..midi.io import write_midi
 from ..mixing.mixer import mix
 from ..score import Score
 from ..provenance import manifest, next_render_id
-from ..spec import PROJECT_ROOT, load_song
+from ..spec import PROJECT_ROOT, load_song, resolve_asset
 from .instruments import render_track
 
 
@@ -138,7 +138,9 @@ def render_song(song: str | Path, overlays: list[str | Path] | None = None, out_
                "limiter_max_gr_db": mres.limiter_max_gr_db, "final_lufs": mres.final_lufs,
                "final_true_peak_db": mres.final_true_peak_db}
     timings["total"] = time.time() - t0
-    man = manifest(spec, rid, spec.source_files + sorted(set(patch_files)), seed,
+    assets = sorted({resolve_asset(nt.params["file"], spec.song_dir) for t in score.tracks for nt in t.notes
+                     if "file" in nt.params})
+    man = manifest(spec, rid, spec.source_files + sorted(set(patch_files)) + assets, seed,
                    extra={"overlays": [str(o) for o in overlays or []], "sample_rate": sr, "mix": mixinfo,
                           "timings_sec": {k: round(v, 2) for k, v in timings.items()},
                           "findings_summary": summarize(findings), "crop_sections": crop_sections})

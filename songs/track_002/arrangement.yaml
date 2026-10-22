@@ -78,12 +78,51 @@ arrangement:
         order: "3 1 2 0 2 3 0 1 3 0 2 1"          # v004 (C7): irregular, like water running down
         patterns: {rinse: {"0": "Xoo.xo.oxo..", "1": "X.oox.o.xoo.", "2": "Xo.o.xo..o.o", "3": "Xoo.x......."}}
       humanize: {timing_ms: 7, vel: 0.08}
-    shower:
-      instrument: fx/shower
-      content: {type: melody, part: shower}
-    splash:
-      instrument: fx/splash
-      content: {type: fx, events: [{at: "rinse:0", beats: 4, vel: 0.9}]}
+    # ---- voices (VOICEVOX, pre-generated into songs/track_002/voice/; see voice.yaml) — v006
+    tsumugi_vox:
+      instrument: fx/sample_player
+      content: {type: voice, clips: [ts_hum, ts_line_go, ts_a1, ts_a2, ts_b1, ts_b2, ts_d1, ts_d2, ts_end, ts_line_fufu]}
+    zunda_vox:
+      instrument: fx/sample_player
+      content: {type: voice, clips: [zd_line_ok, zd_line_tickle, zd_b1, zd_b2, zd_line_puha, zd_d1, zd_d2, zd_end]}
+    # ---- field recordings (assets/sfx/fsd50k, CC0; sources.yaml) — v006 (human: 実際の環境音を加える)
+    scrub:           # soap lather on hands = shampoo scrubbing, in bursts with the shaker gestures
+      instrument: fx/sample_player
+      content:
+        type: audio
+        events:
+          - {at: "a:0", file: assets/sfx/fsd50k/233513.flac, offset: 0.5, beats: 4, fade_in: 0.15, fade_out: 0.5}
+          - {at: "a:2", file: assets/sfx/fsd50k/233513.flac, offset: 1.6, beats: 4, fade_in: 0.15, fade_out: 0.5}
+          - {at: "a:4", file: assets/sfx/fsd50k/233513.flac, offset: 2.6, beats: 4, fade_in: 0.15, fade_out: 0.5}
+          - {at: "a:6", file: assets/sfx/fsd50k/233513.flac, offset: 1.0, beats: 4, fade_in: 0.15, fade_out: 0.5}
+          - {at: "b:0", file: assets/sfx/fsd50k/233513.flac, offset: 2.0, beats: 3, fade_in: 0.2, fade_out: 0.6, gain_db: -3}
+          - {at: "b:2", file: assets/sfx/fsd50k/233513.flac, offset: 0.8, beats: 3, fade_in: 0.2, fade_out: 0.6, gain_db: -3}
+          - {at: "b:6", file: assets/sfx/fsd50k/233513.flac, offset: 2.4, beats: 3, fade_in: 0.2, fade_out: 0.6, gain_db: -3}
+    rinse_water:     # the hair rinse: water poured in the bath (replaces the synth splash + noise shower)
+      instrument: fx/sample_player
+      content:
+        type: audio
+        events:
+          - {at: "rinse:0", file: assets/sfx/fsd50k/420230.flac, offset: 0.9, fade_in: 0.05, fade_out: 1.2}
+          - {at: "rinse:0|1", file: assets/sfx/fsd50k/154695.flac, offset: 0.5, beats: 8, fade_in: 0.6, fade_out: 1.2, gain_db: 4}
+          - {at: "rinse:3|0.5", file: assets/sfx/fsd50k/119923.flac, offset: 0.1, beats: 3, fade_out: 0.4, gain_db: 16}   # head out of the water
+    tub:             # getting into the tub, then the water moving around them
+      instrument: fx/sample_player
+      content:
+        type: audio
+        events:
+          - {at: "a2:0", file: assets/sfx/fsd50k/143257.flac, fade_out: 0.6, gain_db: 4}       # ざぶん
+          - {at: "a2:2", file: assets/sfx/fsd50k/382649.flac, offset: 1.9, beats: 3, fade_in: 0.05, fade_out: 0.6, gain_db: -4}
+          - {at: "a2:5", file: assets/sfx/fsd50k/382649.flac, offset: 4.3, beats: 3, fade_in: 0.05, fade_out: 0.6, gain_db: -4}
+          - {at: "end:0|1", file: assets/sfx/fsd50k/382649.flac, offset: 6.0, beats: 3, fade_in: 0.05, fade_out: 0.8, gain_db: -7}
+    drips:           # a quiet, echoing bathroom drip in the still moments
+      instrument: fx/sample_player
+      content:
+        type: audio
+        events:
+          - {at: "intro:0", file: assets/sfx/fsd50k/422873.flac, fade_out: 0.3}
+          - {at: "intro:2|1", file: assets/sfx/fsd50k/422873.flac, fade_out: 0.3}
+          - {at: "end:2", file: assets/sfx/fsd50k/422873.flac, fade_out: 0.3}
 
   automation:
     # steam is thickest when nothing else happens (intro / rinse / end); absolute gain_db (v002: +5 dB)

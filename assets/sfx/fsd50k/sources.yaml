@@ -1,0 +1,60 @@
+source: FSD50K (Fonseca et al., 2022) clips, via the Hugging Face mirror Fhrozen/FSD50k.
+  Each clip keeps the license of its Freesound original; only CC0 clips are used here.
+dataset_url: https://zenodo.org/record/4060432
+clips:
+- file: 233513.flac
+  freesound_id: 233513
+  title: Tanger_rubbing_hands.wav
+  uploader: ggc9
+  license: http://creativecommons.org/publicdomain/zero/1.0/
+  url: https://freesound.org/s/233513/
+  used_for: soap lather / rubbing hands (shampoo scrub)
+  duration_sec: 5.7
+- file: 420230.flac
+  freesound_id: 420230
+  title: 37 - 3 Rinsing.WAV
+  uploader: 14FPanska_Nemec_Petr
+  license: http://creativecommons.org/publicdomain/zero/1.0/
+  url: https://freesound.org/s/420230/
+  used_for: rinsing in the bath (hair rinse)
+  duration_sec: 6.87
+- file: 154695.flac
+  freesound_id: 154695
+  title: SHOWER_ON_1-2.aif
+  uploader: mistorcaveman
+  license: http://creativecommons.org/publicdomain/zero/1.0/
+  url: https://freesound.org/s/154695/
+  used_for: shower running
+  duration_sec: 6.59
+- file: 143257.flac
+  freesound_id: 143257
+  title: singleSplash.wav
+  uploader: Zabuhailo
+  license: http://creativecommons.org/publicdomain/zero/1.0/
+  url: https://freesound.org/s/143257/
+  used_for: single splash in a bath (getting into the tub)
+  duration_sec: 2.72
+- file: 382649.flac
+  freesound_id: 382649
+  title: Splashes In A Bathtub.wav
+  uploader: bbrocer
+  license: http://creativecommons.org/publicdomain/zero/1.0/
+  url: https://freesound.org/s/382649/
+  used_for: splashes in a bathtub (chapu-chapu)
+  duration_sec: 9.53
+- file: 422873.flac
+  freesound_id: 422873
+  title: Water_Dripping_Loop.wav
+  uploader: IPaddeh
+  license: http://creativecommons.org/publicdomain/zero/1.0/
+  url: https://freesound.org/s/422873/
+  used_for: bathroom dripping loop
+  duration_sec: 2.98
+- file: 119923.flac
+  freesound_id: 119923
+  title: Lifting Out of Water.aif
+  uploader: ftpalad
+  license: http://creativecommons.org/publicdomain/zero/1.0/
+  url: https://freesound.org/s/119923/
+  used_for: head lifting out of water
+  duration_sec: 5.04

@@ -207,7 +207,7 @@ def analyze(x: np.ndarray, sr: int, score: Score, post_fader: dict[str, np.ndarr
         contrast.append(d)
     res["contrast"] = contrast
     # Tonality from pitched stems only: drums (kick pitch sweeps, noise) pollute chroma.
-    pitched = [t.name for t in score.tracks if t.kind not in ("drums", "fx")]
+    pitched = [t.name for t in score.tracks if t.kind not in ("drums", "fx", "audio", "voice")]
     if post_fader and any(k in post_fader for k in pitched):
         tonal = sum(post_fader[k] for k in pitched if k in post_fader)
         st = spectral_stats(tonal.mean(axis=0), sr)

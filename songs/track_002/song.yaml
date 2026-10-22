@@ -24,6 +24,7 @@ include:
   melody: melody.yaml
   arrangement: arrangement.yaml
   mix: mix.yaml
+  voice: voice.yaml
 sections:
   - {name: intro, bars: 4, energy: 0.25}
   - {name: a,     bars: 8, energy: 0.5}

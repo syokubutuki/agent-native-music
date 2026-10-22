@@ -1,0 +1,4 @@
+# Plays audio files (field recordings, foley, pre-generated voice clips) placed by
+# `audio` / `voice` content. Per-note file/offset/fades/gain come from the arrangement.
+type: sample
+gain_db: 0

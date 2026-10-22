@@ -6,11 +6,13 @@ becomes explicit notes. It is deterministic given the spec and its seed.
 from __future__ import annotations
 
 import zlib
+from pathlib import Path
 
 import numpy as np
+import soundfile as sf
 
 from ..score import ChordEvent, Note, Score, SectionInfo, Track
-from ..spec import SongSpec, SpecError, Timeline
+from ..spec import SongSpec, SpecError, Timeline, resolve_asset
 from ..theory import Key, nearest_in_range, parse_chord, parse_key, parse_pitch, voice_chord
 from .notation import MNote, apply_ops, leading_tie, notes_end, parse_notes, parse_pattern, pattern_for_bar
 
@@ -284,6 +286,75 @@ def realize_fx(content: dict, tl: Timeline) -> list[Note]:
     return out
 
 
+def _asset_ref(path: Path) -> str:
+    from ..provenance import rel
+    return rel(path)
+
+
+def realize_audio(content: dict, tl: Timeline, spb: float, song_dir: Path | None) -> list[Note]:
+    """Audio-file events (field recordings, foley): one Note per event, played by a `type: sample` patch.
+
+    events: [{at, file, offset: sec, beats | until | sec (default: to the end of the file),
+              fade_in: sec, fade_out: sec, gain_db, vel, rate}]
+    """
+    out = []
+    for ev in content.get("events", []):
+        s = tl.beat(ev["at"])
+        f = resolve_asset(ev["file"], song_dir)
+        offset, rate = float(ev.get("offset", 0.0)), float(ev.get("rate", 1.0))
+        if "until" in ev:
+            dur = tl.beat(ev["until"]) - s
+        elif "beats" in ev:
+            dur = float(ev["beats"])
+        elif "sec" in ev:
+            dur = float(ev["sec"]) / spb
+        else:
+            dur = max(sf.info(str(f)).duration - offset, 0.01) / rate / spb
+        params = {"file": _asset_ref(f), "offset": offset, "rate": rate,
+                  "fade_in": float(ev.get("fade_in", 0.005)), "fade_out": float(ev.get("fade_out", 0.05)),
+                  "gain_db": float(ev.get("gain_db", 0.0))}
+        out.append(Note(int(ev.get("pitch", 60)), s, dur, float(ev.get("vel", 1.0)), params))
+    out.sort(key=lambda n: n.start)
+    return out
+
+
+def realize_voice(content: dict, data: dict, tl: Timeline, spb: float, song_dir: Path | None) -> list[Note]:
+    """Pre-generated voice clips (songs/<id>/voice/<clip>.wav + .json, see voice/voicevox.py).
+    A clip that has not been generated yet is skipped with a warning, so a song still renders."""
+    import json
+
+    from ..voice.voicevox import build_request, request_hash
+
+    clips_spec = ((data.get("voice") or {}).get("clips") or {})
+    out = []
+    for name in content.get("clips", []):
+        if name not in clips_spec:
+            raise SpecError(f"voice clip '{name}' is not defined under voice.clips")
+        cs = clips_spec[name]
+        meta_p = (song_dir or Path(".")) / "voice" / f"{name}.json"
+        wav_p = meta_p.with_suffix(".wav")
+        if not (meta_p.exists() and wav_p.exists()):
+            print(f"  (voice clip '{name}' not generated yet: python -m music_agent voice <song> --clip {name})")
+            continue
+        meta = json.loads(meta_p.read_text(encoding="utf-8"))
+        req, extra = build_request(data, name)
+        if meta.get("request_hash") != request_hash(req):
+            print(f"  (voice clip '{name}' is stale: its spec changed since generation; re-run `music_agent voice`)")
+        if meta["kind"] == "sing":
+            start = float(meta["start_beat"]) - float(meta["lead_sec"]) / spb
+        else:
+            start = tl.beat(cs["at"]) - float(meta["lead_sec"]) / spb
+        offset = 0.0
+        if start < 0:
+            offset, start = -start * spb, 0.0
+        dur = max(sf.info(str(wav_p)).duration - offset, 0.01) / spb
+        params = {"file": _asset_ref(wav_p), "offset": offset, "rate": 1.0, "fade_in": 0.005, "fade_out": 0.02,
+                  "gain_db": float(cs.get("gain_db", 0.0))}
+        out.append(Note(60, start, dur, 1.0, params))
+    out.sort(key=lambda n: n.start)
+    return out
+
+
 def _humanize(notes: list[Note], hz: dict | None, seed: int, spb_sec: float) -> None:
     if not hz:
         return
@@ -335,6 +406,10 @@ def realize(spec: SongSpec) -> Score:
             notes = realize_drums(content, data, tl, name, only)
         elif ctype == "fx":
             notes = realize_fx(content, tl)
+        elif ctype == "audio":
+            notes = realize_audio(content, tl, 60.0 / float(data["tempo"]), spec.song_dir)
+        elif ctype == "voice":
+            notes = realize_voice(content, data, tl, 60.0 / float(data["tempo"]), spec.song_dir)
         else:
             raise SpecError(f"Track '{name}': unknown content type '{ctype}'")
         _humanize(notes, t.get("humanize"), stable_seed(seed, name), 60.0 / float(data["tempo"]))

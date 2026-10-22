@@ -7,6 +7,7 @@
     python -m music_agent batch  songs/track_001 o1.yaml o2.yaml --name sound_b001 [--sections drop]
     python -m music_agent prefer --comparison cand_00 cand_01 --preferred cand_01 --reason melody
     python -m music_agent vst-params "C:/Program Files/Common Files/VST3/Surge XT.vst3"
+    python -m music_agent voice  songs/track_002 [--clip ts_a1] [--force] [--url http://127.0.0.1:50021] [--status]
 """
 from __future__ import annotations
 
@@ -144,6 +145,23 @@ def _cmd_vst_params(a):
     return 0
 
 
+def _cmd_voice(a):
+    from .spec import load_song
+    from .voice.voicevox import clip_status, generate
+
+    spec = load_song(a.song, a.overlay)
+    if a.status:
+        for name, st in clip_status(spec):
+            print(f"  {name:<14} {st}")
+        return 0
+    try:
+        generate(spec, a.clip or None, a.url, a.force)
+    except OSError as e:
+        print(f"VOICEVOX engine not reachable ({e}). Start the VOICEVOX app/engine (default port 50021) or pass --url.")
+        return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="music_agent", description="Agent-native music production engine")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -202,6 +220,15 @@ def main(argv: list[str] | None = None) -> int:
     v = sub.add_parser("vst-params", help="list automatable parameter IDs of a VST3 plugin")
     v.add_argument("plugin")
     v.set_defaults(fn=_cmd_vst_params)
+
+    vo = sub.add_parser("voice", help="generate/cached VOICEVOX voice clips (songs/<id>/voice/)")
+    vo.add_argument("song")
+    vo.add_argument("--clip", action="append", default=[])
+    vo.add_argument("--force", action="store_true")
+    vo.add_argument("--url")
+    vo.add_argument("--status", action="store_true", help="list clips as ok / missing / stale (no engine needed)")
+    vo.add_argument("--overlay", action="append", default=[])
+    vo.set_defaults(fn=_cmd_voice)
 
     a = ap.parse_args(argv)
     return a.fn(a)
