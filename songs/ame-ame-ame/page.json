@@ -1,5 +1,50 @@
 [
   {
+    "id": "ame-ame-ame-v4-talk-none",
+    "group": "あめ あめ あめ。",
+    "label": "v4-talk-none",
+    "title": "あめ あめ あめ。（v4・読み上げ方式・外れ方そのまま）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v4-talk-none.wav",
+    "durationSec": 198.75
+  },
+  {
+    "id": "ame-ame-ame-v4-talk-weak",
+    "group": "あめ あめ あめ。",
+    "label": "v4-talk-weak",
+    "title": "あめ あめ あめ。（v4・読み上げ方式・音痴 弱）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v4-talk-weak.wav",
+    "durationSec": 198.75
+  },
+  {
+    "id": "ame-ame-ame-v4-talk-mid",
+    "group": "あめ あめ あめ。",
+    "label": "v4-talk-mid",
+    "title": "あめ あめ あめ。（v4・読み上げ方式・音痴 中）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v4-talk-mid.wav",
+    "durationSec": 198.75
+  },
+  {
+    "id": "ame-ame-ame-v4-talk-strong",
+    "group": "あめ あめ あめ。",
+    "label": "v4-talk-strong",
+    "title": "あめ あめ あめ。（v4・読み上げ方式・音痴 強）",
+    "desc": "128 BPM · A major · VOICEVOX:春日部つむぎ・ずんだもん（トーク歌唱）",
+    "wav": "out/full-v4-talk-strong.wav",
+    "durationSec": 198.75
+  },
+  {
+    "id": "ame-ame-ame-v4-talk-none-inst",
+    "group": "あめ あめ あめ。",
+    "label": "v4-talk-none",
+    "title": "インスト（歌なし）",
+    "desc": "128 BPM · A major",
+    "wav": "out/inst-v4-talk-none.wav",
+    "durationSec": 198.75
+  },
+  {
     "id": "ame-ame-ame-v3-talkhard",
     "group": "あめ あめ あめ。",
     "label": "v3-talkhard",

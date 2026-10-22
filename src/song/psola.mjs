@@ -133,3 +133,23 @@ export function correctPitch(x, sr, targetHz, { fadeSec = 0.004 } = {}) {
   }
   return y;
 }
+
+// Mean pitch offset of each note in cents (null where it is not voiced), measured over the middle of
+// the note. onsets[i] / onsets[i+1] bound note i in seconds; hz[i] is its written pitch.
+export function noteOffsets(x, sr, onsets, hz) {
+  const target = (t) => {
+    let i = 0;
+    while (i + 1 < hz.length && t >= onsets[i + 1]) i++;
+    return hz[i];
+  };
+  const { f0, hop } = trackPitch(x, sr, target);
+  return hz.map((h, i) => {
+    const a = onsets[i] + (onsets[i + 1] - onsets[i]) * 0.3;
+    const b = onsets[i] + (onsets[i + 1] - onsets[i]) * 0.8;
+    const v = [];
+    for (let k = Math.floor((a * sr) / hop); k < Math.ceil((b * sr) / hop) && k < f0.length; k++) if (f0[k] > 0) v.push(1200 * Math.log2(f0[k] / h));
+    if (v.length < 2) return null;
+    v.sort((p, q) => p - q);
+    return v[v.length >> 1];
+  });
+}

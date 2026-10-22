@@ -18,7 +18,7 @@ const USAGE = `usage: node bin/song.mjs <command> <songDir>
 commands:
   voices <songDir>   sing the audition phrase with every candidate voice (needs a running VOICEVOX engine)
   chorus <songDir>   fast hard-tuned chorus over a grid-locked bed, once per candidate voice
-  produce <songDir> [--mode talk|talkhard|sing|hard]
+  produce <songDir> [--mode talk|talkhard|sing|hard] [--heta none|weak|mid|strong]
                      render a produced song from <songDir>/score.mjs: full mix + instrumental (needs VOICEVOX).
                      --mode overrides how the voices sing (talk voices / talk voices pitch-pinned / singing voices / singing pinned)`;
 
@@ -111,7 +111,10 @@ async function cmdChorus(songDir) {
 
 const MODE_LABEL = { talk: '読み上げ方式', talkhard: '読み上げ方式・機械的', sing: '歌唱方式', hard: '歌唱方式・機械的' };
 
-async function cmdProduce(songDir, vocalMode) {
+const HETA_LABEL = { none: '外れ方そのまま', weak: '音痴 弱', mid: '音痴 中', strong: '音痴 強' };
+
+async function cmdProduce(songDir, vocalMode, heta) {
+  if (heta && !HETA_LABEL[heta]) fail(`--heta must be none, weak, mid or strong (got ${heta})`);
   if (vocalMode && !MODE_LABEL[vocalMode]) fail(`--mode must be talk, talkhard, sing or hard (got ${vocalMode})`);
   const { pathToFileURL } = await import('node:url');
   const { produce } = await import('../src/song/produce.mjs');
@@ -120,9 +123,9 @@ async function cmdProduce(songDir, vocalMode) {
   const work = path.join(outDir, 'work');
   fs.mkdirSync(work, { recursive: true });
   const t0 = Date.now();
-  const res = await produce(score, { voiceStyle: score.meta.voice.style, workDir: work, vocalMode, log: (m) => console.log(`[song] ${m}`) });
-  const version = `${score.meta.version ?? 1}${vocalMode ? `-${vocalMode}` : ''}`;
-  const modeNote = vocalMode ? `・${MODE_LABEL[vocalMode]}` : '';
+  const res = await produce(score, { voiceStyle: score.meta.voice.style, workDir: work, vocalMode, heta: heta && heta !== 'none' ? heta : null, log: (m) => console.log(`[song] ${m}`) });
+  const version = `${score.meta.version ?? 1}${vocalMode ? `-${vocalMode}` : ''}${heta ? `-${heta}` : ''}`;
+  const modeNote = `${vocalMode ? `・${MODE_LABEL[vocalMode]}` : ''}${heta ? `・${HETA_LABEL[heta]}` : ''}`;
   const group = `${score.meta.title}`;
   const files = { full: path.join(outDir, `full-v${version}.wav`), instrumental: path.join(outDir, `inst-v${version}.wav`) };
   fs.writeFileSync(files.full, encodeWav(res.full));
@@ -137,7 +140,7 @@ async function cmdProduce(songDir, vocalMode) {
   updatePageManifest(songDir, group, [
     { id: `${path.basename(songDir)}-v${version}`, group, label: `v${version}`, title: `${score.meta.title}（v${score.meta.version ?? 1}${modeNote}）`,
       desc: `${score.meta.bpm} BPM · ${score.meta.key} · VOICEVOX:${v.name}（${v.styleName}）`, wav: path.relative(songDir, files.full), durationSec: res.durationSec },
-...(vocalMode && vocalMode !== 'talk' ? [] : [ // the instrumental is the same for every vocal mode: list it once
+...((vocalMode && vocalMode !== 'talk') || (heta && heta !== 'none') ? [] : [ // the instrumental is the same for every vocal mode: list it once
     { id: `${path.basename(songDir)}-v${version}-inst`, group, label: `v${version}`, title: 'インスト（歌なし）',
       desc: `${score.meta.bpm} BPM · ${score.meta.key}`, wav: path.relative(songDir, files.instrumental), durationSec: res.durationSec },
     ]),
@@ -155,8 +158,11 @@ try {
   if (command === 'voices') await cmdVoices(path.resolve(songDir));
   else if (command === 'chorus') await cmdChorus(path.resolve(songDir));
   else if (command === 'produce') {
-    const i = process.argv.indexOf('--mode');
-    await cmdProduce(path.resolve(songDir), i > 0 ? process.argv[i + 1] : undefined);
+    const opt = (name) => {
+      const i = process.argv.indexOf(name);
+      return i > 0 ? process.argv[i + 1] : undefined;
+    };
+    await cmdProduce(path.resolve(songDir), opt('--mode'), opt('--heta'));
   }
   else fail(`unknown command: ${command}\n\n${USAGE}`);
 } catch (err) {

@@ -8,13 +8,15 @@
 
 export const meta = {
   title: 'あめ あめ あめ。',
-  version: 3,
+  version: 4,
   bpm: 128,
   key: 'A major',
   vocalMode: 'talk',
   singers: {
-    a: { name: '春日部つむぎ', talkStyle: 8, singStyle: 3008, pan: -0.2 },
-    z: { name: 'ずんだもん', talkStyle: 3, singStyle: 3003, pan: 0.2 },
+    // heta = each singer's own way of being off (used with --heta): bias cents everywhere, highBias on
+    // notes at or above highKey, timingMs (+ = late, - = early)
+    a: { name: '春日部つむぎ', talkStyle: 8, singStyle: 3008, pan: -0.2, heta: { bias: -15, timingMs: 15 } }, // shy: a bit flat, a bit late
+    z: { name: 'ずんだもん', talkStyle: 3, singStyle: 3003, pan: 0.2, heta: { bias: 10, highBias: 25, highKey: 73, timingMs: -15 } }, // bold: sharp up high, rushes
   },
   voice: { style: 3008, name: '春日部つむぎ・ずんだもん', styleName: 'トーク歌唱' },
 };
@@ -46,8 +48,8 @@ const VERSE1 = {
   a: [
     [2, 'ま:F#4:2 ど:F#4:2 を:E4:2 あ:F#4:2 け:A4:2 た:G#4:2 ら:E4:4'],
     [22, 'そ:E4:2 ら:F#4:2 が:G#4:2 ぴ:A4:2 ん:A4:2 く:E4:4'],
-    [66, 'て:E4:2 の:F#4:2 ひ:G#4:2 ら:A4:2 に:G#4:2 ぽ:E4:1 と:E4:1 り:C#4:4'],
-    [104, 'も:E4:2 う:F#4:2 ひ:G#4:2 と:A4:2 つ:G#4:2 ぽ:E4:1 と:E4:1 り:C#4:4'],
+    [64, 'て:E4:2 の:F#4:2 ひ:G#4:2 ら:A4:2 に:G#4:2 ひ:E4:2 と:E4:2 つ:E4:2 ぶ:C#4:2'],
+    [104, 'き:E4:2 ら:F#4:2 き:G#4:2 ら:A4:2 ひ:G#4:2 か:F#4:2 る:E4:4'],
     [146, 'ね:A4:2 え:G#4:2 こ:F#4:2 れ:E4:2 ゆ:F#4:2 め:G#4:2 か:A4:2 な:A4:4'],
     [194, 'ほ:E4:2 ほ:F#4:2 が:G#4:2 と:A4:2 け:G#4:2 そ:F#4:2 う:E4:4'],
     [236, 'せ:E4:2 え:E4:2 の:A4:4'],
@@ -90,6 +92,24 @@ const BRIDGE = {
     [112, 'は:A4:2 ん:A4:2 ぶ:B4:2 ん:B4:2 こ:C#5:6'],
   ],
 };
+// ---- inter: a giggle and a happy aside, spoken, not sung ----
+const INTER = { a: [[2, 'say:えへへ']], z: [[18, 'say:たのしいのだ']] };
+
+// ---- challenge (before the last chorus): ずんだもん goes for a note far above its range and the
+// talk voice really does crack ("!" = sung as is, never auto-replaced); つむぎ cheers it on ----
+const CHALLENGE = {
+  z: [
+    [0, 'say:いくのだ'],
+    [8, '!あ:A4:2 め:C#5:2 あ:E5:2 め:G#5:2 あ:B5:6'],
+    [34, 'say:もういっかい なのだ'],
+    [56, 'say:せーの'],
+  ],
+  a: [
+    [26, 'say:おしい'],
+    [56, 'say:せーの'],
+  ],
+};
+
 // ---- outro: the hook slowed down, then 「ごちそうさま」 ----
 const OUTRO = {
   z: [
@@ -114,23 +134,26 @@ const CH = {
   outro: ['Dmaj7', 'E', 'Aadd9', 'Aadd9'],
 };
 
-const base = { comp: 'marimba', bass: 'bounce', bassSynth: 'round', phrases: true, duet: true };
+const base = { comp: 'marimba', bass: 'bounce', bassSynth: 'round', phrases: true, duet: true, guide: true };
 export const sections = [
   { ...base, name: 'intro', level: [0.7, 0.85], bars: 8, chords: CH.chorus, drums: 'yuruBreak', toys: 'verse', bellPhrases: INTRO_BOX, whistle: 'up', duet: false },
   { ...base, name: 'verse1', level: [0.75, 0.8], bars: 16, chords: CH.verse, drums: 'yuruVerse', toys: 'verse', vocal: VERSE1 },
   { ...base, name: 'chorus1', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'yuruChorus', pad: true, bells: 'arp', toys: 'chorus', vocal: CHORUS },
-  { ...base, name: 'inter', level: [0.9, 0.9], bars: 4, chords: CH.chorus, drums: 'yuruBreak', riff: true, riffSynth: 'chip', toys: 'drop', whistle: 'down', duet: false },
+  { ...base, name: 'inter', level: [0.9, 0.9], bars: 4, chords: CH.chorus, drums: 'yuruBreak', riff: true, riffSynth: 'chip', toys: 'drop', whistle: 'down', vocal: INTER },
   { ...base, name: 'verse2', level: [0.75, 0.8], bars: 8, chords: CH.verse, drums: 'yuruVerse', toys: 'verse', vocal: VERSE2 },
   { ...base, name: 'chorus2', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'yuruChorus', pad: true, bells: 'arp', toys: 'chorus', vocal: CHORUS },
   { ...base, name: 'bridge', level: [0.7, 0.8], bars: 8, chords: CH.bridge, drums: 'yuruBreak', pad: true, toys: 'verse', whistle: 'up', vocal: BRIDGE },
+  { ...base, name: 'challenge', level: [0.6, 0.75], bars: 4, chords: ['Dmaj7', 'E', 'Dmaj7', 'E'], drums: 'none', comp: undefined, bass: undefined, pad: true, toys: 'outro', whistle: 'up', vocal: CHALLENGE },
   { ...base, name: 'chorus3', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'yuruChorus', pad: true, bells: 'arp', riff: true, riffSynth: 'chip', toys: 'chorus', vocal: CHORUS },
   { ...base, name: 'outro', level: [0.8, 0.6], bars: 8, chords: CH.outro, drums: 'none', bass: undefined, pad: true, toys: 'outro', bellPhrases: OUTRO_BOX, vocal: OUTRO },
 ];
 
 export const lyrics = {
-  verse1: '(つ) まどを あけたら / そらが ぴんく　(ず) なにか ふるのだ / (つ) てのひらに ぽとり　(ず) いちご あじ なのだ / (つ) もう ひとつ ぽとり　(ず) めろん あじ なのだ / (つ) ねえ これ ゆめかな　(ず) ゆめでも いいのだ / (つ) ほほが とけそう　(ず) ほほが おちそう / (ふたり) せーの',
+  verse1: '(つ) まどを あけたら / そらが ぴんく　(ず) なにか ふるのだ / (つ) てのひらに ひとつぶ　(ず) いちご あじ なのだ / (つ) きらきら ひかる　(ず) めろん あじ なのだ / (つ) ねえ これ ゆめかな　(ず) ゆめでも いいのだ / (つ) ほほが とけそう　(ず) ほほが おちそう / (ふたり) せーの',
   chorus: '(ず) あめ あめ あめ。　(つ) ふりだした / (ふたり) あまい あまい あめ / (ず) あめ あめ あめ。　(つ) ぱらぱら ぱらり / (ず) ぜんぶ ほしいのだ　(つ) むしばに なるよ',
   verse2: '(つ) ぼうしに いれよう　(ず) かさを さかさに / (つ) あたま いいね　(ず) そうなのだ / (つ) ゆうがたまで　(ず) ひろいあつめるのだ / (ふたり) せーの',
   bridge: '(つ) ねえ ずんだもん　(ず) なんなのだ / (つ) ひとつ わけて　(ず) だめなのだ / (つ) えー　(ず) じょうだんなのだ / (ふたり) はんぶんこ',
+  inter: '(つ・セリフ) えへへ　(ず・セリフ) たのしいのだ',
+  challenge: '(ず・セリフ) いくのだ　(ず) あめ あめ あーー（裏返る）　(つ・セリフ) おしい　(ず・セリフ) もういっかい なのだ　(ふたり・セリフ) せーの',
   outro: '(ふたり) あめ あめ あめ。 / (ず) おなか まんぷく なのだ　(つ) ごちそうさま',
 };

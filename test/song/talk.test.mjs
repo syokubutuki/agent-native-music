@@ -51,7 +51,20 @@ test('duet stays inside each talk voice\'s measured range', () => {
   assert.ok(vocals.length > 0);
   for (const v of vocals) {
     assert.equal(v.notes.reduce((a, n) => a + n.beats, 0), v.bars * 4);
-    for (const n of v.notes) if (n.key != null) assert.ok(n.key >= R[v.singer][0] && n.key <= R[v.singer][1], `${v.name} ${n.lyric}${n.key}`);
+    for (const n of v.notes) if (n.key != null && !n.wild) assert.ok(n.key >= R[v.singer][0] && n.key <= R[v.singer][1], `${v.name} ${n.lyric}${n.key}`);
   }
   assert.equal(meta.vocalMode, 'talk');
+});
+
+test('duet sections carry spoken asides, a deliberately wild phrase and a guide melody', async () => {
+  const { tracks, vocals, says } = arrange(sections);
+  assert.ok(says.some((x) => x.singer === 'z' && x.text === 'いくのだ'));
+  assert.ok(says.some((x) => x.singer === 'a' && x.text === 'おしい'));
+  const wild = vocals.flatMap((v) => v.notes.filter((n) => n.wild));
+  assert.ok(wild.length > 0 && Math.max(...wild.map((n) => n.key)) > 75, 'the challenge goes above ずんだもん\'s range on purpose');
+  const sungNotes = vocals.flatMap((v) => v.notes.filter((n) => n.key != null && !n.wild));
+  assert.equal(tracks.guide.length, sungNotes.length, 'one guide note per sung note');
+  assert.ok(tracks.guide.every((g) => g.vel < 0.5), 'guide stays quiet');
+  const { HETA } = await import('../../src/song/produce.mjs');
+  assert.ok(HETA.weak.limit < HETA.mid.limit && HETA.mid.limit < HETA.strong.limit);
 });

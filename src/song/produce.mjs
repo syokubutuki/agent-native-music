@@ -1,8 +1,8 @@
 // Score (sections of chords, patterns and vocal bars) -> stems -> mixed song.
 
 import { createBus, kick, clap, hat, riser, impact, bass, supersaw, pluck, bell, chip, toy, snare, futureChords, marimba, roundBass, shaker, lightKick, slideWhistle } from './synth.mjs';
-import { talkQuery, talkSynthesis } from './talksing.mjs';
-import { correctPitch } from './psola.mjs';
+import { talkQuery, talkSynthesis, speakQuery, splitForTalk } from './talksing.mjs';
+import { correctPitch, noteOffsets } from './psola.mjs';
 import { decodeWav } from '../lab/wav.mjs';
 import { reverb, pingPong, sidechainCurve, applyGain, eq, compress, levelTo, mixInto, master } from './fx.mjs';
 import { toScore, singQuery, frameSynthesis, hardTune, softTune, midiHz, vowelOf } from './voicevox.mjs';
@@ -171,10 +171,10 @@ export function parsePhrases(phrases, bars) {
   const total = bars * 16;
   const notes = [];
   let at = 0;
-  for (const [start, text] of phrases) {
+  for (const [start, text, flag] of phrases) {
     if (start < at) throw new Error(`phrase at ${start} overlaps the previous one (ends ${at}): ${text}`);
     if (start > at) notes.push({ key: null, lyric: '', beats: (start - at) / 4 });
-    const ns = parseTokens(text);
+    const ns = parseTokens(text).map((n) => (flag === 'wild' ? { ...n, wild: true } : n));
     notes.push(...ns);
     at = start + ns.reduce((a, n) => a + n.beats * 4, 0);
     if (at > total) throw new Error(`phrase runs past the section end (${at} > ${total}): ${text}`);
@@ -185,9 +185,10 @@ export function parsePhrases(phrases, bars) {
 
 // Everything except the vocal, as note events in beats.
 export function arrange(sections) {
-  const t = { kick: [], clap: [], hat: [], snare: [], bass: [], stab: [], pad: [], pluck: [], riser: [], impact: [], bell: [], chip: [], toy: [], future: [], lightKick: [], shaker: [], marimba: [], roundBass: [], whistle: [] };
+  const t = { kick: [], clap: [], hat: [], snare: [], bass: [], stab: [], pad: [], pluck: [], riser: [], impact: [], bell: [], chip: [], toy: [], future: [], lightKick: [], shaker: [], marimba: [], roundBass: [], whistle: [], guide: [] };
   const vocals = [];
   const chops = [];
+  const says = [];
   let bar0 = 0;
   for (const sec of sections) {
     const start = bar0 * 4;
@@ -250,8 +251,23 @@ export function arrange(sections) {
     if (sec.whistle) t.whistle.push({ beat: start + sec.bars * 4 - 1, beats: 1, down: sec.whistle === 'down', vel: 0.8 });
     if (sec.vocal && sec.duet) {
       // duet: { singerKey: phrases } — each singer has their own phrase list and may overlap the other
+      // "say:..." = a spoken aside; "!..." = a phrase meant to go wrong (sung as is, never replaced)
       for (const [singer, phrases] of Object.entries(sec.vocal)) {
-        vocals.push({ name: `${sec.name}-${singer}`, singer, startBeat: start, bars: sec.bars, double: false, notes: parsePhrases(phrases, sec.bars) });
+        const sung = [];
+        for (const [at16, text] of phrases) {
+          if (text.startsWith('say:')) says.push({ name: `${sec.name}-${singer}`, singer, beat: start + at16 / 4, text: text.slice(4) });
+          else sung.push(text.startsWith('!') ? [at16, text.slice(1), 'wild'] : [at16, text]);
+        }
+        const notes = parsePhrases(sung, sec.bars);
+        vocals.push({ name: `${sec.name}-${singer}`, singer, startBeat: start, bars: sec.bars, double: false, notes });
+        if (sec.guide) {
+          // the right melody, softly, an octave up on the music box: a reference the voices sway around
+          let beat = start;
+          for (const n of notes) {
+            if (n.key != null && !n.wild) t.guide.push({ beat, midi: n.key + 12, vel: 0.35, pan: singer === 'z' ? 0.3 : -0.3 });
+            beat += n.beats;
+          }
+        }
       }
     } else if (sec.vocal) {
       const notes = sec.phrases ? parsePhrases(sec.vocal, sec.bars) : sec.vocal.flatMap(parseBar);
@@ -268,7 +284,7 @@ export function arrange(sections) {
     }
     bar0 += sec.bars;
   }
-  return { tracks: t, vocals, chops, totalBeats: bar0 * 4 };
+  return { tracks: t, vocals, chops, says, totalBeats: bar0 * 4 };
 }
 
 // Per-section instrument level ramps (sections give level: [start, end], default [1, 1]) — the song's
@@ -368,16 +384,25 @@ export function sectionLevels(sections, total, { sr, bpm }) {
   return g;
 }
 
-const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26 };
+const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26, guide: -33 };
 
 // vocalMode: 'talk' (talk voices made to sing), 'talkhard' (talk voices, then PSOLA pitch correction
 // pinning every note: talk timbre, machine pitch), 'sing' (singing voices, smooth tuning) or 'hard'
 // (singing voices pinned to the notes). Defaults to the score's own choice.
-export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, vocalMode, log = () => {} } = {}) {
+// heta: shape how off-key the talk voices land — null (as rendered), 'weak', 'mid', 'strong'.
+// Each note's measured offset is scaled and clamped, then every singer's own habit (meta.singers[x].heta:
+// bias, highBias above highKey, timingMs) is added, and the talk voice is re-sung with that offset.
+export const HETA = {
+  weak: { scale: 0.4, limit: 35 },
+  mid: { scale: 0.75, limit: 60 },
+  strong: { scale: 1.2, limit: 110 },
+};
+
+export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, vocalMode, heta = null, log = () => {} } = {}) {
   const { bpm } = score.meta;
   const mode = vocalMode ?? score.meta.vocalMode ?? 'sing';
   const tuning = vocalMode === 'hard' ? { mode: 'hard' } : vocalMode === 'sing' ? { mode: 'soft', keep: 0.5, smooth: 3 } : (score.meta.tuning ?? { mode: 'hard' });
-  const { tracks, vocals, chops: arrangeChops, totalBeats } = arrange(score.sections);
+  const { tracks, vocals, chops: arrangeChops, says, totalBeats } = arrange(score.sections);
   const total = Math.round(((totalBeats + 8) * 60 * sr) / bpm); // two bars of tail
   const ctx = { sr, bpm };
   const stems = {};
@@ -406,6 +431,7 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   render('marimba', (b) => marimba(ctx, tracks.marimba, b));
   render('roundBass', (b) => roundBass(ctx, tracks.roundBass, b));
   render('whistle', (b) => slideWhistle(ctx, tracks.whistle, b));
+  render('guide', (b) => bell(ctx, tracks.guide, b));
 
   const kickBeats = [...tracks.kick, ...tracks.lightKick].map((e) => e.beat);
   const pump = (depth) => sidechainCurve(total, kickBeats, { sr, bpm, depth });
@@ -423,6 +449,7 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   applyGain(stems.future, pump(0.5));
   applyGain(stems.roundBass, pump(0.2));
   eq(stems.marimba, [['highpass', 150, {}], ['peak', 2500, { q: 0.8, gainDb: -2 }]], sr);
+  eq(stems.guide, [['highpass', 400, {}], ['lowpass', 5000, {}]], sr);
   eq(stems.future, [['highpass', 170, {}], ['peak', 2500, { q: 0.8, gainDb: -3 }]], sr);
 
   // VOICEVOX calls are cached on disk by request, so re-mixing never re-sings.
@@ -446,6 +473,8 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   const lead = 1;
   const singers = score.meta.singers ?? {};
   const talkLog = [];
+  const shapeLog = [];
+  const landed = []; // final per-note offsets (cents) of the talk takes, for the heta summary
   const talkLike = mode === 'talk' || mode === 'talkhard';
   // Target pitch over a rendered phrase: each note's pitch from its onset, moving to the next note
   // over 12 ms — the "pinned" contour the talk voice is corrected to in talkhard mode.
@@ -474,22 +503,60 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
       const at = sec.startBeat + ph.beat;
       let mono = null;
       let leadSec = 0;
-      try {
-        const key = hash(['talk', ph.notes, bpm, who.talkStyle]);
+      const wild = ph.notes.some((n) => n.wild);
+      const renderTalk = async (offsetsCents) => {
+        const key = hash(['talk', ph.notes, bpm, who.talkStyle, offsetsCents]);
         const qfile = `${workDir}/talkq-${key}.json`;
         let tq;
         if (fs.existsSync(qfile)) tq = JSON.parse(fs.readFileSync(qfile, 'utf8'));
         else {
-          tq = await talkQuery(ph.notes, { bpm, style: who.talkStyle, engine });
+          tq = await talkQuery(ph.notes, { bpm, style: who.talkStyle, engine, offsetsCents });
           fs.writeFileSync(qfile, JSON.stringify(tq));
         }
         const wfile = `${workDir}/talk-${key}.wav`;
         if (!fs.existsSync(wfile)) fs.writeFileSync(wfile, await talkSynthesis(tq.query, who.talkStyle, { engine }));
-        const qa = talkQa(fs.readFileSync(wfile), ph.notes, bpm, tq.leadSec);
+        return { tq, buf: fs.readFileSync(wfile), file: wfile };
+      };
+      try {
+        let take = await renderTalk(null);
+        let qa = wild ? { ok: true } : talkQa(take.buf, ph.notes, bpm, take.tq.leadSec);
+        if (qa.ok && heta && mode === 'talk' && !wild) {
+          // measure where each note actually landed, then re-sing it at the shaped offset
+          const { channels: [x24], sampleRate: sr24 } = decodeWav(take.buf);
+          const onsets = [];
+          let t0 = take.tq.leadSec;
+          for (const n of ph.notes) {
+            onsets.push(t0);
+            t0 += (n.beats * 60) / bpm;
+          }
+          onsets.push(t0);
+          const got = noteOffsets(x24, sr24, onsets, ph.notes.map((n) => midiHz(n.key)));
+          const h = HETA[heta];
+          const habit = who.heta ?? {};
+          const nudge = ph.notes.map((n, i) => {
+            const want = (got[i] == null ? 0 : Math.max(-h.limit, Math.min(h.limit, got[i] * h.scale))) + (habit.bias ?? 0) + (n.key >= (habit.highKey ?? 999) ? habit.highBias ?? 0 : 0);
+            return Math.round(want - (got[i] ?? 0));
+          });
+          const shaped = await renderTalk(nudge);
+          const qa2 = talkQa(shaped.buf, ph.notes, bpm, shaped.tq.leadSec);
+          if (qa2.ok) take = shaped;
+          else shapeLog.push(`${sec.name}@${ph.beat}: shaped take failed QA, kept the plain one (${qa2.reason})`);
+        }
         if (qa.ok) {
-          mono = loadWav(wfile, sr).channels[0];
-          leadSec = tq.leadSec;
-          if (mode === 'talkhard') mono = correctPitch(mono, sr, phraseTarget(ph.notes, leadSec));
+          if (!wild) {
+            const { channels: [x24], sampleRate: sr24 } = decodeWav(take.buf);
+            const on = [];
+            let t1 = take.tq.leadSec;
+            for (const n of ph.notes) {
+              on.push(t1);
+              t1 += (n.beats * 60) / bpm;
+            }
+            on.push(t1);
+            for (const c of noteOffsets(x24, sr24, on, ph.notes.map((n) => midiHz(n.key)))) if (c != null) landed.push(c);
+          }
+          mono = loadWav(take.file, sr).channels[0];
+          leadSec = take.tq.leadSec - (heta ? (who.heta?.timingMs ?? 0) / 1000 : 0);
+          if (mode === 'talkhard') mono = correctPitch(mono, sr, phraseTarget(ph.notes, take.tq.leadSec));
         } else talkLog.push(`${sec.name}@${ph.beat}: ${qa.reason}`);
       } catch (err) {
         talkLog.push(`${sec.name}@${ph.beat}: ${err.message.slice(0, 120)}`);
@@ -517,6 +584,31 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
     log(`vocal ${sec.name} (talk)`);
   }
   if (talkLog.length) log(`talk fallbacks to singing voice: ${talkLog.length}\n  ${talkLog.join('\n  ')}`);
+  if (shapeLog.length) log(`heta: ${shapeLog.length} phrase(s) kept unshaped\n  ${shapeLog.join('\n  ')}`);
+  if (landed.length) {
+    const abs = landed.map(Math.abs).sort((a, b) => a - b);
+    const pct = (lim) => Math.round((100 * abs.filter((v) => v > lim).length) / abs.length);
+    log(`talk pitch: median |offset| ${Math.round(abs[abs.length >> 1])} cents, ${pct(25)}% of notes off by >25, ${pct(50)}% by >50, ${pct(100)}% by >100 (n=${abs.length})`);
+  }
+  for (const say of says) {
+    const who = singers[say.singer];
+    const key = hash(['say', say.text, who.talkStyle]);
+    const wfile = `${workDir}/say-${key}.wav`;
+    if (!fs.existsSync(wfile)) {
+      const q = await speakQuery(say.text, { style: who.talkStyle, engine });
+      fs.writeFileSync(wfile, await talkSynthesis(q, who.talkStyle, { engine }));
+    }
+    const mono = loadWav(wfile, sr).channels[0];
+    const offset = Math.round(((say.beat * 60) / bpm - 0.05) * sr);
+    const a = ((who.pan + 1) * Math.PI) / 4;
+    for (let i = 0; i < mono.length; i++) {
+      const j = offset + i;
+      if (j < 0 || j >= total) continue;
+      vocal.left[j] += mono[i] * Math.cos(a) * Math.SQRT2;
+      vocal.right[j] += mono[i] * Math.sin(a) * Math.SQRT2;
+    }
+  }
+  if (says.length) log(`spoken asides: ${says.length}`);
   for (const sec of vocals.filter((v) => !(v.singer && talkLike))) {
     const who = sec.singer ? singers[sec.singer] : null;
     const style = who ? who.singStyle : voiceStyle;

@@ -31,13 +31,15 @@ export function splitForTalk(notes, bpm) {
     const parts = Math.max(1, Math.ceil(sec / MAX_MORA_SEC - 1e-9));
     const continuation = i > 0 && n.melisma === true;
     for (let p = 0; p < parts; p++) {
-      out.push({ ...n, lyric: p === 0 && !continuation ? n.lyric : 'ー', beats: n.beats / parts });
+      out.push({ ...n, lyric: p === 0 && !continuation ? n.lyric : 'ー', beats: n.beats / parts, src: i });
     }
   }
   return out;
 }
 
-export async function talkQuery(phrase, { bpm, style, engine = DEFAULT_ENGINE }) {
+// offsetsCents[i] nudges the sung pitch of score note i (all of its morae) — used to shape how far
+// off-key each note lands ("controlled 音痴").
+export async function talkQuery(phrase, { bpm, style, engine = DEFAULT_ENGINE, offsetsCents = null }) {
   const notes = splitForTalk(phrase, bpm);
   const text = notes.map((n) => n.lyric).join('');
   const q = await (await call(engine, '/audio_query', { text, speaker: style })).json();
@@ -55,7 +57,7 @@ export async function talkQuery(phrase, { bpm, style, engine = DEFAULT_ENGINE })
     if (m.consonant) m.consonant_length = Math.min(m.consonant_length ?? 0.05, 0.08);
     m.vowel = m.vowel.toLowerCase(); // no devoiced vowels: every mora carries its note
     m.vowel_length = Math.max(0.03, slot - nextCons);
-    m.pitch = ln(midiHz(n.key));
+    m.pitch = ln(midiHz(n.key) * 2 ** ((offsetsCents?.[n.src] ?? 0) / 1200));
   });
   const firstCons = moras[0].consonant ? moras[0].consonant_length : 0;
   q.prePhonemeLength = 0.1;
@@ -69,4 +71,14 @@ export async function talkQuery(phrase, { bpm, style, engine = DEFAULT_ENGINE })
 
 export async function talkSynthesis(query, style, { engine = DEFAULT_ENGINE } = {}) {
   return Buffer.from(await (await call(engine, '/synthesis', { speaker: style }, query)).arrayBuffer());
+}
+
+// A spoken line: the engine's own natural reading (no pitch or timing from a score) — the asides
+// between sung lines ("えへへ", "おしい") that make the singing sound like singing by contrast.
+export async function speakQuery(text, { style, engine = DEFAULT_ENGINE }) {
+  const q = await (await call(engine, '/audio_query', { text, speaker: style })).json();
+  q.prePhonemeLength = 0.05;
+  q.postPhonemeLength = 0.1;
+  q.outputSamplingRate = 24000;
+  return q;
 }
