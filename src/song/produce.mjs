@@ -43,6 +43,7 @@ function riffTones(symbol) {
 
 // Toy accents per bar: [step, kind, vel]. Placed in gaps so they read as playful asides, not a beat.
 const TOYS = {
+  snow: (b) => (b % 4 === 2 ? [[8, 'sparkle', 0.5]] : []), // a rare far-off twinkle for quiet songs
   verse: (b) => (b % 2 === 1 ? [[14, 'pop', 0.6]] : []),
   chorus: (b) => (b % 4 === 3 ? [[14, 'squeak', 0.8]] : b % 4 === 1 ? [[15, 'pop', 0.7]] : []),
   drop: (b, bars) => (b === 0 ? [[0, 'sparkle', 1]] : b % 2 === 1 ? [[14, 'squeak', 0.9], [7, 'pop', 0.6]] : [[7, 'pop', 0.6]]),
@@ -56,6 +57,7 @@ const BASS = {
   verse: 'R--.R-.OR--.R.O.',
   pre: 'R.R.R.R.R.R.R.R.',
   long: 'R---------------',
+  sway: 'R-------O-------', // root, then up an octave: a slow cradle rock
 };
 
 // Drum hits for one bar: returns {kick:[step], clap:[[step,vel]], hat:[[step,vel,open]]}.
@@ -79,6 +81,11 @@ function drumBar(style, barIndex, bars) {
       out.clap = [[4, 1], [12, 1]];
       if (last) out.clap.push([14, 0.6], [15, 0.8]);
       out.shaker = Array.from({ length: 16 }, (_, s) => [s, s % 2 ? 0.4 : s % 4 === 2 ? 0.9 : 0.6]);
+      break;
+    // lullaby: a heartbeat kick on 1 and a hushed shaker on the 8ths, nothing on the backbeat
+    case 'nenne':
+      out.kick = [0];
+      out.shaker = [0, 2, 4, 6, 8, 10, 12, 14].map((s) => [s, s % 4 === 2 ? 0.45 : 0.25]);
       break;
     case 'yuruBreak':
       out.kick = [0];
@@ -200,7 +207,7 @@ export function arrange(sections) {
       const sym = sec.chords[b % sec.chords.length];
       const { bassRoot } = chord(sym);
       const d = drumBar(sec.drums, b, sec.bars);
-      const kickTrack = sec.drums.startsWith('yuru') ? t.lightKick : t.kick;
+      const kickTrack = sec.drums.startsWith('yuru') || sec.drums === 'nenne' ? t.lightKick : t.kick;
       for (const s of d.kick) kickTrack.push({ beat: at + s / 4, vel: 1 });
       for (const [s, vel] of d.shaker) t.shaker.push({ beat: at + s / 4, vel, pan: s % 4 === 2 ? 0.3 : -0.3 });
       for (const [s, vel] of d.clap) t.clap.push({ beat: at + s / 4, vel });
@@ -299,7 +306,9 @@ export function capForTalk(notes, bpm, maxSec = 0.3) {
   const cap = (maxSec * bpm) / 60;
   const out = [];
   for (const n of notes) {
-    if (n.key == null || n.beats <= cap) out.push(n);
+    // at slow tempos an 8th is already over the cap; it is sung as is (no zero-length rest, which
+    // would split the phrase into lone notes)
+    if (n.key == null || n.beats <= Math.max(cap, 0.5)) out.push(n);
     else {
       const sung = Math.max(0.5, Math.floor(cap * 4) / 4); // whole 16ths, at least an 8th
       out.push({ ...n, beats: sung }, { key: null, lyric: '', beats: n.beats - sung });

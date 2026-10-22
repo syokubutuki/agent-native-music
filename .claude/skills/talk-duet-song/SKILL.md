@@ -10,6 +10,7 @@ description: 春日部つむぎ × ずんだもん の「読み上げ音声で�
 「とにかく二人のやり取りを聞き続けていたい」。この空気感を守ることが最優先。
 
 代表曲: `songs/ame-ame-ame/`（「あめ あめ あめ。」v5）。経緯と測定はすべて `specs/song-ame-ame-ame.md`。
+第 2 曲: `songs/fuwa-fuwa-fuwa/`（「ふわ ふわ ふわ。」冬の夜の子守唄・86 BPM・D メジャー）。遅いテンポでの注意は `specs/song-fuwa-fuwa-fuwa.md`。
 
 ## まず環境（新しいセッションで）
 ```
@@ -22,10 +23,12 @@ GitHub のリリースは取れない／Docker デーモンは無い／Docker Hu
 ## 書き出しと試聴
 ```
 node bin/song.mjs produce songs/<曲> --mode talk [--heta none|weak|mid|strong]
-node bin/lab.mjs page          # lab/site/ に試聴ページ（MP3 は ffmpeg）
+node bin/lab.mjs page --reuse <公開中の index.html>   # lab/site/ に試聴ページ（MP3 は ffmpeg）
 ```
 試聴ページは Artifact https://claude.ai/artifact/91zKwk9wYWHvS5j6xYTkGj （同じ URL に再公開する。`file_path: lab/site/index.html`、
-新しい MP3 だけ `files` で送る）。ユーザーはページで ★ とメモをつける（db の `ratings`）。比べるときは同条件・同音量で並べる。
+新しい MP3 だけ `files` で送る）。
+過去曲の WAV は git 管理外で新しい環境には無いので、まず Artifact を `read` し、保存された HTML を `--reuse` に渡す
+（ディスクに無い曲は公開中の項目を引き継ぎ、並び順も保つ。新しいグループが先頭）。ユーザーはページで ★ とメモをつける（db の `ratings`）。比べるときは同条件・同音量で並べる。
 
 ## ユーザーの好み（これまでの判断）
 好き:
@@ -47,6 +50,10 @@ node bin/lab.mjs page          # lab/site/ に試聴ページ（MP3 は ffmpeg�
 - 読み上げ声は 0.25 秒を超えて伸ばすと息っぽく消える → `capForTalk` が 0.3 秒で切る。旋律は 8 分中心で書く（128 BPM の 8 分 = 0.23 秒）。
 - 無声化の罠: 語頭や子音にはさまれた「む」「う」「ひ」「つ」、16 分の短い音、1 音だけのフレーズは弱くなる → 8 分に延ばす／言葉を替える。
 - 助詞「は」は歌唱用に「わ」と書く。「ん」は小さい（検査は音量を見ない）。モーラ数と音符数は一致させる（不一致はエラー）。
+- 遅いテンポ（〜100 BPM 以下）では 8 分でも 0.3 s を超え、語中の母音が崩れやすい（同じフレーズが 128 BPM で合格・86 BPM で不合格）。
+  旋律は 8 分だけ・フレーズ途中に長い音や休符を置かない（休符でフレーズが切れる）。落ちた語は言葉か音程を替える。
+  落ちやすかった例: 「きこえる」の「え」、「もぐろう」の語尾「う」、「ゆきの うえ」の「う」、「ずんだもん」の頭の「ず」（「ね ずんだもん」なら立つ）。
+  フレーズ単位の試し歌いは `talkQuery` → `talkSynthesis` → `talkQa` を直接呼ぶと数秒で回せる（全曲の書き出しは 1〜3 分）。
 - 自動検査 `talkQa` に落ちたフレーズだけ歌唱用の声に差し替わる。ログの「talk fallbacks」が 0 件になるまで楽譜側を直す。
 - `--heta`（音痴の量）: 1 回歌わせて音ごとのずれを測り、拡大縮小＋キャラの癖（つむぎ 少し低く遅れる / ずんだもん 高音で上ずり走る）で歌い直す。
   計測例（533 音）: そのまま 中央値 35c・半音以上 12%、中 28c・2%。ユーザーはまだ最終的な度合いを決めていない。
@@ -54,14 +61,14 @@ node bin/lab.mjs page          # lab/site/ に試聴ページ（MP3 は ffmpeg�
 ## 新しい曲を作る
 1. `songs/ame-ame-ame/score.mjs` をコピーして `songs/<新曲>/score.mjs` に。`meta`（title, version, bpm, key, singers, mix）と `sections` を書き換える。
 2. 譜面はフレーズ単位: `[開始位置(16分), 'かな:音名:長さ …']`、休符 `-n`、メリスマ `~:音名:長さ`。歌手ごとに `vocal: { a: [...], z: [...] }`。
-   セクションの主なフラグ: `chords`, `drums`（yuruVerse / yuruChorus / yuruBreak / none）, `comp: 'vibes'|'marimba'`, `bass: 'bounce'` + `bassSynth: 'round'`,
-   `pad`, `bells: 'arp'`, `bellPhrases`（オルゴールの旋律）, `riff` + `riffSynth: 'chip'`, `toys`, `whistle`, `guide`（歌メロを小さくなぞる）, `level: [始, 終]`。
+   セクションの主なフラグ: `chords`, `drums`（yuruVerse / yuruChorus / yuruBreak / nenne=子守唄 / none）, `comp: 'vibes'|'marimba'`, `bass: 'bounce'|'long'|'sway'` + `bassSynth: 'round'`,
+   `pad`, `bells: 'arp'`, `bellPhrases`（オルゴールの旋律）, `riff` + `riffSynth: 'chip'`, `toys`（verse / chorus / drop / outro / snow）, `whistle`, `guide`（歌メロを小さくなぞる）, `level: [始, 終]`。
 3. `specs/song-<新曲>.md` に狙い・歌詞・判断を書く（CLAUDE.md の手順）。テスト（音域、構造）を `test/song/` に足す。
 4. 書き出し → ページ → ユーザーの感想 → 直す。版は残して並べる（`meta.version` を上げる）。
 
 ## 広げ方のアイデア（未検証）
-- 掛け合いの型を増やす: 輪唱（カノン）、こだま返し、同じ旋律を 3 度でハモる、交互に 1 語ずつ、最後だけユニゾン。
+- 掛け合いの型を増やす（こだま返し・6 度のハモりは「ふわ ふわ ふわ。」で使った）: 輪唱（カノン）、同じ旋律を 3 度でハモる、交互に 1 語ずつ、最後だけユニゾン。
 - 場面: 季節や日常の小さな出来事（おやつ、寝る前、お散歩、雨宿り）。言葉は柔らかく、擬音は場面に合わせて。
-- テンポと空気: 子守唄（80–90 BPM、オルゴールとパッド）、跳ねる行進（132–140 BPM、トイピアノ）。
+- テンポと空気: 子守唄（80–90 BPM、オルゴールとパッド → 「ふわ ふわ ふわ。」）、跳ねる行進（132–140 BPM、トイピアノ）。
 - 音色: トイピアノ、カリンバ、チェレスタ、ハープ、ウクレレ風プラック、雨音などの環境音、テープの揺れ（wow/flutter）。
 - 声: セクションごとに `--heta` の量を変える、二人の癖をもっと性格づける。ほかの読み上げ声（はう、ニア）とのコンビも測定済みの音域で試せる。

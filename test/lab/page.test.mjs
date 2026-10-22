@@ -63,3 +63,28 @@ test('import appends only changed ratings and rejects bad rows', () => {
     assert.throws(() => run('import', file), /1-5/);
   });
 });
+
+test('page --reuse keeps published entries for song renders that are not on disk', () => {
+  withLab((dir, run) => {
+    const songs = path.join(dir, 'songs');
+    fs.mkdirSync(path.join(songs, 'old'), { recursive: true });
+    fs.writeFileSync(path.join(songs, 'old', 'page.json'), JSON.stringify([
+      { id: 'old-v1', group: '古い曲', label: 'v1', title: '古い曲 v1', desc: 'x', wav: 'out/full-v1.wav', durationSec: 3 },
+    ]));
+    assert.throws(() => run('page', '--format', 'wav', '--songs', songs), /missing audio for old-v1/);
+    const published = path.join(dir, 'published.html');
+    const prev = { id: 'old-v1', group: '古い曲', audio: 'audio/old-v1.mp3', env: [0.5, 1], rating: null, form: null };
+    fs.writeFileSync(published, `<p><script type="application/json" id="lab-data">${JSON.stringify({ groups: ['古い曲'], clips: [prev] })}</script>`);
+    run('page', '--format', 'wav', '--songs', songs, '--reuse', published);
+    const html = fs.readFileSync(path.join(dir, 'site', 'index.html'), 'utf8');
+    const data = JSON.parse(html.match(/id="lab-data">([\s\S]*?)<\/script>/)[1]);
+    const old = data.clips.find((c) => c.id === 'old-v1');
+    assert.equal(old.audio, 'audio/old-v1.mp3');
+    assert.deepEqual(old.env, [0.5, 1]);
+    assert.equal(old.title, '古い曲 v1');
+    assert.ok(!fs.existsSync(path.join(dir, 'site', 'audio', 'old-v1.wav')));
+    // the published group order is kept; groups new since then (the lab generation) go first
+    assert.deepEqual(data.groups, ['第1世代', '古い曲']);
+    assert.deepEqual(data.clips.map((c) => c.group), ['第1世代', '第1世代', '古い曲']);
+  });
+});

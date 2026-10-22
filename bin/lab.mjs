@@ -35,7 +35,8 @@ commands:
   rate    <id> <1-5> [note...]                                      record a rating (latest wins)
   list    [--gen N] [--rated] [--top N]                             show clips and ratings
   render  <id | genome.json> [--duration s] [--out path]            re-render (e.g. longer)
-  page    [--out dir] [--format mp3|wav] [--songs dir]              build the listening page (default <labDir>/site, songs <labDir>/../songs)
+  page    [--out dir] [--format mp3|wav] [--songs dir] [--reuse html]  build the listening page (default <labDir>/site, songs <labDir>/../songs);
+                                                                    --reuse: a published index.html whose entries stand in for song WAVs not on disk
   import  <ratings.json>                                            merge ratings saved on the page into ratings.jsonl
 
 common: --dir <labDir>  (default ./lab, or $LAB_DIR)`;
@@ -53,6 +54,7 @@ const OPTIONS = {
   out: { type: 'string' },
   format: { type: 'string' },
   songs: { type: 'string' },
+  reuse: { type: 'string' },
   help: { type: 'boolean', short: 'h' },
 };
 
@@ -184,6 +186,7 @@ function cmdPage(dir, opts) {
     outDir: opts.out ? path.resolve(opts.out) : undefined,
     format,
     songsDir: path.resolve(opts.songs ?? path.join(dir, '..', 'songs')), // songs/ sits beside lab/
+    reuse: opts.reuse ? path.resolve(opts.reuse) : undefined,
   });
   console.log(`[lab] ${rel(index)}  (${clips.length} clips, ${format})`);
 }

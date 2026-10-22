@@ -60,7 +60,17 @@ function songItems(songsDir) {
   return items;
 }
 
-export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3', songsDir } = {}) {
+// The clip list baked into a built page (the published one, for `reuse`).
+export function readPageData(file) {
+  const m = fs.readFileSync(file, 'utf8').match(/<script type="application\/json" id="lab-data">([\s\S]*?)<\/script>/);
+  if (!m) throw new Error(`no lab-data in ${file}`);
+  return JSON.parse(m[1]);
+}
+
+// reuse: a previously published index.html. Song items whose WAV is not on this machine (renders are
+// not committed) keep that page's entry — same audio path and envelope — so a fresh checkout can add
+// new songs to the page without re-rendering every old version; only the new MP3s need uploading.
+export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3', songsDir, reuse } = {}) {
   if (format === 'mp3' && !hasFfmpeg()) throw new Error('ffmpeg not found: install it, or use --format wav');
   const audioDir = path.join(outDir, 'audio');
   fs.mkdirSync(audioDir, { recursive: true });
@@ -82,8 +92,14 @@ export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3'
   });
   const extra = songItems(songsDir);
   const newestFirst = labClips.sort((a, b) => Number(b.id.slice(1, 5)) - Number(a.id.slice(1, 5)) || a.id.localeCompare(b.id));
+  const previous = new Map((reuse ? readPageData(reuse).clips : []).map((c) => [c.id, c]));
   const clips = [...extra, ...newestFirst].map(({ wav, ...item }) => {
-    if (!fs.existsSync(wav)) throw new Error(`missing audio for ${item.id}: ${wav}`);
+    if (!fs.existsSync(wav)) {
+      const prev = previous.get(item.id);
+      if (!prev) throw new Error(`missing audio for ${item.id}: ${wav}`);
+      const r = ratings.get(item.id);
+      return { ...prev, ...item, audio: prev.audio, env: prev.env, rating: r ? { score: r.score, note: r.note ?? '' } : prev.rating ?? null };
+    }
     const audioName = `${item.id}.${format}`;
     encodeAudio(wav, path.join(audioDir, audioName), format);
     const r = ratings.get(item.id);
@@ -97,7 +113,13 @@ export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3'
   });
   // `<` escaped so clip data can never close the script tag it lives in.
   // Groups in first-appearance order: song work first, then lab generations newest first.
-  const groups = [...new Set(clips.map((c) => c.group))];
+  // With reuse, groups keep the published page's order and groups new since then go on top.
+  let groups = [...new Set(clips.map((c) => c.group))];
+  if (reuse) {
+    const before = readPageData(reuse).groups ?? [];
+    groups = [...groups.filter((g) => !before.includes(g)), ...before.filter((g) => groups.includes(g))];
+    clips.sort((a, b) => groups.indexOf(a.group) - groups.indexOf(b.group));
+  }
   const json = JSON.stringify({ builtAt: new Date().toISOString(), groups, clips }).replace(/</g, '\\u003c');
   const html = fs.readFileSync(TEMPLATE, 'utf8').replace('__LAB_DATA__', () => json);
   const index = path.join(outDir, 'index.html');

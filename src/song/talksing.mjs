@@ -24,11 +24,11 @@ const midiHz = (k) => 440 * 2 ** ((k - 69) / 12);
 // split into "ー" continuation morae of at most MAX_MORA_SEC at the same pitch, and a note that only
 // repeats the previous vowel (a melisma from the score) is sung as "ー" too.
 const MAX_MORA_SEC = 0.24;
-export function splitForTalk(notes, bpm) {
+export function splitForTalk(notes, bpm, maxMoraSec = MAX_MORA_SEC) {
   const out = [];
   for (const [i, n] of notes.entries()) {
     const sec = (n.beats * 60) / bpm;
-    const parts = Math.max(1, Math.ceil(sec / MAX_MORA_SEC - 1e-9));
+    const parts = Math.max(1, Math.ceil(sec / maxMoraSec - 1e-9));
     const continuation = i > 0 && n.melisma === true;
     for (let p = 0; p < parts; p++) {
       out.push({ ...n, lyric: p === 0 && !continuation ? n.lyric : 'ー', beats: n.beats / parts, src: i });
@@ -39,8 +39,8 @@ export function splitForTalk(notes, bpm) {
 
 // offsetsCents[i] nudges the sung pitch of score note i (all of its morae) — used to shape how far
 // off-key each note lands ("controlled 音痴").
-export async function talkQuery(phrase, { bpm, style, engine = DEFAULT_ENGINE, offsetsCents = null }) {
-  const notes = splitForTalk(phrase, bpm);
+export async function talkQuery(phrase, { bpm, style, engine = DEFAULT_ENGINE, offsetsCents = null, maxMoraSec = MAX_MORA_SEC }) {
+  const notes = splitForTalk(phrase, bpm, maxMoraSec);
   const text = notes.map((n) => n.lyric).join('');
   const q = await (await call(engine, '/audio_query', { text, speaker: style })).json();
   const moras = q.accent_phrases.flatMap((ap) => [...ap.moras, ...(ap.pause_mora ? [] : [])]);
