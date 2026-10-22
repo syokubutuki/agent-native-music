@@ -9,7 +9,7 @@
 // v5 is the reference sound; its settings live in src/song/presets.mjs so new songs can start from them.
 import { yuruDuetMeta, DUET_SECTION } from '../../src/song/presets.mjs';
 
-export const meta = yuruDuetMeta({ title: 'あめ あめ あめ。', version: 5, bpm: 128, key: 'A major' });
+export const meta = { ...yuruDuetMeta({ title: 'あめ あめ あめ。', version: 6, bpm: 128, key: 'A major' }), hook: 'あめあめあめ' };
 
 // ---- chorus (8 bars): ずんだもん's deadpan hook, つむぎ answers, both sing the sweet line ----
 const chorus = (o) => ({
@@ -36,20 +36,20 @@ const CHORUS = twice(chorus);
 // ---- verses: つむぎ wonders, ずんだもん answers with 〜なのだ ----
 const VERSE1 = {
   a: [
-    [2, 'ま:F#4:2 ど:F#4:2 を:E4:2 あ:F#4:2 け:A4:2 た:G#4:2 ら:E4:4'],
-    [22, 'そ:E4:2 ら:F#4:2 が:G#4:2 ぴ:A4:2 ん:A4:2 く:E4:4'],
-    [64, 'て:E4:2 の:F#4:2 ひ:G#4:2 ら:A4:2 に:G#4:2 ひ:E4:2 と:E4:2 つ:E4:2 ぶ:C#4:2'],
-    [104, 'き:E4:2 ら:F#4:2 き:G#4:2 ら:A4:2 ひ:G#4:2 か:F#4:2 る:E4:4'],
-    [146, 'ね:A4:2 え:G#4:2 こ:F#4:2 れ:E4:2 ゆ:F#4:2 め:G#4:2 か:A4:2 な:A4:4'],
-    [194, 'ほ:E4:2 ほ:F#4:2 が:G#4:2 と:A4:2 け:G#4:2 そ:F#4:2 う:E4:4'],
+    [2, 'ま:F#4:2 ど:E4:2 を:E4:2 あ:E4:2 け:A4:2 た:G#4:2 ら:E4:4'],
+    [22, 'そ:G#4:2 ら:E4:2 が:E4:2 ぴ:A4:2 ん:F#4:2 く:E4:4'],
+    [64, 'て:A4:2 の:F#4:2 ひ:F#4:2 ら:E4:2 に:E4:2 ひ:E4:2 と:G#4:2 つ:F#4:2 ぶ:E4:2'],
+    [104, 'き:A4:2 ら:F#4:2 き:F#4:2 ら:E4:2 ひ:E4:2 か:G#4:2 る:E4:4'],
+    [146, 'ね:E4:2 え:A4:2 こ:F#4:2 れ:F#4:2 ゆ:E4:2 め:G#4:2 か:F#4:2 な:E4:4'],
+    [194, 'ほ:A4:2 ほ:F#4:2 が:F#4:2 と:E4:2 け:A4:2 そ:F#4:2 う:E4:4'],
     [236, 'せ:E4:2 え:E4:2 の:A4:4'],
   ],
   z: [
-    [38, 'な:A4:2 に:B4:2 か:C#5:2 ふ:B4:2 る:A4:2 の:B4:2 だ:A4:4'],
-    [84, 'い:A4:2 ち:A4:2 ご:B4:2 あ:C#5:2 じ:C#5:2 な:B4:2 の:A4:2 だ:B4:4'],
-    [122, 'め:A4:2 ろ:A4:2 ん:B4:2 あ:C#5:2 じ:C#5:2 な:B4:2 の:A4:2 だ:B4:4'],
-    [168, 'ゆ:A4:2 め:B4:2 で:C#5:2 も:B4:2 い:A4:2 い:B4:2 の:C#5:2 だ:A4:4'],
-    [216, 'ほ:A4:2 ほ:B4:2 が:C#5:2 お:B4:2 ち:A4:2 そ:B4:2 う:C#5:4'],
+    [38, 'な:C#5:2 に:A4:2 か:A4:2 ふ:C#5:2 る:B4:2 の:A4:2 だ:A4:4'],
+    [84, 'い:A4:2 ち:C#5:2 ご:C#5:2 あ:B4:2 じ:A4:2 な:B4:2 の:A4:2 だ:A4:4'],
+    [122, 'め:A4:2 ろ:C#5:2 ん:C#5:2 あ:B4:2 じ:A4:2 な:B4:2 の:A4:2 だ:A4:4'],
+    [168, 'ゆ:A4:2 め:C#5:2 で:B4:2 も:A4:2 い:C#5:2 い:B4:2 の:A4:2 だ:A4:4'],
+    [216, 'ほ:C#5:2 ほ:A4:2 が:A4:2 お:A4:2 ち:C#5:2 そ:B4:2 う:A4:4'],
     [236, 'せ:A4:2 え:A4:2 の:C#5:4'],
   ],
 };
@@ -61,25 +61,25 @@ const VERSE2 = {
     [120, 'せ:E4:2 え:E4:2 の:A4:4'],
   ],
   z: [
-    [20, 'か:A4:2 さ:A4:2 を:B4:2 さ:C#5:2 か:B4:2 さ:A4:2 に:B4:4'],
+    [20, 'か:C#5:2 さ:A4:2 を:A4:2 さ:A4:2 か:C#5:2 さ:C#5:2 に:B4:4'],
     [60, 'そ:A4:2 う:B4:2 な:C#5:2 の:B4:2 だ:A4:4'],
-    [98, 'ひ:A4:2 ろ:A4:2 い:B4:2 あ:C#5:2 つ:B4:2 め:A4:2 る:B4:2 の:C#5:2 だ:A4:4'],
+    [98, 'ひ:A4:2 ろ:C#5:2 い:C#5:2 あ:C#5:2 つ:B4:2 め:B4:2 る:A4:2 の:A4:2 だ:A4:4'],
     [120, 'せ:A4:2 え:A4:2 の:C#5:4'],
   ],
 };
 // ---- bridge: a little argument over one candy, settled by sharing ----
 const BRIDGE = {
   a: [
-    [0, 'ね:A4:2 え:G#4:2 ず:F#4:2 ん:F#4:2 だ:E4:2 も:F#4:2 ん:E4:4'],
-    [40, 'ひ:E4:2 と:F#4:2 つ:G#4:4 わ:A4:2 け:G#4:2 て:F#4:4'],
+    [0, 'ね:F#4:2 え:A4:2 ず:A4:2 ん:F#4:2 だ:F#4:2 も:E4:2 ん:E4:4'],
+    [40, 'ひ:E4:2 と:G#4:2 つ:F#4:4 わ:E4:2 け:G#4:2 て:E4:4'],
     [84, 'え:F#4:4 え:E4:4'],
-    [112, 'は:E4:2 ん:E4:2 ぶ:F#4:2 ん:G#4:2 こ:A4:6'],
+    [112, 'は:F#4:2 ん:A4:2 ぶ:A4:2 ん:F#4:2 こ:E4:6'],
   ],
   z: [
-    [20, 'な:B4:2 ん:B4:2 な:A4:2 の:B4:2 だ:C#5:4'],
-    [64, 'だ:C#5:2 め:C#5:2 な:B4:2 の:A4:2 だ:A4:2'],
+    [20, 'な:C#5:2 ん:A4:2 な:A4:2 の:A4:2 だ:B4:4'],
+    [64, 'だ:A4:2 め:C#5:2 な:B4:2 の:A4:2 だ:A4:2'],
     [96, 'じょ:A4:2 う:B4:2 だ:C#5:2 ん:B4:2 な:A4:2 の:B4:2 だ:A4:2'],
-    [112, 'は:A4:2 ん:A4:2 ぶ:B4:2 ん:B4:2 こ:C#5:6'],
+    [112, 'は:A4:2 ん:C#5:2 ぶ:C#5:2 ん:B4:2 こ:A4:6'],
   ],
 };
 // ---- outro: the hook slowed down, then 「ごちそうさま」 ----
@@ -97,26 +97,29 @@ const OUTRO = {
 // music box: the hook an octave up (token syntax; lyrics are ignored)
 const BOX = 'x:C#6:2 x:A5:2 x:C#6:2 x:A5:2 x:C#6:2 x:A5:2 -4 | x:A5:2 x:B5:2 x:C#6:2 x:B5:2 x:A5:4 -4';
 const INTRO_BOX = [[0, BOX], [64, BOX]];
+// v6: the music box answers each 「あめ あめ あめ。」 in the gap before つむぎ comes in (a musical echo)
+const ECHO = 'x:C#6:2 x:A5:2 x:C#6:2';
+const CHORUS_ECHO = [12, 76, 140, 204].map((at) => [at, ECHO]);
 const OUTRO_BOX = [[96, BOX]];
 
 const CH = {
   chorus: ['Aadd9', 'E', 'F#m7', 'Dmaj7'],
   verse: ['Dmaj7', 'E', 'C#m7', 'F#m7'],
   bridge: ['Bm7', 'E', 'C#m7', 'F#m7'],
-  outro: ['Dmaj7', 'E', 'Aadd9', 'Aadd9'],
+  outro: ['Dmaj7', 'E', 'Dmaj7', 'E'], // v6: end on E so the song falls back into the intro's A when looped
 };
 
 const base = DUET_SECTION;
 export const sections = [
   { ...base, name: 'intro', level: [0.7, 0.85], bars: 8, chords: CH.chorus, drums: 'yuruBreak', toys: 'verse', bellPhrases: INTRO_BOX, whistle: 'up', duet: false },
   { ...base, name: 'verse1', level: [0.75, 0.8], bars: 16, chords: CH.verse, drums: 'yuruVerse', toys: 'verse', vocal: VERSE1 },
-  { ...base, name: 'chorus1', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'yuruChorus', pad: true, bells: 'arp', toys: 'chorus', vocal: CHORUS },
+  { ...base, name: 'chorus1', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'yuruChorus', bellPhrases: CHORUS_ECHO, pad: true, bells: 'arp', toys: 'chorus', vocal: CHORUS },
   { ...base, name: 'inter', level: [0.9, 0.9], bars: 4, chords: CH.chorus, drums: 'yuruBreak', riff: true, riffSynth: 'chip', toys: 'drop', whistle: 'down', duet: false },
   { ...base, name: 'verse2', level: [0.75, 0.8], bars: 8, chords: CH.verse, drums: 'yuruVerse', toys: 'verse', vocal: VERSE2 },
-  { ...base, name: 'chorus2', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'yuruChorus', pad: true, bells: 'arp', toys: 'chorus', vocal: CHORUS },
+  { ...base, name: 'chorus2', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'yuruChorus', bellPhrases: CHORUS_ECHO, pad: true, bells: 'arp', toys: 'chorus', vocal: CHORUS },
   { ...base, name: 'bridge', level: [0.7, 0.8], bars: 8, chords: CH.bridge, drums: 'yuruBreak', pad: true, toys: 'verse', whistle: 'up', vocal: BRIDGE },
-  { ...base, name: 'chorus3', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'yuruChorus', pad: true, bells: 'arp', riff: true, riffSynth: 'chip', toys: 'chorus', vocal: CHORUS },
-  { ...base, name: 'outro', level: [0.8, 0.6], bars: 8, chords: CH.outro, drums: 'none', bass: undefined, pad: true, toys: 'outro', bellPhrases: OUTRO_BOX, vocal: OUTRO },
+  { ...base, name: 'chorus3', level: [1, 1], bars: 16, chords: CH.chorus, drums: 'yuruChorus', bellPhrases: CHORUS_ECHO, pad: true, bells: 'arp', riff: true, riffSynth: 'chip', toys: 'chorus', vocal: CHORUS },
+  { ...base, name: 'outro', level: [0.8, 0.75], bars: 8, chords: CH.outro, drums: 'none', bass: undefined, pad: true, toys: 'outro', bellPhrases: OUTRO_BOX, vocal: OUTRO },
 ];
 
 export const lyrics = {
