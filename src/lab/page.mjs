@@ -60,7 +60,16 @@ function songItems(songsDir) {
   return items;
 }
 
-export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3', songsDir } = {}) {
+// The clip list baked into a built page (its lab-data script), or null.
+export function readPageData(html) {
+  const m = /<script type="application\/json" id="lab-data">([\s\S]*?)<\/script>/.exec(html);
+  return m ? JSON.parse(m[1]) : null;
+}
+
+// previous: the HTML of an already published page. A clip whose audio is not on this machine (song renders
+// are not in git) is carried over from it as published — same audio path and envelope — so a fresh session
+// can rebuild the page and upload only its new audio.
+export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3', songsDir, previous } = {}) {
   if (format === 'mp3' && !hasFfmpeg()) throw new Error('ffmpeg not found: install it, or use --format wav');
   const audioDir = path.join(outDir, 'audio');
   fs.mkdirSync(audioDir, { recursive: true });
@@ -82,8 +91,16 @@ export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3'
   });
   const extra = songItems(songsDir);
   const newestFirst = labClips.sort((a, b) => Number(b.id.slice(1, 5)) - Number(a.id.slice(1, 5)) || a.id.localeCompare(b.id));
+  const before = new Map((previous ? readPageData(previous)?.clips ?? [] : []).map((c) => [c.id, c]));
+  const carried = [];
   const clips = [...extra, ...newestFirst].map(({ wav, ...item }) => {
-    if (!fs.existsSync(wav)) throw new Error(`missing audio for ${item.id}: ${wav}`);
+    if (!fs.existsSync(wav)) {
+      const old = before.get(item.id);
+      if (!old || !old.audio.endsWith(`.${format}`)) throw new Error(`missing audio for ${item.id}: ${wav}`);
+      carried.push(item.id);
+      const r = ratings.get(item.id);
+      return { ...old, ...item, audio: old.audio, env: old.env, rating: r ? { score: r.score, note: r.note ?? '' } : old.rating ?? null };
+    }
     const audioName = `${item.id}.${format}`;
     encodeAudio(wav, path.join(audioDir, audioName), format);
     const r = ratings.get(item.id);
@@ -102,7 +119,7 @@ export function buildPage(dir, { outDir = path.join(dir, 'site'), format = 'mp3'
   const html = fs.readFileSync(TEMPLATE, 'utf8').replace('__LAB_DATA__', () => json);
   const index = path.join(outDir, 'index.html');
   fs.writeFileSync(index, html);
-  return { index, audioDir, clips };
+  return { index, audioDir, clips, carried };
 }
 
 // Accepts the page store's ratings as [{id, score, note, updatedAt}] (or {id: {...}}) and appends

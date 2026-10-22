@@ -4,12 +4,19 @@
 
 import { DEFAULT_ENGINE } from './voicevox.mjs';
 
-async function call(engine, path, params, body) {
-  const res = await fetch(`${engine}${path}?${new URLSearchParams(params)}`, {
-    method: 'POST',
-    headers: body ? { 'content-type': 'application/json' } : {},
-    body: body ? JSON.stringify(body) : undefined,
-  });
+async function call(engine, path, params, body, retry = 1) {
+  let res;
+  try {
+    res = await fetch(`${engine}${path}?${new URLSearchParams(params)}`, {
+      method: 'POST',
+      headers: body ? { 'content-type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (err) {
+    // the engine drops idle keep-alive sockets; a request that lands on one fails once and succeeds again
+    if (retry > 0) return call(engine, path, params, body, retry - 1);
+    throw err;
+  }
   if (!res.ok) throw new Error(`VOICEVOX ${path} ${res.status}: ${await res.text()}`);
   return res;
 }

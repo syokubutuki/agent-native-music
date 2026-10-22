@@ -1,10 +1,10 @@
 // Score (sections of chords, patterns and vocal bars) -> stems -> mixed song.
 
-import { createBus, kick, clap, hat, riser, impact, bass, supersaw, pluck, bell, chip, toy, snare, futureChords, marimba, roundBass, shaker, lightKick, slideWhistle, vibes } from './synth.mjs';
+import { createBus, kick, clap, hat, riser, impact, bass, supersaw, pluck, bell, chip, toy, snare, futureChords, marimba, roundBass, shaker, lightKick, slideWhistle, vibes, toyPiano, kalimba, celesta, harp, uke, rain } from './synth.mjs';
 import { talkQuery, talkSynthesis, speakQuery, splitForTalk } from './talksing.mjs';
 import { correctPitch, noteOffsets } from './psola.mjs';
 import { decodeWav } from '../lab/wav.mjs';
-import { reverb, pingPong, sidechainCurve, applyGain, eq, compress, levelTo, mixInto, master, chorus, tremolo, predelay } from './fx.mjs';
+import { reverb, pingPong, sidechainCurve, applyGain, eq, compress, levelTo, mixInto, master, chorus, tremolo, predelay, tape } from './fx.mjs';
 import { toScore, singQuery, frameSynthesis, hardTune, softTune, midiHz, vowelOf } from './voicevox.mjs';
 import { pitchToMidi } from './notes.mjs';
 import { createSvf } from '../lab/dsp.mjs';
@@ -174,7 +174,8 @@ export function parsePhrases(phrases, bars) {
   for (const [start, text, flag] of phrases) {
     if (start < at) throw new Error(`phrase at ${start} overlaps the previous one (ends ${at}): ${text}`);
     if (start > at) notes.push({ key: null, lyric: '', beats: (start - at) / 4 });
-    const ns = parseTokens(text).map((n) => (flag === 'wild' ? { ...n, wild: true } : n));
+    // flag: 'wild' (meant to go wrong) or { gain } (a quieter phrase, e.g. an echo)
+    const ns = parseTokens(text).map((n) => (flag === 'wild' ? { ...n, wild: true } : flag?.gain != null ? { ...n, gain: flag.gain } : n));
     notes.push(...ns);
     at = start + ns.reduce((a, n) => a + n.beats * 4, 0);
     if (at > total) throw new Error(`phrase runs past the section end (${at} > ${total}): ${text}`);
@@ -183,9 +184,47 @@ export function parsePhrases(phrases, bars) {
   return notes;
 }
 
+// The explore-duo comping colours. Sustained bars (toy piano, celesta) play the vibes rhythm (chords on
+// beats 1 and 3); plucked ones play in their own idiom: kalimba a 3+3+2 broken chord, harp a rolled
+// arpeggio on 1 and a lighter one on 3, ukulele a down/up strum. v = the bar's chord voicing.
+function compBar(comp, t, at, v, b) {
+  const up = v.map((x) => x + 12);
+  const pan = (i) => (i % 2 ? 0.3 : -0.3);
+  switch (comp) {
+    case 'toyPiano':
+      for (const beatInBar of [0, 2]) for (const midi of up) t.toyPiano.push({ beat: at + beatInBar, midi, vel: beatInBar ? 0.42 : 0.55, pan: midi % 2 ? 0.2 : -0.2 });
+      break;
+    case 'celesta':
+      for (const beatInBar of [0, 2]) for (const midi of up) t.celesta.push({ beat: at + beatInBar, midi, vel: beatInBar ? 0.42 : 0.55, pan: midi % 2 ? 0.2 : -0.2 });
+      break;
+    case 'kalimba': {
+      const order = [0, 2, 1, 3, 2, 1];
+      [0, 3, 6, 8, 11, 14].forEach((s, j) => t.kalimba.push({ beat: at + s / 4, midi: up[order[j] % up.length], vel: j === 0 || j === 3 ? 0.6 : 0.42, pan: pan(j) }));
+      break;
+    }
+    case 'harp': {
+      const low = [v[0] - 12, ...v];
+      low.forEach((midi, j) => t.harp.push({ beat: at + j * 0.25, midi, vel: 0.6 - j * 0.04, pan: -0.3 + j * 0.15 }));
+      v.slice(0, 3).forEach((midi, j) => t.harp.push({ beat: at + 2 + j * 0.25, midi: midi + 12, vel: 0.38, pan: 0.1 + j * 0.15 }));
+      break;
+    }
+    case 'uke': {
+      // D . D U . U D U on eighths; down strums go low->high, up strums high->low and softer
+      const strings = v.slice(-4).length === 4 ? v.slice(-4) : [...v, v[0] + 12].slice(0, 4);
+      for (const [s, dir] of [[0, 'D'], [4, 'D'], [6, 'U'], [10, 'U'], [12, 'D'], [14, 'U']]) {
+        const order = dir === 'D' ? strings : [...strings].reverse();
+        order.forEach((midi, j) => t.uke.push({ beat: at + s / 4 + j * 0.022, midi, vel: (dir === 'D' ? 0.55 : 0.36) * (s === 0 ? 1.15 : 1), pan: (j - 1.5) * 0.15 }));
+      }
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 // Everything except the vocal, as note events in beats.
 export function arrange(sections) {
-  const t = { kick: [], clap: [], hat: [], snare: [], bass: [], stab: [], pad: [], pluck: [], riser: [], impact: [], bell: [], chip: [], toy: [], future: [], lightKick: [], shaker: [], marimba: [], roundBass: [], whistle: [], guide: [], vibes: [] };
+  const t = { kick: [], clap: [], hat: [], snare: [], bass: [], stab: [], pad: [], pluck: [], riser: [], impact: [], bell: [], chip: [], toy: [], future: [], lightKick: [], shaker: [], marimba: [], roundBass: [], whistle: [], guide: [], vibes: [], toyPiano: [], kalimba: [], celesta: [], harp: [], uke: [], rain: [] };
   const vocals = [];
   const chops = [];
   const says = [];
@@ -243,6 +282,7 @@ export function arrange(sections) {
         for (const midi of v) t.marimba.push({ beat: at, midi, vel: 0.7 });
         for (const s of [2, 6, 10, 14]) for (const midi of v.slice(-2)) t.marimba.push({ beat: at + s / 4, midi: midi + 12, vel: 0.45, pan: s % 4 === 2 ? 0.3 : -0.3 });
       }
+      compBar(sec.comp, t, at, v, b);
       if ((sec.riff || sec.riffLow) && b >= (sec.riffFrom ?? 0)) {
         const tones = riffTones(sym);
         const voice = sec.riffSynth === 'chip' ? t.chip : t.pluck;
@@ -252,23 +292,31 @@ export function arrange(sections) {
         }
       }
     }
+    // rain is one long event (rainBars may run past the section, through the tail) so it never breaks
+    if (sec.rain) t.rain.push({ beat: start, beats: (sec.rainBars ?? sec.bars) * 4, vel: sec.rain === true ? 1 : sec.rain });
     if (sec.whistle) t.whistle.push({ beat: start + sec.bars * 4 - 1, beats: 1, down: sec.whistle === 'down', vel: 0.8 });
     if (sec.vocal && sec.duet) {
       // duet: { singerKey: phrases } — each singer has their own phrase list and may overlap the other
       // "say:..." = a spoken aside; "!..." = a phrase meant to go wrong (sung as is, never replaced)
       for (const [singer, phrases] of Object.entries(sec.vocal)) {
         const sung = [];
-        for (const [at16, text] of phrases) {
+        for (const [at16, text, flag] of phrases) {
+          if (flag) {
+            sung.push([at16, text, flag]);
+            continue;
+          }
           if (text.startsWith('say:')) says.push({ name: `${sec.name}-${singer}`, singer, beat: start + at16 / 4, text: text.slice(4) });
           else sung.push(text.startsWith('!') ? [at16, text.slice(1), 'wild'] : [at16, text]);
         }
         const notes = parsePhrases(sung, sec.bars);
-        vocals.push({ name: `${sec.name}-${singer}`, singer, startBeat: start, bars: sec.bars, double: false, notes });
+        // sec.heta: 'none'|'weak'|'mid'|'strong' for both singers, or { a: ..., z: ... } per singer
+        const heta = typeof sec.heta === 'object' && sec.heta ? sec.heta[singer] : sec.heta;
+        vocals.push({ name: `${sec.name}-${singer}`, singer, startBeat: start, bars: sec.bars, double: false, notes, ...(heta ? { heta } : {}) });
         if (sec.guide) {
           // the right melody, softly, an octave up on the music box: a reference the voices sway around
           let beat = start;
           for (const n of notes) {
-            if (n.key != null && !n.wild) t.guide.push({ beat, midi: n.key + 12, vel: 0.35, pan: singer === 'z' ? 0.3 : -0.3 });
+            if (n.key != null && !n.wild && (n.gain ?? 1) >= 1) t.guide.push({ beat, midi: n.key + 12, vel: 0.35, pan: singer === 'z' ? 0.3 : -0.3 });
             beat += n.beats;
           }
         }
@@ -388,7 +436,7 @@ export function sectionLevels(sections, total, { sr, bpm }) {
   return g;
 }
 
-const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26, guide: -33, vibes: -21 };
+const STEM_DB = { kick: -12, clap: -21, hat: -28, bass: -15, stab: -21, pad: -26, pluck: -21, riser: -27, impact: -23, snare: -19, bell: -25, chip: -23, toy: -27, future: -19, lightKick: -15, shaker: -29, marimba: -20, roundBass: -14, whistle: -26, guide: -33, vibes: -21, toyPiano: -21, kalimba: -21, celesta: -21, harp: -21, uke: -22, rain: -32 };
 
 // vocalMode: 'talk' (talk voices made to sing), 'talkhard' (talk voices, then PSOLA pitch correction
 // pinning every note: talk timbre, machine pitch), 'sing' (singing voices, smooth tuning) or 'hard'
@@ -402,7 +450,7 @@ export const HETA = {
   strong: { scale: 1.2, limit: 110 },
 };
 
-export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, vocalMode, heta = null, log = () => {} } = {}) {
+export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, vocalMode, heta: hetaAll = null, log = () => {} } = {}) {
   const { bpm } = score.meta;
   const mode = vocalMode ?? score.meta.vocalMode ?? 'sing';
   const tuning = vocalMode === 'hard' ? { mode: 'hard' } : vocalMode === 'sing' ? { mode: 'soft', keep: 0.5, smooth: 3 } : (score.meta.tuning ?? { mode: 'hard' });
@@ -437,6 +485,12 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   render('whistle', (b) => slideWhistle(ctx, tracks.whistle, b));
   render('guide', (b) => bell(ctx, tracks.guide, b));
   render('vibes', (b) => vibes(ctx, tracks.vibes, b));
+  render('toyPiano', (b) => toyPiano(ctx, tracks.toyPiano, b));
+  render('kalimba', (b) => kalimba(ctx, tracks.kalimba, b));
+  render('celesta', (b) => celesta(ctx, tracks.celesta, b));
+  render('harp', (b) => harp(ctx, tracks.harp, b));
+  render('uke', (b) => uke(ctx, tracks.uke, b));
+  render('rain', (b) => rain(ctx, tracks.rain, b));
 
   const kickBeats = [...tracks.kick, ...tracks.lightKick].map((e) => e.beat);
   const pump = (depth) => sidechainCurve(total, kickBeats, { sr, bpm, depth });
@@ -508,6 +562,8 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   };
   for (const sec of vocals.filter((v) => v.singer && talkLike)) {
     const who = singers[sec.singer];
+    // a section (or one singer in it) may set its own amount of 音痴; 'none' turns it off there
+    const heta = sec.heta ? (sec.heta === 'none' ? null : sec.heta) : hetaAll;
     for (const ph of splitPhrases(capForTalk(sec.notes, bpm))) {
       const at = sec.startBeat + ph.beat;
       let mono = null;
@@ -583,20 +639,23 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
       }
       const offset = Math.round(((at * 60) / bpm - leadSec) * sr);
       const a = ((who.pan + 1) * Math.PI) / 4;
+      const gain = ph.notes[0].gain ?? 1;
       for (let i = 0; i < mono.length; i++) {
         const j = offset + i;
         if (j < 0 || j >= total) continue;
-        vocal.left[j] += mono[i] * Math.cos(a) * Math.SQRT2;
-        vocal.right[j] += mono[i] * Math.sin(a) * Math.SQRT2;
+        vocal.left[j] += mono[i] * Math.cos(a) * Math.SQRT2 * gain;
+        vocal.right[j] += mono[i] * Math.sin(a) * Math.SQRT2 * gain;
       }
     }
-    log(`vocal ${sec.name} (talk)`);
+    log(`vocal ${sec.name} (talk${heta ? `, heta ${heta}` : ''})`);
   }
   if (talkLog.length) log(`talk fallbacks to singing voice: ${talkLog.length}\n  ${talkLog.join('\n  ')}`);
   if (shapeLog.length) log(`heta: ${shapeLog.length} phrase(s) kept unshaped\n  ${shapeLog.join('\n  ')}`);
+  const stats = { talkFallbacks: talkLog.length, hetaUnshaped: shapeLog.length, notes: landed.length };
   if (landed.length) {
     const abs = landed.map(Math.abs).sort((a, b) => a - b);
     const pct = (lim) => Math.round((100 * abs.filter((v) => v > lim).length) / abs.length);
+    Object.assign(stats, { medianCents: Math.round(abs[abs.length >> 1]), over50: pct(50), over100: pct(100) });
     log(`talk pitch: median |offset| ${Math.round(abs[abs.length >> 1])} cents, ${pct(25)}% of notes off by >25, ${pct(50)}% by >50, ${pct(100)}% by >100 (n=${abs.length})`);
   }
   for (const say of says) {
@@ -705,6 +764,8 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
   for (const name of Object.keys(STEM_DB)) mixInto(instrumental, stems[name]);
   mixInto(instrumental, instVerb, mixCfg.instReverb ?? 0.3);
   applyGain(instrumental, sectionLevels(score.sections, total, { sr, bpm }));
+  // tape wow/flutter on the accompaniment (mix.tape), before the voices join
+  if (mixCfg.tape) tape(instrumental, { sr, ...mixCfg.tape });
   const full = createBus(total);
   mixInto(full, instrumental);
   mixInto(full, vocal);
@@ -721,5 +782,6 @@ export async function produce(score, { sr = 44100, engine, voiceStyle, workDir, 
     full: { ...master(full, { sr, targetDb: -11 }), sampleRate: sr },
     instrumental: { ...master(inst, { sr, targetDb: -12 }), sampleRate: sr },
     stems,
+    stats,
   };
 }

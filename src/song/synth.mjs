@@ -520,3 +520,139 @@ export function vibes(ctx, events, bus) {
     }
   }
 }
+
+// --- explore-duo: more small, soft "toy" colours ----------------------------------------------------
+
+// Modal struck/plucked bar: [ratio, amp, decaySec] partials, a soft attack and an optional seeded
+// detune per note (toys are never quite in tune). Shared by toy piano, kalimba and celesta.
+function modal(ctx, events, bus, { partials, attackSec, lenSec, detuneCents = 0, thunk = 0, seed = 71 }) {
+  const sr = ctx.sr;
+  const rng = createRng(seed);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const len = Math.round(lenSec * sr);
+    const f = mtof(ev.midi) * 2 ** ((detuneCents * rng.uniform(-1, 1)) / 1200);
+    const phases = partials.map(() => rng.next() * 0.1);
+    const lp = createSvf('lp', 900, 0.7, sr);
+    for (let n = 0; n < len; n++) {
+      const t = n / sr;
+      let y = 0;
+      partials.forEach(([r, a, d], k) => {
+        if (f * r > sr * 0.45) return;
+        phases[k] += (TAU * f * r) / sr;
+        y += Math.sin(phases[k]) * a * Math.exp(-t / d);
+      });
+      y *= Math.min(1, t / attackSec);
+      if (thunk && t < 0.03) y += lp(rng.uniform(-1, 1)) * thunk * Math.exp(-t / 0.008); // the hammer's knock
+      add(bus, s0 + n, y * (ev.vel ?? 1), ev.pan ?? 0);
+    }
+  }
+}
+
+// Toy piano: hammered metal rods (clamped-free bar partials 1 : 6.27 : 17.55), a wooden knock, slightly
+// out of tune note to note.
+export function toyPiano(ctx, events, bus) {
+  modal(ctx, events, bus, { partials: [[1, 1, 0.9], [2, 0.12, 0.25], [6.27, 0.32, 0.09], [17.55, 0.07, 0.025]], attackSec: 0.0008, lenSec: 1.6, detuneCents: 9, thunk: 0.35, seed: 73 });
+}
+
+// Kalimba: a thumb-plucked tine — round fundamental with a long ring and a quick high "tink" (~5.9x).
+export function kalimba(ctx, events, bus) {
+  modal(ctx, events, bus, { partials: [[1, 1, 1.1], [3, 0.05, 0.2], [5.93, 0.28, 0.07]], attackSec: 0.003, lenSec: 2.2, detuneCents: 4, seed: 79 });
+}
+
+// Celesta: felt hammer on a steel plate over a wooden resonator — almost a sine, a little 2nd and 4th.
+export function celesta(ctx, events, bus) {
+  modal(ctx, events, bus, { partials: [[1, 1, 0.8], [2, 0.18, 0.35], [4, 0.05, 0.12]], attackSec: 0.004, lenSec: 1.8, seed: 83 });
+}
+
+// Karplus–Strong string: a noise burst circulating in a tuned delay loop with an averaging lowpass.
+// Tuned exactly with a first-order allpass for the fractional part of the period.
+function ksString(ctx, events, bus, { decay, bright, lenSec, seed }) {
+  const sr = ctx.sr;
+  const rng = createRng(seed);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const period = sr / mtof(ev.midi);
+    let N = Math.floor(period - 0.5 - 0.1);
+    const d = period - N - 0.5; // 0.1 .. 1.1
+    const c = (1 - d) / (1 + d);
+    const buf = new Float32Array(N);
+    const exc = createSvf('lp', 600 + 7000 * bright, 0.7, sr);
+    for (let i = 0; i < N; i++) buf[i] = exc(rng.uniform(-1, 1));
+    let mean = 0;
+    for (const v of buf) mean += v / N;
+    for (let i = 0; i < N; i++) buf[i] -= mean;
+    const len = Math.round(lenSec * sr);
+    const fb = decay ** (1 / mtof(ev.midi)); // per-period loss -> about `decay` of level after one second
+    let prev = 0;
+    let apIn = 0;
+    let apOut = 0;
+    let p = 0;
+    for (let n = 0; n < len; n++) {
+      const x = buf[p];
+      const avg = 0.5 * (x + prev);
+      prev = x;
+      const y = c * avg + apIn - c * apOut; // allpass
+      apIn = avg;
+      apOut = y;
+      buf[p] = y * fb;
+      p = (p + 1) % N;
+      const fade = Math.min(1, (len - n) / (0.02 * sr));
+      add(bus, s0 + n, x * fade * (ev.vel ?? 1), ev.pan ?? 0);
+    }
+  }
+}
+
+// Harp: long, warm nylon/gut string.
+export function harp(ctx, events, bus) {
+  ksString(ctx, events, bus, { decay: 0.25, bright: 0.35, lenSec: 3, seed: 89 });
+}
+
+// Ukulele-ish pluck: brighter and shorter, the small-body "pon".
+export function uke(ctx, events, bus) {
+  ksString(ctx, events, bus, { decay: 0.04, bright: 0.6, lenSec: 1.2, seed: 97 });
+}
+
+// Rain on the eaves: a soft band-passed hiss plus random drops (short gliding sine "plips", some low
+// "pots" on the roof), seeded so the same score always rains the same way. Event: { beat, beats, vel }.
+export function rain(ctx, events, bus, seed = 101) {
+  const sr = ctx.sr;
+  const rng = createRng(seed);
+  for (const ev of events) {
+    const s0 = place(ctx, ev);
+    const len = lengthOf(ctx, ev.beats);
+    const hp = createSvf('hp', 500, 0.7, sr);
+    const lp = createSvf('lp', 3800, 0.6, sr);
+    const hp2 = createSvf('hp', 500, 0.7, sr);
+    const lp2 = createSvf('lp', 3800, 0.6, sr);
+    const fadeIn = 1.5 * sr;
+    const fadeOut = 1.5 * sr;
+    for (let n = 0; n < len; n++) {
+      const env = Math.min(1, n / fadeIn, (len - n) / fadeOut) * 0.22;
+      const i = s0 + n;
+      if (i >= bus.left.length) break;
+      bus.left[i] += lp(hp(rng.uniform(-1, 1))) * env * (ev.vel ?? 1);
+      bus.right[i] += lp2(hp2(rng.uniform(-1, 1))) * env * (ev.vel ?? 1);
+    }
+    // drops: Poisson, about 9 per second
+    let t = 0;
+    while (true) {
+      t += -Math.log(1 - rng.next()) / 9;
+      const at = Math.round(t * sr);
+      if (at >= len - 0.1 * sr) break;
+      const low = rng.next() < 0.25;
+      const f0 = low ? rng.uniform(500, 900) : rng.uniform(1500, 3800);
+      const glide = low ? 0.8 : rng.uniform(1.15, 1.5);
+      const dur = low ? 0.05 : rng.uniform(0.012, 0.03);
+      const amp = (low ? 0.35 : rng.uniform(0.08, 0.3)) * Math.min(1, at / fadeIn, (len - at) / fadeOut);
+      const pan = rng.uniform(-0.8, 0.8);
+      const dl = Math.round(dur * sr * 3);
+      let ph = 0;
+      for (let n = 0; n < dl; n++) {
+        const u = n / sr;
+        ph += (TAU * f0 * glide ** (u / dur)) / sr;
+        add(bus, s0 + at + n, Math.sin(ph) * Math.min(1, u / 0.001) * Math.exp(-u / (dur * 0.5)) * amp * (ev.vel ?? 1), pan);
+      }
+    }
+  }
+}

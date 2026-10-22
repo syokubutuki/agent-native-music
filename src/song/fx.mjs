@@ -244,3 +244,32 @@ export function predelay(bus, { sr, ms }) {
   }
   return out;
 }
+
+// Tape wow & flutter: the bus read through a delay that drifts slowly (wow) and trembles fast (flutter),
+// so pitch wobbles like an old cassette. Depths are peak pitch deviation in cents; for a sine-swept delay
+// of amplitude A seconds at f Hz the pitch ratio swings by 2*pi*f*A. Both channels share the transport
+// (same modulation), as on a real tape. A slow seeded random drift keeps the wow from sounding like an LFO.
+export function tape(bus, { sr, wowHz = 0.55, wowCents = 9, flutterHz = 6.5, flutterCents = 2.5, seed = 7 }) {
+  const n = bus.left.length;
+  const ratio = (c) => 2 ** (c / 1200) - 1;
+  const wowA = ratio(wowCents) / (2 * Math.PI * wowHz);
+  const flutA = ratio(flutterCents) / (2 * Math.PI * flutterHz);
+  const base = wowA * 1.6 + flutA * 1.6 + 0.002; // seconds; keeps the read head behind the write head
+  // seeded drift: a second, incommensurate slow sine with a seed-derived phase
+  const ph0 = ((seed * 2654435761) % 1000) / 1000 * 2 * Math.PI;
+  const out = { left: new Float32Array(n), right: new Float32Array(n) };
+  for (let i = 0; i < n; i++) {
+    const t = i / sr;
+    const w = Math.sin(2 * Math.PI * wowHz * t) * 0.75 + Math.sin(2 * Math.PI * wowHz * 0.37 * t + ph0) * 0.25;
+    const d = (base + wowA * w + flutA * Math.sin(2 * Math.PI * flutterHz * t)) * sr;
+    const p = i - d;
+    const i0 = Math.floor(p);
+    const f = p - i0;
+    if (i0 < 0 || i0 + 1 >= n) continue;
+    out.left[i] = bus.left[i0] + (bus.left[i0 + 1] - bus.left[i0]) * f;
+    out.right[i] = bus.right[i0] + (bus.right[i0 + 1] - bus.right[i0]) * f;
+  }
+  bus.left.set(out.left);
+  bus.right.set(out.right);
+  return bus;
+}

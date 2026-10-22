@@ -7,9 +7,15 @@ export const DEFAULT_ENGINE = process.env.VOICEVOX_URL ?? 'http://127.0.0.1:5002
 export const TEACHER_STYLE = 6000; // 波音リツ (sing)
 export const FRAME_RATE = 24000 / 256;
 
-async function post(engine, path, params, body) {
+async function post(engine, path, params, body, retry = 1) {
   const url = `${engine}${path}?${new URLSearchParams(params)}`;
-  const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  let res;
+  try {
+    res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  } catch (err) {
+    if (retry > 0) return post(engine, path, params, body, retry - 1); // dropped keep-alive socket: try once more
+    throw err;
+  }
   if (!res.ok) throw new Error(`VOICEVOX ${path} ${res.status}: ${await res.text()}`);
   return res;
 }

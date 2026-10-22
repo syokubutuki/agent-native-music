@@ -20,7 +20,10 @@ commands:
   chorus <songDir>   fast hard-tuned chorus over a grid-locked bed, once per candidate voice
   produce <songDir> [--mode talk|talkhard|sing|hard] [--heta none|weak|mid|strong]
                      render a produced song from <songDir>/score.mjs: full mix + instrumental (needs VOICEVOX).
-                     --mode overrides how the voices sing (talk voices / talk voices pitch-pinned / singing voices / singing pinned)`;
+                     --mode overrides how the voices sing (talk voices / talk voices pitch-pinned / singing voices / singing pinned)
+  explore <songDir> [--only id,id]
+                     render the short comparison sketches of <songDir>/sketches.mjs (one file per sketch, same
+                     loudness), measure them into <songDir>/measure.json and list them on the page`;
 
 function fail(msg) {
   console.error(`[song] ${msg}`);
@@ -149,6 +152,60 @@ async function cmdProduce(songDir, vocalMode, heta) {
   console.log(`[song] ${path.relative(process.cwd(), files.full)}  (${res.durationSec.toFixed(1)}s, peak ${res.full.peak.toFixed(2)}, ${((Date.now() - t0) / 1000).toFixed(0)}s)`);
 }
 
+// Energy shares of a mix in five bands (crossover lowpasses at 200 / 800 / 3000 / 8000 Hz, two biquads each).
+async function bandShares(bus, sr) {
+  const { biquad } = await import('../src/song/fx.mjs');
+  const mono = new Float32Array(bus.left.length);
+  for (let i = 0; i < mono.length; i++) mono[i] = (bus.left[i] + bus.right[i]) / 2;
+  const energy = (x) => x.reduce((a, v) => a + v * v, 0);
+  const below = (f) => {
+    const a = biquad('lowpass', f, { sr });
+    const b = biquad('lowpass', f, { sr });
+    return energy(mono.map((v) => b(a(v))));
+  };
+  const total = energy(mono) || 1;
+  const cuts = [200, 800, 3000, 8000].map(below);
+  const edges = [0, ...cuts, total];
+  const names = ['low', 'lowMid', 'mid', 'presence', 'air'];
+  return Object.fromEntries(names.map((n, i) => [n, Math.round((1000 * Math.max(0, edges[i + 1] - edges[i])) / total) / 10]));
+}
+
+async function cmdExplore(songDir, only) {
+  const { pathToFileURL } = await import('node:url');
+  const { produce } = await import('../src/song/produce.mjs');
+  const { sketches } = await import(pathToFileURL(path.join(songDir, 'sketches.mjs')).href);
+  const outDir = path.join(songDir, 'out');
+  const work = path.join(outDir, 'work');
+  fs.mkdirSync(work, { recursive: true });
+  const want = only ? new Set(only.split(',')) : null;
+  const measureFile = path.join(songDir, 'measure.json');
+  const measures = fs.existsSync(measureFile) ? JSON.parse(fs.readFileSync(measureFile, 'utf8')) : {};
+  const done = new Map(); // identical scores (the per-group references) are rendered once
+  for (const sk of sketches) {
+    if (want && !want.has(sk.id)) continue;
+    const key = JSON.stringify(sk.score);
+    const wav = path.join(outDir, `${sk.id}.wav`);
+    const t0 = Date.now();
+    if (done.has(key)) {
+      fs.copyFileSync(done.get(key).wav, wav);
+      measures[sk.id] = { ...done.get(key).m, sameAs: done.get(key).id };
+    } else {
+      const res = await produce(sk.score, { voiceStyle: sk.score.meta.voice.style, workDir: work, log: (m) => (m.startsWith('stem') ? null : console.log(`[song] ${sk.id}: ${m}`)) });
+      fs.writeFileSync(wav, encodeWav(res.full));
+      const m = { durationSec: Math.round(res.durationSec * 100) / 100, peak: Math.round(res.full.peak * 100) / 100, ...res.stats, bands: await bandShares(res.full, res.sr) };
+      measures[sk.id] = m;
+      done.set(key, { wav, m, id: sk.id });
+    }
+    console.log(`[song] ${sk.id}  ${JSON.stringify(measures[sk.id])}  (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
+  }
+  fs.writeFileSync(measureFile, JSON.stringify(measures, null, 2) + '\n');
+  // page: every sketch whose audio exists, grouped by direction, in the order of sketches.mjs
+  const items = sketches
+    .filter((sk) => fs.existsSync(path.join(outDir, `${sk.id}.wav`)))
+    .map((sk) => ({ id: `duo-${sk.id}`, group: sk.group, label: sk.label, title: sk.title, desc: sk.desc, wav: `out/${sk.id}.wav`, durationSec: measures[sk.id]?.durationSec }));
+  fs.writeFileSync(path.join(songDir, 'page.json'), JSON.stringify(items, null, 2) + '\n');
+}
+
 const [command, songDir] = process.argv.slice(2);
 if (!command || !songDir) {
   console.log(USAGE);
@@ -163,6 +220,10 @@ try {
       return i > 0 ? process.argv[i + 1] : undefined;
     };
     await cmdProduce(path.resolve(songDir), opt('--mode'), opt('--heta'));
+  }
+  else if (command === 'explore') {
+    const i = process.argv.indexOf('--only');
+    await cmdExplore(path.resolve(songDir), i > 0 ? process.argv[i + 1] : undefined);
   }
   else fail(`unknown command: ${command}\n\n${USAGE}`);
 } catch (err) {

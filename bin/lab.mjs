@@ -35,7 +35,9 @@ commands:
   rate    <id> <1-5> [note...]                                      record a rating (latest wins)
   list    [--gen N] [--rated] [--top N]                             show clips and ratings
   render  <id | genome.json> [--duration s] [--out path]            re-render (e.g. longer)
-  page    [--out dir] [--format mp3|wav] [--songs dir]              build the listening page (default <labDir>/site, songs <labDir>/../songs)
+  page    [--out dir] [--format mp3|wav] [--songs dir] [--previous index.html]
+                                                                    build the listening page (default <labDir>/site, songs <labDir>/../songs);
+                                                                    --previous: a published page whose clips stand in for audio missing here
   import  <ratings.json>                                            merge ratings saved on the page into ratings.jsonl
 
 common: --dir <labDir>  (default ./lab, or $LAB_DIR)`;
@@ -53,6 +55,7 @@ const OPTIONS = {
   out: { type: 'string' },
   format: { type: 'string' },
   songs: { type: 'string' },
+  previous: { type: 'string' },
   help: { type: 'boolean', short: 'h' },
 };
 
@@ -180,12 +183,13 @@ function cmdRender(dir, positionals, opts) {
 function cmdPage(dir, opts) {
   const format = opts.format ?? 'mp3';
   if (!['mp3', 'wav'].includes(format)) fail(`--format must be mp3 or wav (got ${format})`);
-  const { index, clips } = buildPage(dir, {
+  const { index, clips, carried } = buildPage(dir, {
     outDir: opts.out ? path.resolve(opts.out) : undefined,
+    previous: opts.previous ? fs.readFileSync(opts.previous, 'utf8') : undefined,
     format,
     songsDir: path.resolve(opts.songs ?? path.join(dir, '..', 'songs')), // songs/ sits beside lab/
   });
-  console.log(`[lab] ${rel(index)}  (${clips.length} clips, ${format})`);
+  console.log(`[lab] ${rel(index)}  (${clips.length} clips, ${format}${carried.length ? `, ${carried.length} carried over from the previous page` : ''})`);
 }
 
 function cmdImport(dir, positionals) {
